@@ -1,23 +1,22 @@
 import { Suspense } from "react";
-import { ServiceFilters } from "@/components/services/ServiceFilters";
+import { ServicesTabs } from "@/components/services/ServicesTabs";
+import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 
 export default function PetHotelsPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Pet Hotels</h1>
-        <p className="text-muted-foreground text-sm mt-1">ძაղლების სასტუმრო</p>
-      </div>
-      <div className="flex gap-6">
-        <aside className="w-56 shrink-0 hidden md:block">
-          <Suspense fallback={null}>
-            <ServiceFilters category="pet-hotels" />
-          </Suspense>
-        </aside>
-        <div className="flex-1 min-w-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <p className="text-muted-foreground col-span-full py-12 text-center">No listings yet — check back soon.</p>
-          </div>
+    <div className="min-h-screen bg-[#F5F0E8]">
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+        <div>
+          <h1 className="text-3xl font-black text-[#1C1917] mb-1">სერვისები</h1>
+          <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
+        </div>
+        <Suspense fallback={null}>
+          <ServicesTabs active="pet-hotels" />
+          <MarketplaceSearch />
+        </Suspense>
+        <div className="py-20 text-center text-stone-400">
+          <div className="text-5xl mb-4">🏨</div>
+          <p className="font-medium">სერვისები მალე დაემატება</p>
         </div>
       </div>
     </div>
