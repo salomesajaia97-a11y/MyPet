@@ -3,7 +3,7 @@ import { Stethoscope, Home, ShoppingBag, Coffee } from "lucide-react";
 
 const categories = [
   { href: "/services/vet-clinics", label: "Vet Clinics", georgian: "ვეტ. კლინიკები", icon: Stethoscope },
-  { href: "/services/pet-hotels", label: "Pet Hotels", georgian: "ძაღლების სასტუმრო", icon: Home },
+  { href: "/services/pet-hotels", label: "Pet Hotels", georgian: "ძაղლების სასტუმრო", icon: Home },
   { href: "/services/pet-shops", label: "Pet Shops", georgian: "Pet მაღაზიები", icon: ShoppingBag },
   { href: "/services/pet-friendly", label: "Pet-Friendly", georgian: "Pet-Friendly ადგილები", icon: Coffee },
 ];

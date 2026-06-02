@@ -6,7 +6,7 @@ export default function PetHotelsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Pet Hotels</h1>
-        <p className="text-muted-foreground text-sm mt-1">ძაღლების სასტუმრო</p>
+        <p className="text-muted-foreground text-sm mt-1">ძაղლების სასტუმრო</p>
       </div>
       <div className="flex gap-6">
         <aside className="w-56 shrink-0 hidden md:block">
