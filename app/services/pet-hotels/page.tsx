@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
+import { RealBusinessCard } from "@/components/services/RealBusinessCard";
+import { PET_HOTELS } from "@/lib/data/businesses";
 
 export default function PetHotelsPage() {
   return (
@@ -14,9 +16,10 @@ export default function PetHotelsPage() {
           <ServicesTabs active="pet-hotels" />
           <MarketplaceSearch />
         </Suspense>
-        <div className="py-20 text-center text-stone-400">
-          <div className="text-5xl mb-4">🏨</div>
-          <p className="font-medium">სერვისები მალე დაემატება</p>
+        <div className="space-y-4">
+          {PET_HOTELS.map((biz) => (
+            <RealBusinessCard key={biz._id} business={biz} />
+          ))}
         </div>
       </div>
     </div>
