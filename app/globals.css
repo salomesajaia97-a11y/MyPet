@@ -4,31 +4,32 @@
 
 @layer base {
   :root {
-    --background: 45 30% 96%;       /* soft cream */
-    --foreground: 25 10% 15%;       /* dark charcoal */
-    --card: 40 25% 94%;
-    --card-foreground: 25 10% 15%;
-    --popover: 40 25% 94%;
-    --popover-foreground: 25 10% 15%;
-    --primary: 30 20% 30%;          /* warm dark brown */
-    --primary-foreground: 45 30% 96%;
-    --secondary: 38 20% 88%;        /* muted beige */
+    --background: 38 30% 94%;
+    --foreground: 25 10% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 25 10% 12%;
+    --primary: 22 26% 33%;
+    --primary-foreground: 38 30% 96%;
+    --secondary: 38 20% 90%;
     --secondary-foreground: 25 10% 20%;
-    --muted: 40 15% 91%;
-    --muted-foreground: 25 8% 45%;
-    --accent: 35 40% 75%;           /* warm sand accent */
+    --muted: 38 15% 92%;
+    --muted-foreground: 25 8% 48%;
+    --accent: 35 40% 75%;
     --accent-foreground: 25 10% 15%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 38 15% 85%;
-    --input: 38 15% 85%;
-    --ring: 30 20% 50%;
+    --border: 38 15% 88%;
+    --ring: 22 26% 33%;
     --radius: 0.75rem;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 10% 12%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --input: 38 15% 88%;
   }
 }
 
 @layer base {
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-[#F5F0E8] text-foreground antialiased;
+    font-family: var(--font-geist-sans), "BPG Arial", system-ui, sans-serif;
   }
 }
