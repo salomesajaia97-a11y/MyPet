@@ -1,6 +1,9 @@
+// app/services/pet-friendly/page.tsx
 import { Suspense } from "react";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
+import { RealBusinessCard } from "@/components/services/RealBusinessCard";
+import { PET_FRIENDLY } from "@/lib/data/businesses";
 
 export default function PetFriendlyPage() {
   return (
@@ -14,9 +17,23 @@ export default function PetFriendlyPage() {
           <ServicesTabs active="pet-friendly" />
           <MarketplaceSearch />
         </Suspense>
-        <div className="py-20 text-center text-stone-400">
-          <div className="text-5xl mb-4">☕</div>
-          <p className="font-medium">სერვისები მალე დაემატება</p>
+
+        {/* Indoor badge legend */}
+        <div className="flex items-center gap-4 text-xs text-stone-500">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+            Indoor Allowed — შიგნით შემოყვანა შეიძლება
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+            Outdoor Only — მხოლოდ გარე სივრცე
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          {PET_FRIENDLY.map((place) => (
+            <RealBusinessCard key={place._id} business={place} />
+          ))}
         </div>
       </div>
     </div>
