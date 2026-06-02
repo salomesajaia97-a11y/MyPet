@@ -1,22 +1,18 @@
 import { Suspense } from "react";
-import { ListingGrid } from "@/components/marketplace/ListingGrid";
-import { ListingFilters } from "@/components/marketplace/ListingFilters";
+import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
+import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 
-export default async function AdoptionPage() {
+export default function AdoptionPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Adoption</h1>
-        <p className="text-muted-foreground text-sm mt-1">გაჩუქება</p>
-      </div>
-      <div className="flex gap-6">
-        <aside className="w-56 shrink-0 hidden md:block">
-          <Suspense fallback={null}>
-            <ListingFilters type="adoption" />
-          </Suspense>
-        </aside>
-        <div className="flex-1 min-w-0">
-          <ListingGrid listings={[]} type="adoption" />
+    <div className="min-h-screen bg-[#F5F0E8]">
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+        <Suspense fallback={null}>
+          <MarketplaceTabs active="adoption" />
+          <MarketplaceSearch />
+        </Suspense>
+        <div className="py-20 text-center text-stone-400">
+          <div className="text-5xl mb-4">🐾</div>
+          <p className="font-medium">განცხადება არ მოიძებნა</p>
         </div>
       </div>
     </div>

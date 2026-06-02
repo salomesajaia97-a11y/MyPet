@@ -1,31 +1,92 @@
-import Link from "next/link";
-import { Stethoscope, Home, ShoppingBag, Coffee } from "lucide-react";
+import { Suspense } from "react";
+import { ServicesTabs } from "@/components/services/ServicesTabs";
+import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
+import { Star, MapPin, Phone } from "lucide-react";
 
-const categories = [
-  { href: "/services/vet-clinics", label: "Vet Clinics", georgian: "ვეტ. კლინიკები", icon: Stethoscope },
-  { href: "/services/pet-hotels", label: "Pet Hotels", georgian: "ძაղლების სასტუმრო", icon: Home },
-  { href: "/services/pet-shops", label: "Pet Shops", georgian: "Pet მაღაზიები", icon: ShoppingBag },
-  { href: "/services/pet-friendly", label: "Pet-Friendly", georgian: "Pet-Friendly ადგილები", icon: Coffee },
+const MOCK_BUSINESSES = [
+  {
+    _id: "1", name: "ვეტერინარული კლინიკა 'პროვეტი'", category: "ვეტკლინიკები",
+    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&auto=format&fit=crop",
+    rating: 4.8, reviewCount: 142, is24h: true,
+    tags: ["24/7", "ოპერაცია", "ლაბორატორია", "რენტგენი"],
+    address: "ჭავჭავაძის 33ა, თბილისი, ვაკე", phone: "+995 32 2 99 99 99",
+  },
+  {
+    _id: "2", name: "ვეტერინარული ცენტრი 'ანიმალი'", category: "ვეტკლინიკები",
+    image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&auto=format&fit=crop",
+    rating: 4.6, reviewCount: 98, is24h: false,
+    tags: ["დიაგნოსტიკა", "ვაქცინაცია", "პროფილაქტიკა"],
+    address: "ვაზა-ფშაველას 71, თბილისი, საბურთალო", phone: "+995 32 2 88 88 88",
+  },
 ];
 
 export default function ServicesPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight mb-3">Services Directory</h1>
-        <p className="text-muted-foreground text-lg">Find trusted pet services in Georgia</p>
+    <div className="min-h-screen bg-[#F5F0E8]">
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+        <div>
+          <h1 className="text-3xl font-black text-[#1C1917] mb-1">სერვისები</h1>
+          <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
+        </div>
+
+        <Suspense fallback={null}>
+          <ServicesTabs active="vet-clinics" />
+          <MarketplaceSearch />
+        </Suspense>
+
+        <div className="space-y-4">
+          {MOCK_BUSINESSES.map((biz) => (
+            <FigmaBusinessCard key={biz._id} business={biz} />
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {categories.map((c) => (
-          <Link key={c.href} href={c.href} className="group block">
-            <div className="bg-card border border-border rounded-2xl p-8 text-center hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-              <c.icon className="w-10 h-10 mx-auto mb-4 text-primary" />
-              <p className="font-bold text-lg">{c.label}</p>
-              <p className="text-sm text-muted-foreground mt-1">{c.georgian}</p>
+      <FigmaFAB />
+    </div>
+  );
+}
+
+function FigmaBusinessCard({ business }: { business: typeof MOCK_BUSINESSES[0] }) {
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
+      <div className="flex">
+        <div className="relative w-32 h-32 sm:w-40 sm:h-40 shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={business.image} alt={business.name} className="w-full h-full object-cover" />
+          {business.is24h && (
+            <div className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              ⏰ 24/7
             </div>
-          </Link>
-        ))}
+          )}
+        </div>
+        <div className="p-4 flex-1 space-y-2 min-w-0">
+          <p className="font-bold text-[#1C1917] text-base leading-tight">{business.name}</p>
+          <p className="text-stone-500 text-sm">{business.category}</p>
+          <div className="flex items-center gap-1.5 text-sm">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <span className="font-semibold">{business.rating}</span>
+            <span className="text-stone-400">({business.reviewCount} შეფასება)</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {business.tags.map((tag) => (
+              <span key={tag} className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">{tag}</span>
+            ))}
+          </div>
+          <p className="text-xs text-stone-500 flex items-center gap-1">
+            <MapPin className="w-3 h-3 shrink-0" /> {business.address}
+          </p>
+          <p className="text-xs text-stone-500 flex items-center gap-1">
+            <Phone className="w-3 h-3 shrink-0" /> {business.phone}
+          </p>
+        </div>
       </div>
     </div>
+  );
+}
+
+function FigmaFAB() {
+  return (
+    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#6B5240] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#5a4435] transition-colors z-50">
+      +
+    </button>
   );
 }
