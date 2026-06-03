@@ -21,14 +21,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     }
 
-    const passwordHash = hashPassword(password);
+    const passwordHash = await hashPassword(password);
     const user = await UserModel.create({ name, email: email.toLowerCase(), passwordHash });
 
     return NextResponse.json(
       { id: user._id.toString(), name: user.name, email: user.email },
       { status: 201 }
     );
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Internal server error";
+    console.error("[register]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

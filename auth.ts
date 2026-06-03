@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await connectDB();
         const user = await UserModel.findOne({ email: credentials.email });
         if (!user) return null;
-        const valid = verifyPassword(credentials.password as string, user.passwordHash);
+        const valid = await verifyPassword(credentials.password as string, user.passwordHash);
         if (!valid) return null;
         return { id: user._id.toString(), email: user.email, name: user.name };
       },

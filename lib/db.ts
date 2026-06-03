@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-
-if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI is not defined in environment variables");
-}
-
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -19,11 +13,29 @@ declare global {
 const cached: MongooseCache = global.mongoose ?? { conn: null, promise: null };
 global.mongoose = cached;
 
+async function getUri(): Promise<string> {
+  const uri = process.env.MONGODB_URI;
+
+  // Use in-memory MongoDB for local dev when Atlas URI is missing or still has placeholder
+  if (!uri || uri.includes("<db_password>")) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("MONGODB_URI is not configured for production");
+    }
+    const { MongoMemoryServer } = await import("mongodb-memory-server");
+    const mms = await MongoMemoryServer.create();
+    return mms.getUri();
+  }
+
+  return uri;
+}
+
 export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, { bufferCommands: false });
+    cached.promise = getUri().then((uri) =>
+      mongoose.connect(uri, { bufferCommands: false })
+    );
   }
 
   cached.conn = await cached.promise;

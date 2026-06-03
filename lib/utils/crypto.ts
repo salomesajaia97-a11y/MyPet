@@ -1,14 +1,21 @@
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from "crypto";
+import { pbkdf2, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
-export function hashPassword(password: string): string {
+const pbkdf2Async = promisify(pbkdf2);
+
+export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
-  const hash = pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
+  const hash = (await pbkdf2Async(password, salt, 1000, 64, "sha512")).toString("hex");
   return `${salt}:${hash}`;
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const [salt, storedHash] = stored.split(":");
   if (!salt || !storedHash) return false;
-  const hash = pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
-  return timingSafeEqual(Buffer.from(hash), Buffer.from(storedHash));
+  const hash = (await pbkdf2Async(password, salt, 1000, 64, "sha512")).toString("hex");
+  try {
+    return timingSafeEqual(Buffer.from(hash), Buffer.from(storedHash));
+  } catch {
+    return false;
+  }
 }
