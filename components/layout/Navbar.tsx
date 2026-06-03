@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils/cn";
 
 const navItems = [
   { href: "/", label: "მთავარი", icon: Home, exact: true },
-  { href: "/buy-sell", label: "ბაზარი", icon: Store, exact: false, matchPrefix: ["/buy-sell", "/adoption", "/mating", "/lost-found"] },
+  { href: "/buy-sell", label: "განცხადებები", icon: Store, exact: false, matchPrefix: ["/buy-sell", "/adoption", "/mating", "/lost-found"] },
   { href: "/services", label: "სერვისები", icon: Briefcase, exact: false, matchPrefix: ["/services"] },
 ];
 

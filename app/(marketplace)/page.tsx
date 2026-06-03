@@ -30,7 +30,7 @@ export default function MarketplacePage() {
             className="inline-flex items-center gap-2 bg-[#6B5240] text-white px-8 py-3.5 rounded-xl font-semibold text-base hover:bg-[#5a4435] transition-colors"
           >
             <Store className="w-5 h-5" />
-            ბაზარი
+            განცხადებები
           </Link>
           <Link
             href="/services"
@@ -48,7 +48,7 @@ export default function MarketplacePage() {
           {[
             {
               icon: Store,
-              title: "ბაზარი",
+              title: "განცხადებები",
               desc: "ყიდვა, გაყიდვა, გაჩუქება, შეჯვარება",
               href: "/buy-sell",
             },
