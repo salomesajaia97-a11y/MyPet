@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Plus, Heart, LogIn, LogOut, User, Phone, Globe, ChevronUp, ChevronDown } from "lucide-react";
+import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, Globe, ChevronUp, ChevronDown, List, Wallet, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 
@@ -145,6 +145,90 @@ function LocaleSelector() {
   );
 }
 
+function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSession>["data"]> }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const name = session.user?.name ?? "";
+  const email = session.user?.email ?? "";
+  const initial = (name || email).charAt(0).toUpperCase();
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all",
+          open ? "border-stone-300 bg-stone-50" : "border-stone-200 hover:border-stone-300"
+        )}
+      >
+        {/* Avatar */}
+        <div className="w-7 h-7 rounded-full bg-[#6B5240] flex items-center justify-center text-white text-xs font-bold shrink-0">
+          {initial}
+        </div>
+        <span className="text-sm font-medium text-stone-700 max-w-[60px] truncate hidden sm:block">
+          {name || email.split("@")[0]}
+        </span>
+        <ChevronDown className={cn("w-3.5 h-3.5 text-stone-400 transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-64 z-50 overflow-hidden">
+          {/* User info */}
+          <div className="flex items-center gap-3 px-4 py-4 border-b border-stone-100">
+            <div className="w-10 h-10 rounded-full bg-[#6B5240] flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#1C1917] truncate">{email}</p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                ID: {Math.abs(email.split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 37).toString().slice(0, 7)}
+              </p>
+            </div>
+          </div>
+
+          {/* Menu items */}
+          <div className="py-2">
+            {[
+              { icon: List, label: "ჩემი განცხადებები", href: "/buy-sell" },
+              { icon: Wallet, label: "ბალანსის შევსება", href: "#" },
+              { icon: UserRound, label: "პროფილი", href: "#" },
+            ].map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+              >
+                <item.icon className="w-4 h-4 text-stone-400 shrink-0" />
+                {item.label}
+              </Link>
+            ))}
+
+            <div className="h-px bg-stone-100 mx-4 my-1" />
+
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+            >
+              <LogOut className="w-4 h-4 text-stone-400 shrink-0" />
+              გასვლა
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
@@ -190,21 +274,7 @@ export function Navbar() {
           {status === "loading" ? (
             <div className="w-8 h-8 rounded-full bg-stone-100 animate-pulse" />
           ) : session ? (
-            <div className="flex items-center gap-1">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F5F0E8] text-sm text-[#6B5240] font-medium">
-                <User className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline max-w-[100px] truncate">
-                  {session.user?.name}
-                </span>
-              </div>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 hover:bg-stone-100 transition-colors"
-                title="გასვლა"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            <UserMenu session={session} />
           ) : (
             <Link
               href="/login"
