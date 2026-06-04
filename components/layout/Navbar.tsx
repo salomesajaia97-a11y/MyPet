@@ -91,7 +91,7 @@ function LocaleSelector() {
                   <span
                     className={cn(
                       "text-sm font-medium",
-                      lang === l.code ? "text-[#1C1917]" : "text-stone-600"
+                      lang === l.code ? "text-[#0F2830]" : "text-stone-600"
                     )}
                   >
                     {l.label}
@@ -130,7 +130,7 @@ function LocaleSelector() {
                   <span
                     className={cn(
                       "text-sm font-medium",
-                      currency === c.code ? "text-[#1C1917]" : "text-stone-600"
+                      currency === c.code ? "text-[#0F2830]" : "text-stone-600"
                     )}
                   >
                     {c.label} - {c.symbol}
@@ -171,7 +171,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
         )}
       >
         {/* Avatar */}
-        <div className="w-7 h-7 rounded-full bg-[#6B5240] flex items-center justify-center text-white text-xs font-bold shrink-0">
+        <div className="w-7 h-7 rounded-full bg-[#0E4A5C] flex items-center justify-center text-white text-xs font-bold shrink-0">
           {initial}
         </div>
         <span className="text-sm font-medium text-stone-700 max-w-[60px] truncate hidden sm:block">
@@ -184,11 +184,11 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
         <div className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-64 z-50 overflow-hidden">
           {/* User info */}
           <div className="flex items-center gap-3 px-4 py-4 border-b border-stone-100">
-            <div className="w-10 h-10 rounded-full bg-[#6B5240] flex items-center justify-center text-white font-bold text-sm shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#0E4A5C] flex items-center justify-center text-white font-bold text-sm shrink-0">
               {initial}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#1C1917] truncate">{email}</p>
+              <p className="text-sm font-semibold text-[#0F2830] truncate">{email}</p>
               <p className="text-xs text-stone-400 mt-0.5">
                 ID: {Math.abs(email.split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 37).toString().slice(0, 7)}
               </p>
@@ -242,11 +242,11 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-[#6B5240] flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#0E4A5C] flex items-center justify-center">
             <PawPrint className="w-5 h-5 text-white" />
           </div>
           <span className="font-black text-lg tracking-tight">
-            <span className="text-[#6B5240]">MyPet</span>
+            <span className="text-[#0E4A5C]">MyPet</span>
             <span className="text-stone-400 font-light">.ge</span>
           </span>
         </Link>
@@ -256,7 +256,7 @@ export function Navbar() {
           {/* Add listing */}
           <Link
             href="/buy-sell"
-            className="hidden sm:flex items-center gap-1.5 border border-[#6B5240] text-[#6B5240] hover:bg-[#6B5240] hover:text-white transition-all rounded-lg px-4 py-2 text-sm font-semibold"
+            className="hidden sm:flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-4 py-2 text-sm font-semibold"
           >
             <Plus className="w-4 h-4" />
             დამატება
@@ -278,7 +278,7 @@ export function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-[#6B5240] transition-colors px-3 py-2"
+              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-[#0E4A5C] transition-colors px-3 py-2"
             >
               <LogIn className="w-4 h-4" />
               <span>შესვლა</span>
@@ -298,8 +298,8 @@ export function Navbar() {
                 className={cn(
                   "px-3.5 py-2.5 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors",
                   isActive(item.href)
-                    ? "border-[#6B5240] text-[#6B5240]"
-                    : "border-transparent text-stone-500 hover:text-[#6B5240] hover:border-stone-300"
+                    ? "border-[#0E4A5C] text-[#0E4A5C]"
+                    : "border-transparent text-stone-500 hover:text-[#0E4A5C] hover:border-stone-300"
                 )}
               >
                 {item.label}

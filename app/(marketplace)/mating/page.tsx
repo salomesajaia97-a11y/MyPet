@@ -4,7 +4,7 @@ import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 
 export default function MatingPage() {
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
+    <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <Suspense fallback={null}>
           <MarketplaceTabs active="mating" />

@@ -33,41 +33,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#EBF6FA] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-sm p-8 space-y-6">
           {/* Logo */}
           <div className="flex flex-col items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#6B5240] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#0E4A5C] flex items-center justify-center">
               <PawPrint className="w-6 h-6 text-white" />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-black text-[#1C1917]">მოგესალმებით</h1>
+              <h1 className="text-2xl font-black text-[#0F2830]">მოგესალმებით</h1>
               <p className="text-stone-500 text-sm mt-1">შედით თქვენს ანგარიშზე</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[#1C1917]">ელ-ფოსტა</label>
+              <label className="text-sm font-medium text-[#0F2830]">ელ-ფოსტა</label>
               <input
                 name="email"
                 type="email"
                 required
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#F5F0E8]/50 text-[#1C1917] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#6B5240]/30 focus:border-[#6B5240] transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#EBF6FA]/50 text-[#0F2830] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30 focus:border-[#0E4A5C] transition-all"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[#1C1917]">პაროლი</label>
+              <label className="text-sm font-medium text-[#0F2830]">პაროლი</label>
               <input
                 name="password"
                 type="password"
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#F5F0E8]/50 text-[#1C1917] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#6B5240]/30 focus:border-[#6B5240] transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#EBF6FA]/50 text-[#0F2830] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30 focus:border-[#0E4A5C] transition-all"
               />
             </div>
 
@@ -80,7 +80,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#6B5240] text-white py-3.5 rounded-xl font-semibold text-base hover:bg-[#5a4435] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full bg-[#0E4A5C] text-white py-3.5 rounded-xl font-semibold text-base hover:bg-[#0B3D4E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? "მიმდინარეობს..." : "შესვლა"}
             </button>
@@ -98,7 +98,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="w-full flex items-center justify-center gap-3 border border-stone-200 bg-white text-[#1C1917] py-3.5 rounded-xl font-semibold text-base hover:bg-stone-50 transition-colors"
+            className="w-full flex items-center justify-center gap-3 border border-stone-200 bg-white text-[#0F2830] py-3.5 rounded-xl font-semibold text-base hover:bg-stone-50 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-stone-500">
             ანგარიში არ გაქვთ?{" "}
-            <Link href="/register" className="text-[#6B5240] font-semibold hover:underline">
+            <Link href="/register" className="text-[#0E4A5C] font-semibold hover:underline">
               რეგისტრაცია
             </Link>
           </p>

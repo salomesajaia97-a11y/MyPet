@@ -22,8 +22,8 @@ export function ServicesTabs({ active }: Props) {
           className={cn(
             "inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 border",
             active === tab.key
-              ? "bg-[#6B5240] text-white border-[#6B5240]"
-              : "bg-white text-stone-600 border-stone-200 hover:border-[#6B5240]/50 hover:text-[#6B5240]"
+              ? "bg-[#0E4A5C] text-white border-[#0E4A5C]"
+              : "bg-white text-stone-600 border-stone-200 hover:border-[#0E4A5C]/50 hover:text-[#0E4A5C]"
           )}
         >
           <tab.icon className="w-4 h-4" />

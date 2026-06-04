@@ -124,10 +124,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* ─── Search Hero ─── */}
-      <section className="bg-[#FAF7F2] py-10 px-4">
+      <section className="bg-[#EBF6FA] py-10 px-4">
         <div className="max-w-5xl mx-auto">
           {/* Search bar */}
-          <div className="flex items-stretch bg-white rounded-2xl border-2 border-[#6B5240] shadow-sm overflow-visible relative">
+          <div className="flex items-stretch bg-white rounded-2xl border-2 border-[#0E4A5C] shadow-sm overflow-visible relative">
             {/* Animal type dropdown */}
             <div className="relative shrink-0">
               <button
@@ -138,7 +138,7 @@ export default function HomePage() {
                   <div className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider leading-none mb-1">
                     ტიპი
                   </div>
-                  <div className="text-sm font-semibold text-[#1C1917] leading-none">
+                  <div className="text-sm font-semibold text-[#0F2830] leading-none">
                     {animalType}
                   </div>
                 </div>
@@ -158,7 +158,7 @@ export default function HomePage() {
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                         animalType === type
-                          ? "bg-[#F5F0E8] text-[#6B5240] font-semibold"
+                          ? "bg-[#EBF6FA] text-[#0E4A5C] font-semibold"
                           : "text-stone-700 hover:bg-stone-50"
                       }`}
                     >
@@ -187,12 +187,12 @@ export default function HomePage() {
             />
 
             {/* Filters icon */}
-            <button className="px-4 border-l border-stone-200 text-stone-400 hover:text-[#6B5240] transition-colors hidden sm:flex items-center">
+            <button className="px-4 border-l border-stone-200 text-stone-400 hover:text-[#0E4A5C] transition-colors hidden sm:flex items-center">
               <SlidersHorizontal className="w-5 h-5" />
             </button>
 
             {/* Search button */}
-            <button className="bg-[#6B5240] hover:bg-[#5a4435] text-white px-7 py-4 font-bold text-sm flex items-center gap-2 transition-colors whitespace-nowrap rounded-r-[14px]">
+            <button className="bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-7 py-4 font-bold text-sm flex items-center gap-2 transition-colors whitespace-nowrap rounded-r-[14px]">
               <Search className="w-4 h-4" />
               ძება
             </button>
@@ -204,9 +204,9 @@ export default function HomePage() {
               <Link
                 key={chip.label}
                 href={chip.href}
-                className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-600 hover:text-[#6B5240] hover:shadow-md transition-all border border-stone-200 shadow-sm"
+                className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-600 hover:text-[#0E4A5C] hover:shadow-md transition-all border border-stone-200 shadow-sm"
               >
-                <chip.icon className="w-4 h-4 text-[#6B5240]" />
+                <chip.icon className="w-4 h-4 text-[#0E4A5C]" />
                 {chip.label}
               </Link>
             ))}
@@ -219,11 +219,11 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Rocket className="w-5 h-5 text-orange-500" />
-            <h2 className="font-black text-xl text-[#1C1917]">VIP განცხადებები</h2>
+            <h2 className="font-black text-xl text-[#0F2830]">VIP განცხადებები</h2>
           </div>
           <Link
             href="/buy-sell"
-            className="text-sm text-stone-500 hover:text-[#6B5240] font-medium transition-colors"
+            className="text-sm text-stone-500 hover:text-[#0E4A5C] font-medium transition-colors"
           >
             ყველას ნახვა →
           </Link>
@@ -254,7 +254,7 @@ export default function HomePage() {
                 </button>
               </div>
               <div className="pt-3 pb-1">
-                <p className="font-black text-[#1C1917] text-lg leading-tight">
+                <p className="font-black text-[#0F2830] text-lg leading-tight">
                   {item.price}
                 </p>
                 <p className="text-sm text-stone-600 font-medium mt-0.5">{item.breed}</p>
@@ -269,23 +269,23 @@ export default function HomePage() {
       </section>
 
       {/* ─── Browse by Category ─── */}
-      <section className="bg-[#FAF7F2] py-10 px-4">
+      <section className="bg-[#EBF6FA] py-10 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-black text-xl text-[#1C1917]">კატეგორიები</h2>
+            <h2 className="font-black text-xl text-[#0F2830]">კატეგორიები</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.label}
                 href={cat.href}
-                className="group flex flex-col items-center gap-2.5 bg-white rounded-2xl p-4 border border-stone-100 hover:border-[#6B5240]/30 hover:shadow-md transition-all"
+                className="group flex flex-col items-center gap-2.5 bg-white rounded-2xl p-4 border border-stone-100 hover:border-[#0E4A5C]/30 hover:shadow-md transition-all"
               >
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${cat.color}`}>
                   <cat.icon className="w-5 h-5" />
                 </div>
                 <div className="text-center">
-                  <p className="text-[11px] font-semibold text-[#1C1917] leading-snug">
+                  <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">
                     {cat.label}
                   </p>
                   <p className="text-[10px] text-stone-400 mt-0.5">{cat.count}</p>
@@ -300,12 +300,12 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <PawPrint className="w-5 h-5 text-[#6B5240]" />
-            <h2 className="font-black text-xl text-[#1C1917]">ახალი განცხადებები</h2>
+            <PawPrint className="w-5 h-5 text-[#0E4A5C]" />
+            <h2 className="font-black text-xl text-[#0F2830]">ახალი განცხადებები</h2>
           </div>
           <Link
             href="/buy-sell"
-            className="text-sm text-stone-500 hover:text-[#6B5240] font-medium transition-colors"
+            className="text-sm text-stone-500 hover:text-[#0E4A5C] font-medium transition-colors"
           >
             ყველას ნახვა →
           </Link>
@@ -330,7 +330,7 @@ export default function HomePage() {
                 </button>
               </div>
               <div className="pt-3 pb-1">
-                <p className="font-black text-[#1C1917] text-lg leading-tight">{item.price}</p>
+                <p className="font-black text-[#0F2830] text-lg leading-tight">{item.price}</p>
                 <p className="text-sm text-stone-600 font-medium mt-0.5">{item.breed}</p>
                 <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3 shrink-0" />
@@ -343,7 +343,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Stats bar ─── */}
-      <section className="bg-[#4A3728] py-10 px-4">
+      <section className="bg-[#093040] py-10 px-4">
         <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-center text-white">
           {[
             { number: "10,000+", label: "ცხოველის განცხადება" },

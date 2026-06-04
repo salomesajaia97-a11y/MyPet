@@ -21,7 +21,7 @@ export default async function BuySellPage() {
   const listings = await getListings();
 
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
+    <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <Suspense fallback={null}>
           <MarketplaceTabs active="buy-sell" />
@@ -55,13 +55,13 @@ function ListingCard({ listing }: { listing: BuySellListing }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
         )}
-        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#1C1917]">
+        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">
           {listing.price.toLocaleString()}₾
         </div>
       </div>
       <div className="p-4 space-y-2.5">
         <div>
-          <p className="font-bold text-[#1C1917] text-base">
+          <p className="font-bold text-[#0F2830] text-base">
             {listing.breed} {listing.age < 12 ? "ლეკვი" : ""}
           </p>
           <p className="text-stone-500 text-sm">{listing.breed} • {listing.age}თვე</p>
@@ -88,7 +88,7 @@ function ListingCard({ listing }: { listing: BuySellListing }) {
 
 function FAB() {
   return (
-    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#6B5240] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#5a4435] transition-colors z-50">
+    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#0E4A5C] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#0B3D4E] transition-colors z-50">
       +
     </button>
   );

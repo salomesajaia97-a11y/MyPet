@@ -6,10 +6,10 @@ import { PET_SHOPS } from "@/lib/data/businesses";
 
 export default function PetShopsPage() {
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
+    <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <div>
-          <h1 className="text-3xl font-black text-[#1C1917] mb-1">სერვისები</h1>
+          <h1 className="text-3xl font-black text-[#0F2830] mb-1">სერვისები</h1>
           <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
         </div>
         <Suspense fallback={null}>

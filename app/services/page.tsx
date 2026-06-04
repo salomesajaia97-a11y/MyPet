@@ -6,10 +6,10 @@ import { VET_CLINICS } from "@/lib/data/businesses";
 
 export default function ServicesPage() {
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
+    <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <div>
-          <h1 className="text-3xl font-black text-[#1C1917] mb-1">სერვისები</h1>
+          <h1 className="text-3xl font-black text-[#0F2830] mb-1">სერვისები</h1>
           <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
         </div>
 
@@ -31,7 +31,7 @@ export default function ServicesPage() {
 
 function FigmaFAB() {
   return (
-    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#6B5240] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#5a4435] transition-colors z-50">
+    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#0E4A5C] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#0B3D4E] transition-colors z-50">
       +
     </button>
   );

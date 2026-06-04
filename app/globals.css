@@ -29,7 +29,7 @@
 
 @layer base {
   body {
-    @apply bg-[#F5F0E8] text-foreground antialiased;
+    @apply bg-[#EBF6FA] text-foreground antialiased;
     font-family: var(--font-geist-sans), "BPG Arial", system-ui, sans-serif;
   }
 }

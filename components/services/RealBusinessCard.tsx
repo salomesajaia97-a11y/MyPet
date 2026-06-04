@@ -29,11 +29,11 @@ export function RealBusinessCard({ business }: Props) {
         <div className="p-4 flex-1 space-y-2 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-bold text-[#1C1917] text-base leading-tight">{business.name}</p>
+              <p className="font-bold text-[#0F2830] text-base leading-tight">{business.name}</p>
               <p className="text-stone-400 text-xs mt-0.5">{business.nameKa}</p>
             </div>
             {business.pricePerNight && (
-              <span className="shrink-0 text-sm font-bold text-[#6B5240] bg-[#6B5240]/10 px-2.5 py-1 rounded-full">
+              <span className="shrink-0 text-sm font-bold text-[#0E4A5C] bg-[#0E4A5C]/10 px-2.5 py-1 rounded-full">
                 {business.pricePerNight}₾/ღამე
               </span>
             )}
@@ -63,12 +63,12 @@ export function RealBusinessCard({ business }: Props) {
 
           {/* Phone & Website */}
           <div className="flex items-center gap-4">
-            <a href={`tel:${business.phone}`} className="text-xs text-[#6B5240] flex items-center gap-1.5 hover:underline">
+            <a href={`tel:${business.phone}`} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
               <Phone className="w-3 h-3 shrink-0" />
               {business.phone}
             </a>
             {business.website && (
-              <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 hover:text-[#6B5240]">
+              <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 hover:text-[#0E4A5C]">
                 <Globe className="w-3 h-3" />
                 ვებ-გვერდი
               </a>
