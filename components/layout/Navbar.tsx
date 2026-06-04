@@ -1,102 +1,113 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Store, Briefcase, Home, LogIn, LogOut, User } from "lucide-react";
+import { PawPrint, Plus, Heart, LogIn, LogOut, User, Phone } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-const navItems = [
-  { href: "/", label: "მთავარი", icon: Home, exact: true },
-  {
-    href: "/buy-sell",
-    label: "განცხადებები",
-    icon: Store,
-    exact: false,
-    matchPrefix: ["/buy-sell", "/adoption", "/mating", "/lost-found"],
-  },
-  {
-    href: "/services",
-    label: "სერვისები",
-    icon: Briefcase,
-    exact: false,
-    matchPrefix: ["/services"],
-  },
+const SUB_NAV = [
+  { href: "/buy-sell", label: "ყიდვა-გაყიდვა" },
+  { href: "/adoption", label: "გაჩუქება" },
+  { href: "/mating", label: "შეჯვარება" },
+  { href: "/lost-found", label: "დაკარგული/ნაპოვნი" },
+  { href: "/services/vet-clinics", label: "ვეტ-კლინიკები" },
+  { href: "/services/pet-hotels", label: "სასტუმროები" },
+  { href: "/services/pet-shops", label: "მაღაზიები" },
+  { href: "/services/pet-friendly", label: "Pet-Friendly" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { data: session, status } = useSession();
 
-  const isActive = (item: (typeof navItems)[0]) => {
-    if (item.exact) return pathname === item.href;
-    if (item.matchPrefix) return item.matchPrefix.some((p) => pathname.startsWith(p));
-    return pathname.startsWith(item.href);
-  };
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-stone-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-stone-200">
+      {/* Row 1 — main bar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="w-9 h-9 rounded-xl bg-[#6B5240] flex items-center justify-center">
             <PawPrint className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg text-[#1C1917] tracking-tight">MyPet</span>
+          <span className="font-black text-lg tracking-tight">
+            <span className="text-[#6B5240]">MyPet</span>
+            <span className="text-stone-400 font-light">.ge</span>
+          </span>
         </Link>
 
-        {/* Nav */}
-        <nav className="flex items-center gap-1">
-          {navItems.map((item) => {
-            const active = isActive(item);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
-                  active
-                    ? "bg-[#6B5240] text-white"
-                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-                )}
-              >
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Right actions */}
+        <div className="flex items-center gap-1.5">
+          {/* Add listing */}
+          <Link
+            href="/buy-sell"
+            className="hidden sm:flex items-center gap-1.5 border border-[#6B5240] text-[#6B5240] hover:bg-[#6B5240] hover:text-white transition-all rounded-lg px-4 py-2 text-sm font-semibold"
+          >
+            <Plus className="w-4 h-4" />
+            დამატება
+          </Link>
 
-        {/* Auth */}
-        <div className="flex items-center gap-2">
+          {/* Favorites */}
+          <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500">
+            <Heart className="w-[18px] h-[18px]" />
+          </button>
+
+          {/* Auth */}
           {status === "loading" ? (
             <div className="w-8 h-8 rounded-full bg-stone-100 animate-pulse" />
           ) : session ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F5F0E8] text-sm text-[#6B5240] font-medium">
                 <User className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline max-w-[120px] truncate">
+                <span className="hidden sm:inline max-w-[100px] truncate">
                   {session.user?.name}
                 </span>
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 hover:bg-stone-100 transition-colors"
                 title="გასვლა"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">გასვლა</span>
               </button>
             </div>
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-[#6B5240] text-white hover:bg-[#5a4435] transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-[#6B5240] transition-colors px-3 py-2"
             >
               <LogIn className="w-4 h-4" />
-              შესვლა
+              <span>შესვლა</span>
             </Link>
           )}
+        </div>
+      </div>
+
+      {/* Row 2 — sub-nav */}
+      <div className="border-t border-stone-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <nav className="flex items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {SUB_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "px-3.5 py-2.5 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors",
+                  isActive(item.href)
+                    ? "border-[#6B5240] text-[#6B5240]"
+                    : "border-transparent text-stone-500 hover:text-[#6B5240] hover:border-stone-300"
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <span className="hidden lg:flex items-center gap-1.5 text-xs text-stone-400 shrink-0 ml-4 pb-px">
+            <Phone className="w-3 h-3" />
+            032 2 80 00 15
+          </span>
         </div>
       </div>
     </header>
