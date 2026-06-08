@@ -2,7 +2,6 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { X, ImagePlus, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
 
 interface ImageUploaderProps {
   value: string[];
@@ -30,8 +29,9 @@ export function ImageUploader({
 
   async function handleFiles(files: FileList | null) {
     if (!files) return;
-    const picked = Array.from(files).slice(0, limit - slots.filter(s => "url" in s).length);
+    const picked = Array.from(files).slice(0, limit - slots.filter(s => "url" in s || "uploading" in s).length);
 
+    let offset = slots.length;
     for (const file of picked) {
       if (!ALLOWED.includes(file.type)) {
         setSlots((prev) => [...prev, { error: `${file.name}: only JPEG/PNG/WebP` }]);
@@ -42,8 +42,12 @@ export function ImageUploader({
         continue;
       }
 
-      const placeholderIndex = slots.length;
-      setSlots((prev) => [...prev, { uploading: true }]);
+      const placeholderIndex = offset++;
+      setSlots((prev) => {
+        const next = [...prev];
+        next[placeholderIndex] = { uploading: true };
+        return next;
+      });
 
       const fd = new FormData();
       fd.append("file", file);
