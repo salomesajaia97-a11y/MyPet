@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import type { BuySellListing } from "@/types/marketplace";
@@ -88,8 +89,11 @@ function ListingCard({ listing }: { listing: BuySellListing }) {
 
 function FAB() {
   return (
-    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#0E4A5C] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#0B3D4E] transition-colors z-50">
+    <Link
+      href="/listings/new"
+      className="fixed bottom-6 right-6 w-14 h-14 bg-[#0E4A5C] text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-[#0B3D4E] transition-colors z-50"
+    >
       +
-    </button>
+    </Link>
   );
 }
