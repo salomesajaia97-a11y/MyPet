@@ -8,10 +8,6 @@ import { verifyPassword } from "@/lib/utils/crypto";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   cookies: {
-    pkceCodeVerifier: {
-      name: "authjs.pkce.code_verifier",
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: false },
-    },
     state: {
       name: "authjs.state",
       options: { httpOnly: true, sameSite: "lax", path: "/", secure: false },
@@ -21,6 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      checks: ["state"],
     }),
     Credentials({
       name: "credentials",
