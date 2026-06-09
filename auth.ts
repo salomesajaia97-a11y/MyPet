@@ -7,12 +7,6 @@ import { verifyPassword } from "@/lib/utils/crypto";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
-  cookies: {
-    state: {
-      name: "authjs.state",
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: false },
-    },
-  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
