@@ -60,19 +60,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async jwt({ token, user, account }) {
       if (user) {
-        if (account?.provider === "google") {
-          await connectDB();
-          const dbUser = await UserModel.findOne({ email: user.email });
-          if (dbUser) token.id = dbUser._id.toString();
-        } else {
+        await connectDB();
+        const dbUser = await UserModel.findOne({ email: user.email });
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+          token.role = dbUser.role ?? "user";
+        } else if (account?.provider !== "google") {
           token.id = user.id;
+          token.role = "user";
         }
       }
       return token;
     },
     async session({ session, token }) {
       if (token.id && session.user) {
-        (session.user as typeof session.user & { id: string }).id = token.id as string;
+        const u = session.user as typeof session.user & { id: string; role: string };
+        u.id = token.id as string;
+        u.role = (token.role as string) ?? "user";
       }
       return session;
     },

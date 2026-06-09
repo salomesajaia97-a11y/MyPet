@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
+import { connectDB } from "@/lib/db";
+import UploadModel from "@/lib/models/Upload";
+import { auth } from "@/auth";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -47,6 +50,14 @@ export async function POST(req: NextRequest) {
           .end(buffer);
       }
     );
+
+    const session = await auth();
+    await connectDB();
+    await UploadModel.create({
+      publicId: result.public_id,
+      url: result.secure_url,
+      uploadedBy: (session?.user as { id?: string })?.id ?? undefined,
+    });
 
     return NextResponse.json({ url: result.secure_url, publicId: result.public_id });
   } catch {
