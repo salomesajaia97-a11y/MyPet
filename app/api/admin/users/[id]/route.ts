@@ -10,11 +10,11 @@ async function requireAdmin() {
   return session;
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const { id } = params;
+  const { id } = await params;
   const body = await req.json();
   const allowed = ["name", "role"];
   const update: Record<string, unknown> = {};
@@ -27,11 +27,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(user);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const { id } = params;
+  const { id } = await params;
   await connectDB();
   const user = await UserModel.findByIdAndDelete(id);
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });

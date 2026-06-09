@@ -11,11 +11,11 @@ async function requireAdmin() {
   return session;
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const { id } = params;
+  const { id } = await params;
   await connectDB();
   const upload = await UploadModel.findById(id);
   if (!upload) return NextResponse.json({ error: "Not found" }, { status: 404 });
