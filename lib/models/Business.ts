@@ -1,4 +1,4 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, model, models, Types } from "mongoose";
 
 const BusinessSchema = new Schema(
   {
@@ -24,6 +24,8 @@ const BusinessSchema = new Schema(
     aggregateRating: { type: Number, default: 0 },
     googleRatingCount: { type: Number, default: 0 },
     nativeRatingCount: { type: Number, default: 0 },
+    userId: { type: Types.ObjectId, ref: "User" },
+    status: { type: String, enum: ["pending", "approved"], default: "approved" },
   },
   { timestamps: true }
 );

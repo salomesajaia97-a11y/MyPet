@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
@@ -22,6 +23,12 @@ export default function VetClinicsPage() {
           ))}
         </div>
       </div>
+      <Link
+        href="/services/new"
+        className="fixed bottom-6 right-6 flex items-center gap-2 bg-[#0E4A5C] text-white rounded-full shadow-lg px-5 py-3 text-sm font-semibold hover:bg-[#0B3D4E] transition-colors z-50"
+      >
+        + ბიზნესის დამატება
+      </Link>
     </div>
   );
 }

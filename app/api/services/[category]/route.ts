@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
+import { auth } from "@/auth";
 
 const VALID_CATEGORIES = ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"];
 
@@ -23,6 +24,8 @@ export async function GET(
     if (searchParams.get("hasEmergency") === "true") filter.hasEmergency = true;
     if (searchParams.get("indoorAllowed") === "true") filter.indoorAllowed = true;
 
+    filter.status = "approved";
+
     const businesses = await BusinessModel.find(filter)
       .sort({ aggregateRating: -1 })
       .limit(50)
@@ -44,10 +47,16 @@ export async function POST(
     return NextResponse.json({ error: "Invalid category" }, { status: 400 });
   }
 
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     await connectDB();
-    const business = await BusinessModel.create({ ...body, category });
+    const userId = (session.user as typeof session.user & { id?: string }).id;
+    const business = await BusinessModel.create({ ...body, category, userId, status: "approved" });
     return NextResponse.json({ business }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
