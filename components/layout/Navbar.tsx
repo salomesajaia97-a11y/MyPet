@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, Globe, ChevronUp, ChevronDown, List, Wallet, UserRound } from "lucide-react";
+import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, Globe, ChevronUp, ChevronDown, List, Wallet, UserRound, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 import { ImageUploader } from "@/components/ui/ImageUploader";
@@ -221,6 +221,16 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
             </div>
 
             <div className="py-2">
+              {(session.user as { role?: string })?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-emerald-700 hover:bg-emerald-50 transition-colors font-medium"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                  Admin Panel
+                </Link>
+              )}
               {[
                 { icon: List, label: "ჩემი განცხადებები", href: "/buy-sell" },
                 { icon: Wallet, label: "ბალანსის შევსება", href: "#" },
