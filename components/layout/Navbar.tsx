@@ -298,7 +298,7 @@ export function Navbar() {
         <div className="flex items-center gap-1.5">
           {/* Add listing */}
           <Link
-            href="/buy-sell"
+            href="/listings/new"
             className="hidden sm:flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-4 py-2 text-sm font-semibold"
           >
             <Plus className="w-4 h-4" />
