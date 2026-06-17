@@ -37,28 +37,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async signIn({ account, user }) {
       if (account?.provider === "google") {
-        await connectDB();
-        const existing = await UserModel.findOne({ email: user.email });
-        if (!existing) {
-          await UserModel.create({
-            name: user.name ?? user.email,
-            email: user.email,
-            passwordHash: "",
-          });
+        try {
+          await connectDB();
+          const existing = await UserModel.findOne({ email: user.email });
+          if (!existing) {
+            await UserModel.create({
+              name: user.name ?? user.email,
+              email: user.email,
+              passwordHash: "",
+            });
+          }
+        } catch (err) {
+          console.error("Google signIn DB error:", err);
         }
       }
       return true;
     },
     async jwt({ token, user, account }) {
       if (user) {
-        await connectDB();
-        const dbUser = await UserModel.findOne({ email: user.email });
-        if (dbUser) {
-          token.id = dbUser._id.toString();
-          token.role = dbUser.role ?? "user";
-        } else if (account?.provider !== "google") {
-          token.id = user.id;
-          token.role = "user";
+        try {
+          await connectDB();
+          const dbUser = await UserModel.findOne({ email: user.email });
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+            token.role = dbUser.role ?? "user";
+          } else if (account?.provider !== "google") {
+            token.id = user.id;
+            token.role = "user";
+          }
+        } catch (err) {
+          console.error("JWT DB error:", err);
         }
       }
       return token;
