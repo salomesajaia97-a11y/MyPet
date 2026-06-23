@@ -51,16 +51,22 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    const session = await auth();
-    await connectDB();
-    await UploadModel.create({
-      publicId: result.public_id,
-      url: result.secure_url,
-      uploadedBy: (session?.user as { id?: string })?.id ?? undefined,
-    });
+    try {
+      const session = await auth();
+      await connectDB();
+      await UploadModel.create({
+        publicId: result.public_id,
+        url: result.secure_url,
+        uploadedBy: (session?.user as { id?: string })?.id ?? undefined,
+      });
+    } catch (dbErr) {
+      console.error("[upload] db tracking failed:", dbErr instanceof Error ? dbErr.message : dbErr);
+    }
 
     return NextResponse.json({ url: result.secure_url, publicId: result.public_id });
-  } catch {
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[upload] failed:", msg);
+    return NextResponse.json({ error: "Upload failed", detail: msg }, { status: 500 });
   }
 }

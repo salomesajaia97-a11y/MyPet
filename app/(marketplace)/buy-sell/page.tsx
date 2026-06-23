@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
+
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import type { BuySellListing } from "@/types/marketplace";
 
@@ -48,6 +49,7 @@ export default async function BuySellPage() {
 
 function ListingCard({ listing }: { listing: BuySellListing }) {
   return (
+    <Link href={`/listings/${listing._id}`} className="block">
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
       <div className="relative aspect-[4/3] bg-stone-100">
         {listing.images[0] ? (
@@ -84,6 +86,7 @@ function ListingCard({ listing }: { listing: BuySellListing }) {
         </p>
       </div>
     </div>
+    </Link>
   );
 }
 
