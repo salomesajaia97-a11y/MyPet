@@ -49,14 +49,6 @@ export default function NewListingPage() {
       body.vaccinated = data.vaccinated === "on";
       body.hasPassport = data.hasPassport === "on";
     }
-    if (type === "adoption") {
-      body.spayedNeutered = data.spayedNeutered === "on";
-      body.goodWithKids = data.goodWithKids === "on";
-      body.goodWithPets = data.goodWithPets === "on";
-      if (data.temperament) {
-        body.temperament = String(data.temperament).split(",").map((s) => s.trim()).filter(Boolean);
-      }
-    }
     if (type === "mating") {
       body.price = data.price ? Number(data.price) : null;
       body.weight = Number(data.weight);
@@ -180,26 +172,7 @@ export default function NewListingPage() {
           )}
 
           {type === "adoption" && (
-            <>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ხასიათი (მძდელი გამოყოფილი)</label>
-                <input name="temperament" placeholder="მაგ: მოყვარული, მშვიდი, აქტიური" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
-              </div>
-              <div className="flex flex-wrap gap-6">
-                <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
-                  <input type="checkbox" name="spayedNeutered" className="rounded" />
-                  სტერილიზებული
-                </label>
-                <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
-                  <input type="checkbox" name="goodWithKids" className="rounded" />
-                  ბავშვებთან კარგია
-                </label>
-                <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
-                  <input type="checkbox" name="goodWithPets" className="rounded" />
-                  სხვა ცხოველებთან კარგია
-                </label>
-              </div>
-            </>
+            <></>
           )}
 
           {type === "mating" && (
