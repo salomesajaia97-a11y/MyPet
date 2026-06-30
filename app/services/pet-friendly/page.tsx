@@ -4,8 +4,14 @@ import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
 import { PET_FRIENDLY } from "@/lib/data/businesses";
+import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
-export default function PetFriendlyPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PetFriendlyPage() {
+  const dbBusinesses = await fetchDBBusinesses("pet-friendly");
+  const businesses = [...dbBusinesses, ...PET_FRIENDLY];
+
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
@@ -18,7 +24,6 @@ export default function PetFriendlyPage() {
           <MarketplaceSearch />
         </Suspense>
 
-        {/* Indoor badge legend */}
         <div className="flex items-center gap-4 text-xs text-stone-500">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
@@ -31,7 +36,7 @@ export default function PetFriendlyPage() {
         </div>
 
         <div className="space-y-4">
-          {PET_FRIENDLY.map((place) => (
+          {businesses.map((place) => (
             <RealBusinessCard key={place._id} business={place} />
           ))}
         </div>

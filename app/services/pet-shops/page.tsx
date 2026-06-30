@@ -4,8 +4,14 @@ import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
 import { PET_SHOPS } from "@/lib/data/businesses";
+import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
-export default function PetShopsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PetShopsPage() {
+  const dbBusinesses = await fetchDBBusinesses("pet-shops");
+  const businesses = [...dbBusinesses, ...PET_SHOPS];
+
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
@@ -18,7 +24,7 @@ export default function PetShopsPage() {
           <MarketplaceSearch />
         </Suspense>
         <div className="space-y-4">
-          {PET_SHOPS.map((biz) => (
+          {businesses.map((biz) => (
             <RealBusinessCard key={biz._id} business={biz} />
           ))}
         </div>

@@ -33,3 +33,96 @@
     font-family: var(--font-geist-sans), "BPG Arial", system-ui, sans-serif;
   }
 }
+
+/* ─────────────────────────────────────────────────────────
+   Scroll reveal ("PowerPoint slide-in") + ambient motion
+   ───────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Base hidden state — applied until the element scrolls into view */
+  .reveal {
+    opacity: 0;
+    transform: translateY(48px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal-left {
+    transform: translateX(-56px);
+  }
+  .reveal-right {
+    transform: translateX(56px);
+  }
+  .reveal-scale {
+    transform: scale(0.9);
+  }
+  /* Settled state — slides to its real position */
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Soft floating motion for decorative paw motifs */
+  .animate-float {
+    animation: mp-float 7s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: mp-float 11s ease-in-out infinite;
+  }
+  /* Slow drifting gradient blobs behind the hero */
+  .animate-blob {
+    animation: mp-blob 16s ease-in-out infinite;
+  }
+  /* Sweeping highlight used on the VIP badge */
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: mp-shimmer 2.8s linear infinite;
+  }
+}
+
+@keyframes mp-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(8deg);
+  }
+}
+
+@keyframes mp-blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(24px, -28px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 18px) scale(0.95);
+  }
+}
+
+@keyframes mp-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Respect users who prefer reduced motion — show everything, animate nothing */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .animate-float,
+  .animate-float-slow,
+  .animate-blob,
+  .animate-shimmer {
+    animation: none !important;
+  }
+}
