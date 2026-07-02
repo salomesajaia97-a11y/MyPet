@@ -19,8 +19,19 @@ import {
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 
-const SPECIES = ["ყველა ტიპი", "ძაღლი", "კატა", "ჩიტი", "კურდღელი", "სხვა"];
-const LOCATIONS = ["ყველა ქალაქი", "თბილისი", "ბათუმი", "ქუთაისი", "რუსთავი", "გორი"];
+// Placeholder (index 0) is the default/reset value — `handleSearch` skips it
+// so a blank selection lands on the plain listing page.
+const SPECIES = ["ყველა სახეობა", "ძაღლი", "კატა", "ფრინველი", "მღრღნელი", "რეპტილია", "თევზი"];
+const LOCATIONS = [
+  "ყველა ქალაქი",
+  "თბილისი", "ბათუმი", "ქუთაისი", "რუსთავი", "გორი", "ზუგდიდი", "ფოთი",
+  "ხაშური", "სამტრედია", "სენაკი", "ზესტაფონი", "მარნეული", "თელავი",
+  "ახალციხე", "ქობულეთი", "ოზურგეთი", "კასპი", "ჭიათურა", "წყალტუბო",
+  "საგარეჯო", "გარდაბანი", "ბორჯომი", "ტყიბული", "ხონი", "ბოლნისი",
+  "ახალქალაქი", "გურჯაანი", "მცხეთა", "ყვარელი", "ახმეტა", "ლაგოდეხი",
+  "საჩხერე", "დუშეთი", "სიღნაღი", "ლანჩხუთი", "მარტვილი", "ამბროლაური",
+  "მესტია", "სტეფანწმინდა",
+];
 const DEAL_TYPES = ["ყველა", "ყიდვა-გაყიდვა", "გაჩუქება", "შეჯვარება"];
 
 // Slug map so the quick-search button routes to the right section
@@ -152,7 +163,7 @@ export default function HomePage() {
           <Reveal direction="up" delay={80}>
             <div className="flex flex-col md:flex-row items-stretch bg-white rounded-2xl border-2 border-[#0E4A5C] shadow-[0_18px_45px_-18px_rgba(14,74,92,0.55)] overflow-hidden transition-shadow hover:shadow-[0_24px_60px_-18px_rgba(14,74,92,0.65)] md:pr-2">
               <div className="flex items-stretch divide-y md:divide-y-0 flex-1 flex-col md:flex-row">
-                <QuickSelect label="ტიპი" value={species} options={SPECIES} onChange={setSpecies} />
+                <QuickSelect label="სახეობა" value={species} options={SPECIES} onChange={setSpecies} />
                 <QuickSelect label="მდებარეობა" value={location} options={LOCATIONS} onChange={setLocation} />
                 <QuickSelect label="განცხადება" value={deal} options={DEAL_TYPES} onChange={setDeal} />
               </div>
