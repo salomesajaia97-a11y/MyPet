@@ -10,11 +10,8 @@ import {
   TrendingUp,
   PawPrint,
   Stethoscope,
-  Hotel,
-  ShoppingBag,
   Gift,
   AlertCircle,
-  Shuffle,
   Star,
   Plus,
   ArrowRight,
@@ -42,29 +39,33 @@ const QUICK_CHIPS = [
 
 // `deal` drives the badge logic: "adoption" listings show a soft green badge
 // instead of a price.
+// Unsplash placeholder photos (free-to-use) so cards look like a live site
+// until real user-uploaded images exist. `bg` stays as the load-in backdrop.
+const IMG = "?auto=format&fit=crop&w=800&q=80";
+
 const VIP_LISTINGS = [
-  { breed: "German Shepherd", price: "₾ 1,500", location: "თბილისი", age: "3 თვე", bg: "from-amber-50 to-amber-100", emoji: "🐕", deal: "sale" },
-  { breed: "British Shorthair", price: "₾ 800", location: "ბათუმი", age: "2 თვე", bg: "from-sky-50 to-sky-100", emoji: "🐈", deal: "sale" },
-  { breed: "Golden Retriever", price: "₾ 2,000", location: "თბილისი", age: "6 კვირა", bg: "from-emerald-50 to-emerald-100", emoji: "🐕‍🦺", deal: "sale" },
-  { breed: "Beagle Mix", price: "₾ 0", location: "ქუთაისი", age: "3 თვე", bg: "from-violet-50 to-violet-100", emoji: "🐶", deal: "adoption" },
+  { breed: "German Shepherd", price: "₾ 1,500", location: "თბილისი", age: "3 თვე", bg: "from-amber-50 to-amber-100", img: `https://images.unsplash.com/photo-1568572933382-74d440642117${IMG}`, deal: "sale" },
+  { breed: "British Shorthair", price: "₾ 800", location: "ბათუმი", age: "2 თვე", bg: "from-sky-50 to-sky-100", img: `https://images.unsplash.com/photo-1574158622682-e40e69881006${IMG}`, deal: "sale" },
+  { breed: "Golden Retriever", price: "₾ 2,000", location: "თბილისი", age: "6 კვირა", bg: "from-emerald-50 to-emerald-100", img: `https://images.unsplash.com/photo-1552053831-71594a27632d${IMG}`, deal: "sale" },
+  { breed: "Beagle Mix", price: "₾ 0", location: "ქუთაისი", age: "3 თვე", bg: "from-violet-50 to-violet-100", img: `https://images.unsplash.com/photo-1505628346881-b72b27e84530${IMG}`, deal: "adoption" },
 ];
 
 const STANDARD_LISTINGS = [
-  { breed: "Husky", price: "₾ 900", location: "თბილისი", age: "4 თვე", bg: "from-stone-50 to-stone-100", emoji: "🐺", deal: "sale" },
-  { breed: "Persian Cat", price: "₾ 600", location: "რუსთავი", age: "5 კვირა", bg: "from-pink-50 to-pink-100", emoji: "🐈‍⬛", deal: "sale" },
-  { breed: "Mixed Kitten", price: "₾ 0", location: "ბათუმი", age: "8 კვირა", bg: "from-yellow-50 to-yellow-100", emoji: "🐱", deal: "adoption" },
-  { breed: "Scottish Fold", price: "₾ 750", location: "გორი", age: "3 თვე", bg: "from-teal-50 to-teal-100", emoji: "😸", deal: "sale" },
+  { breed: "Husky", price: "₾ 900", location: "თბილისი", age: "4 თვე", bg: "from-stone-50 to-stone-100", img: `https://images.unsplash.com/photo-1605568427561-40dd23c2acea${IMG}`, deal: "sale" },
+  { breed: "Persian Cat", price: "₾ 600", location: "რუსთავი", age: "5 კვირა", bg: "from-pink-50 to-pink-100", img: `https://images.unsplash.com/photo-1533738363-b7f9aef128ce${IMG}`, deal: "sale" },
+  { breed: "Mixed Kitten", price: "₾ 0", location: "ბათუმი", age: "8 კვირა", bg: "from-yellow-50 to-yellow-100", img: `https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba${IMG}`, deal: "adoption" },
+  { breed: "Scottish Fold", price: "₾ 750", location: "გორი", age: "3 თვე", bg: "from-teal-50 to-teal-100", img: `https://images.unsplash.com/photo-1573865526739-10659fec78a5${IMG}`, deal: "sale" },
 ];
 
 const CATEGORIES = [
-  { icon: ShoppingBag, label: "ყიდვა-გაყიდვა", count: "2,400+", href: "/buy-sell", color: "bg-amber-50 text-amber-600" },
-  { icon: Gift, label: "გაჩუქება", count: "380+", href: "/adoption", color: "bg-emerald-50 text-emerald-600" },
-  { icon: Shuffle, label: "შეჯვარება", count: "150+", href: "/mating", color: "bg-sky-50 text-sky-600" },
-  { icon: AlertCircle, label: "დაკარგული/ნაპოვნი", count: "60+", href: "/lost-found", color: "bg-rose-50 text-rose-600" },
-  { icon: Stethoscope, label: "ვეტ-კლინიკები", count: "120+", href: "/services/vet-clinics", color: "bg-violet-50 text-violet-600" },
-  { icon: Hotel, label: "სასტუმროები", count: "80+", href: "/services/pet-hotels", color: "bg-indigo-50 text-indigo-600" },
-  { icon: ShoppingBag, label: "პეთ-მაღაზიები", count: "200+", href: "/services/pet-shops", color: "bg-orange-50 text-orange-600" },
-  { icon: MapPin, label: "Pet-Friendly", count: "350+", href: "/services/pet-friendly", color: "bg-lime-50 text-lime-600" },
+  { emoji: "🛍️", label: "ყიდვა-გაყიდვა", count: "2,400+", href: "/buy-sell", color: "bg-amber-50" },
+  { emoji: "🎁", label: "გაჩუქება", count: "380+", href: "/adoption", color: "bg-emerald-50" },
+  { emoji: "💞", label: "შეჯვარება", count: "150+", href: "/mating", color: "bg-sky-50" },
+  { emoji: "🔎", label: "დაკარგული/ნაპოვნი", count: "60+", href: "/lost-found", color: "bg-rose-50" },
+  { emoji: "🏥", label: "ვეტ-კლინიკები", count: "120+", href: "/services/vet-clinics", color: "bg-violet-50" },
+  { emoji: "🏨", label: "სასტუმროები", count: "80+", href: "/services/pet-hotels", color: "bg-indigo-50" },
+  { emoji: "🛒", label: "პეთ-მაღაზიები", count: "200+", href: "/services/pet-shops", color: "bg-orange-50" },
+  { emoji: "🐾", label: "Pet-Friendly", count: "350+", href: "/services/pet-friendly", color: "bg-lime-50" },
 ];
 
 /** Minimal inline select styled to match the search bar — no extra chrome. */
@@ -118,7 +119,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white overflow-x-clip">
       {/* ─── Search Hero ─── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#E3F2F8] via-[#EBF6FA] to-white py-14 px-4">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#E3F2F8] via-[#EBF6FA] to-white pt-20 pb-14 px-4">
         {/* Ambient drifting blobs for depth */}
         <div className="pointer-events-none absolute -top-24 -left-16 h-72 w-72 rounded-full bg-[#0E4A5C]/10 blur-3xl animate-blob" />
         <div className="pointer-events-none absolute -bottom-28 right-0 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl animate-blob [animation-delay:-6s]" />
@@ -141,7 +142,7 @@ export default function HomePage() {
 
           {/* Quick search bar */}
           <Reveal direction="up" delay={80}>
-            <div className="flex flex-col md:flex-row items-stretch bg-white rounded-2xl border-2 border-[#0E4A5C] shadow-[0_18px_45px_-18px_rgba(14,74,92,0.55)] overflow-hidden transition-shadow hover:shadow-[0_24px_60px_-18px_rgba(14,74,92,0.65)]">
+            <div className="flex flex-col md:flex-row items-stretch bg-white rounded-2xl border-2 border-[#0E4A5C] shadow-[0_18px_45px_-18px_rgba(14,74,92,0.55)] overflow-hidden transition-shadow hover:shadow-[0_24px_60px_-18px_rgba(14,74,92,0.65)] md:pr-2">
               <div className="flex items-stretch divide-y md:divide-y-0 flex-1 flex-col md:flex-row">
                 <QuickSelect label="ტიპი" value={species} options={SPECIES} onChange={setSpecies} />
                 <QuickSelect label="მდებარეობა" value={location} options={LOCATIONS} onChange={setLocation} />
@@ -149,7 +150,7 @@ export default function HomePage() {
               </div>
               <Link
                 href={searchHref}
-                className="group bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-7 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap"
+                className="group bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-7 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap md:my-1.5 md:rounded-xl"
               >
                 <Search className="w-4 h-4 transition-transform group-hover:scale-110" />
                 ძება
@@ -241,8 +242,8 @@ export default function HomePage() {
                   href={cat.href}
                   className="group flex flex-col items-center gap-2.5 bg-white rounded-2xl p-4 border border-stone-100 hover:border-[#0E4A5C]/30 hover:-translate-y-1 hover:shadow-md transition-all h-full"
                 >
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${cat.color} transition-transform group-hover:scale-110 group-hover:-rotate-6`}>
-                    <cat.icon className="w-5 h-5" />
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl leading-none ${cat.color} transition-transform group-hover:scale-110 group-hover:-rotate-6`}>
+                    <span aria-hidden="true">{cat.emoji}</span>
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">{cat.label}</p>
@@ -327,9 +328,13 @@ function ListingCard({
       >
         {/* Sweeping sheen on hover */}
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:translate-x-full transition-transform duration-700 ease-out" />
-        <div className="w-full h-full flex items-center justify-center">
-          <span className="text-5xl group-hover:scale-105 transition-transform duration-300">{item.emoji}</span>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.img}
+          alt={item.breed}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
 
         {/* VIP star accent — subtle, corner only */}
         {vip && (
