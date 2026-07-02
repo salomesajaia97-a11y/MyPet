@@ -19,7 +19,26 @@ export interface BusinessData {
   reviewCount: number;
   pricePerNight?: number;
   indoorAllowed?: boolean;
+  lat?: number;
+  lng?: number;
 }
+
+// Neighborhood → approximate coordinates. Used as a map fallback for any
+// business (e.g. DB entries) that has no explicit lat/lng.
+export const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
+  "ვაკე": [41.7093, 44.7537],
+  "საბურთალო": [41.7290, 44.7460],
+  "გლდანი": [41.7860, 44.8090],
+  "ისანი": [41.6870, 44.8360],
+  "ჩუღურეთი": [41.7060, 44.8010],
+  "რუსთაველი": [41.6980, 44.7990],
+  "ვერა": [41.7110, 44.7830],
+  "ივართუბანი": [41.7180, 44.7220],
+  "ძველი თბილისი": [41.6910, 44.8090],
+  "ციხიანი": [41.8450, 44.7180],
+  "მცხეთა": [41.8450, 44.7180],
+  "თბილისი": [41.7151, 44.8271],
+};
 
 export const VET_CLINICS: BusinessData[] = [
   {
@@ -302,6 +321,8 @@ export const PET_FRIENDLY: BusinessData[] = [
     rating: 4.8,
     reviewCount: 1240,
     indoorAllowed: true,
+    lat: 41.7093,
+    lng: 44.8016,
   },
   {
     _id: "pf2",
@@ -321,6 +342,8 @@ export const PET_FRIENDLY: BusinessData[] = [
     rating: 4.7,
     reviewCount: 389,
     indoorAllowed: false,
+    lat: 41.7079,
+    lng: 44.8032,
   },
   {
     _id: "pf3",
@@ -339,6 +362,8 @@ export const PET_FRIENDLY: BusinessData[] = [
     rating: 4.6,
     reviewCount: 567,
     indoorAllowed: false,
+    lat: 41.6994,
+    lng: 44.7967,
   },
   {
     _id: "pf4",
@@ -357,6 +382,8 @@ export const PET_FRIENDLY: BusinessData[] = [
     rating: 4.9,
     reviewCount: 743,
     indoorAllowed: false,
+    lat: 41.6935,
+    lng: 44.8015,
   },
 ];
 

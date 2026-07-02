@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
+import { MapPanel } from "@/components/services/MapPanel";
 import { PET_FRIENDLY } from "@/lib/data/businesses";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
@@ -14,10 +15,10 @@ export default async function PetFriendlyPage() {
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         <div>
-          <h1 className="text-3xl font-black text-[#0F2830] mb-1">სერვისები</h1>
-          <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
+          <h1 className="text-3xl font-black text-[#0F2830] mb-1">Pet-Friendly ადგილები</h1>
+          <p className="text-stone-500 text-sm">კაფეები, სასტუმროები და პარკები, სადაც ცხოველი მისასალმებელია</p>
         </div>
         <Suspense fallback={null}>
           <ServicesTabs active="pet-friendly" />
@@ -35,10 +36,17 @@ export default async function PetFriendlyPage() {
           </span>
         </div>
 
-        <div className="space-y-4">
-          {businesses.map((place) => (
-            <RealBusinessCard key={place._id} business={place} />
-          ))}
+        {/* ─── Split screen: list (left) + map (right) ─── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5 items-start">
+          {/* Left — places */}
+          <div className="space-y-4">
+            {businesses.map((place) => (
+              <RealBusinessCard key={place._id} business={place} />
+            ))}
+          </div>
+
+          {/* Right — live Leaflet map */}
+          <MapPanel businesses={businesses} />
         </div>
       </div>
       <Link
