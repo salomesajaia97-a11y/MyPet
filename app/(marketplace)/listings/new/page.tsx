@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { cn } from "@/lib/utils/cn";
+import { CITIES } from "@/lib/marketplace/filters";
 import type { MarketplaceType, PetSpecies } from "@/types/marketplace";
 
 const TYPES: { value: MarketplaceType; label: string }[] = [
@@ -42,6 +43,8 @@ export default function NewListingPage() {
       ...data,
       images,
       age: Number(data.age),
+      // Store location as "<city>, <district>" so the city filter matches.
+      location: [data.city, data.district].filter(Boolean).join(", "),
     };
 
     if (type === "buy-sell") {
@@ -229,8 +232,16 @@ export default function NewListingPage() {
 
           {/* Common fields */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">მდებარეობა</label>
-            <input name="location" required placeholder="მაგ: თბილისი, ვაკე" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">ქალაქი</label>
+            <select name="city" required className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
+              {CITIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">უბანი / მისამართი (სურვილისამებრ)</label>
+            <input name="district" placeholder="მაგ: ვაკე" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">აღწერა</label>

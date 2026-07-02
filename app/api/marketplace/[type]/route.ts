@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
-import { speciesToSlug } from "@/lib/marketplace/filters";
+import { speciesToSlug, locationMatchTerms } from "@/lib/marketplace/filters";
 
 /** Escape user text before using it inside a RegExp. */
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -32,9 +32,13 @@ export async function GET(
     if (searchParams.get("pedigree")) filter.pedigree = searchParams.get("pedigree");
     if (searchParams.get("status")) filter.status = searchParams.get("status");
 
-    // City matches the free-text `location` field (case-insensitive substring).
+    // City matches the free-text `location` field — either the city itself or
+    // any of its known districts (case-insensitive substring).
     const city = searchParams.get("city");
-    if (city) filter.location = { $regex: escapeRegex(city), $options: "i" };
+    if (city) {
+      const pattern = locationMatchTerms(city).map(escapeRegex).join("|");
+      filter.location = { $regex: pattern, $options: "i" };
+    }
 
     // Free-text query matches the breed.
     const q = searchParams.get("q");

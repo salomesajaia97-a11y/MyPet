@@ -13,6 +13,29 @@ export const SPECIES = [
 
 export const CITIES = ["თბილისი", "ბათუმი", "ქუთაისი", "რუსთავი", "გორი"] as const;
 
+// Districts that belong to a city, so a city filter also matches listings whose
+// location is stored as just the district (e.g. "ვაკე" → part of თბილისი).
+export const CITY_DISTRICTS: Record<string, string[]> = {
+  თბილისი: [
+    "ვაკე",
+    "საბურთალო",
+    "გლდანი",
+    "ისანი",
+    "სამგორი",
+    "დიდუბე",
+    "ჩუღურეთი",
+    "კრწანისი",
+    "მთაწმინდა",
+    "ნაძალადევი",
+  ],
+};
+
+/** All location strings that should match a given city filter. */
+export const locationMatchTerms = (city: string): string[] => [
+  city,
+  ...(CITY_DISTRICTS[city] ?? []),
+];
+
 /** Georgian species label → DB slug (e.g. "ძაღლი" → "dog"). "" if unknown. */
 export const speciesToSlug = (ka: string): string =>
   SPECIES.find((s) => s.ka === ka)?.slug ?? "";
