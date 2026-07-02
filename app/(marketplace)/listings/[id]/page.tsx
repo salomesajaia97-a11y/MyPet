@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, User, Calendar, ArrowLeft } from "lucide-react";
 import type { Listing } from "@/types/marketplace";
+import { OwnerControls } from "./OwnerControls";
 
 async function getListing(id: string): Promise<Listing | null> {
   try {
@@ -40,6 +41,10 @@ export default async function ListingDetailPage({
   const { id } = await params;
   const listing = await getListing(id);
   if (!listing) notFound();
+
+  // TODO: replace with a real session check (compare listing.userId to the
+  // logged-in user id). Hardcoded for now to inspect the owner layout.
+  const isOwner = true;
 
   const ageLabel =
     listing.age < 12
@@ -224,26 +229,34 @@ export default async function ListingDetailPage({
               </div>
             )}
 
-            {/* Contact */}
-            <div className="border-t pt-5 space-y-3">
-              <p className="text-sm font-semibold text-[#0F2830]">კონტაქტი</p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#EBF6FA] rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-[#0E4A5C]" />
+            {/* Owner sees management controls; everyone else sees the buyer
+                contact block. */}
+            {isOwner ? (
+              <OwnerControls
+                id={id}
+                backHref={backHref[listing.type] ?? "/buy-sell"}
+              />
+            ) : (
+              <div className="border-t pt-5 space-y-3">
+                <p className="text-sm font-semibold text-[#0F2830]">კონტაქტი</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#EBF6FA] rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-[#0E4A5C]" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-[#0F2830]">{listing.contactName}</p>
+                    <p className="text-sm text-stone-500">{listing.contactPhone}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-[#0F2830]">{listing.contactName}</p>
-                  <p className="text-sm text-stone-500">{listing.contactPhone}</p>
-                </div>
+                <a
+                  href={`tel:${listing.contactPhone}`}
+                  className="flex items-center justify-center gap-2 w-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors"
+                >
+                  <Phone className="w-4 h-4" />
+                  დარეკვა
+                </a>
               </div>
-              <a
-                href={`tel:${listing.contactPhone}`}
-                className="flex items-center justify-center gap-2 w-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors"
-              >
-                <Phone className="w-4 h-4" />
-                დარეკვა
-              </a>
-            </div>
+            )}
           </div>
         </div>
       </div>

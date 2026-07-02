@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Search,
@@ -105,16 +106,23 @@ function QuickSelect({
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [species, setSpecies] = useState(SPECIES[0]);
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [deal, setDeal] = useState(DEAL_TYPES[0]);
 
-  // Build the quick-search destination from the chosen filters.
-  const params = new URLSearchParams();
-  if (species !== SPECIES[0]) params.set("species", species);
-  if (location !== LOCATIONS[0]) params.set("city", location);
-  const query = params.toString();
-  const searchHref = `${DEAL_HREF[deal] ?? "/buy-sell"}${query ? `?${query}` : ""}`;
+  // Route to the right results page, carrying the chosen filters as query
+  // params (e.g. /buy-sell?species=ძაღლი&city=თბილისი). Defaults are skipped
+  // so a blank search lands on the plain listing page.
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    // Keep everything Georgian in the URL; the API maps species → DB slug.
+    if (species !== SPECIES[0]) params.set("species", species);
+    if (location !== LOCATIONS[0]) params.set("city", location);
+    const query = params.toString();
+    const base = DEAL_HREF[deal] ?? "/buy-sell";
+    router.push(query ? `${base}?${query}` : base);
+  };
 
   return (
     <div className="min-h-screen bg-white overflow-x-clip">
@@ -148,13 +156,14 @@ export default function HomePage() {
                 <QuickSelect label="მდებარეობა" value={location} options={LOCATIONS} onChange={setLocation} />
                 <QuickSelect label="განცხადება" value={deal} options={DEAL_TYPES} onChange={setDeal} />
               </div>
-              <Link
-                href={searchHref}
+              <button
+                type="button"
+                onClick={handleSearch}
                 className="group bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-7 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap md:my-1.5 md:rounded-xl"
               >
                 <Search className="w-4 h-4 transition-transform group-hover:scale-110" />
                 ძება
-              </Link>
+              </button>
             </div>
           </Reveal>
 

@@ -2,14 +2,16 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
+import { buildListingQuery } from "@/lib/marketplace/filters";
 import type { MatingListing } from "@/types/marketplace";
 
-async function getListings(): Promise<MatingListing[]> {
+async function getListings(query: string): Promise<MatingListing[]> {
   try {
     const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const res = await fetch(`${base}/api/marketplace/mating`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${base}/api/marketplace/mating${query ? `?${query}` : ""}`,
+      { cache: "no-store" }
+    );
     if (!res.ok) return [];
     const { listings } = await res.json();
     return listings ?? [];
@@ -18,15 +20,19 @@ async function getListings(): Promise<MatingListing[]> {
   }
 }
 
-export default async function MatingPage() {
-  const listings = await getListings();
+export default async function MatingPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const listings = await getListings(buildListingQuery(await searchParams));
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <Suspense fallback={null}>
           <MarketplaceTabs active="mating" />
-          <MarketplaceSearch />
+          <MarketplaceSearch filters />
         </Suspense>
 
         {listings.length === 0 ? (

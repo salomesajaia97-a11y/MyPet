@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
+import { speciesToSlug } from "@/lib/marketplace/filters";
+
+/** Escape user text before using it inside a RegExp. */
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const VALID_TYPES = ["buy-sell", "adoption", "mating", "lost-found"];
 
@@ -19,9 +23,22 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const filter: Record<string, unknown> = { type };
 
-    if (searchParams.get("species")) filter.species = searchParams.get("species");
+    // Species arrives in Georgian ("ძაღლი"); the DB stores English slugs.
+    const speciesParam = searchParams.get("species");
+    if (speciesParam) {
+      const slug = speciesToSlug(speciesParam) || speciesParam;
+      filter.species = slug;
+    }
     if (searchParams.get("pedigree")) filter.pedigree = searchParams.get("pedigree");
     if (searchParams.get("status")) filter.status = searchParams.get("status");
+
+    // City matches the free-text `location` field (case-insensitive substring).
+    const city = searchParams.get("city");
+    if (city) filter.location = { $regex: escapeRegex(city), $options: "i" };
+
+    // Free-text query matches the breed.
+    const q = searchParams.get("q");
+    if (q) filter.breed = { $regex: escapeRegex(q), $options: "i" };
 
     const listings = await ListingModel.find(filter)
       .sort({ createdAt: -1 })
