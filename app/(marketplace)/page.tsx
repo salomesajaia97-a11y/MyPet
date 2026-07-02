@@ -18,20 +18,13 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
+import { CITIES } from "@/lib/marketplace/filters";
 
 // Placeholder (index 0) is the default/reset value — `handleSearch` skips it
-// so a blank selection lands on the plain listing page.
+// so a blank selection lands on the plain listing page. City list is shared
+// with the listing forms via CITIES so the two never drift apart.
 const SPECIES = ["ყველა სახეობა", "ძაღლი", "კატა", "ფრინველი", "მღრღნელი", "რეპტილია", "თევზი"];
-const LOCATIONS = [
-  "ყველა ქალაქი",
-  "თბილისი", "ბათუმი", "ქუთაისი", "რუსთავი", "გორი", "ზუგდიდი", "ფოთი",
-  "ხაშური", "სამტრედია", "სენაკი", "ზესტაფონი", "მარნეული", "თელავი",
-  "ახალციხე", "ქობულეთი", "ოზურგეთი", "კასპი", "ჭიათურა", "წყალტუბო",
-  "საგარეჯო", "გარდაბანი", "ბორჯომი", "ტყიბული", "ხონი", "ბოლნისი",
-  "ახალქალაქი", "გურჯაანი", "მცხეთა", "ყვარელი", "ახმეტა", "ლაგოდეხი",
-  "საჩხერე", "დუშეთი", "სიღნაღი", "ლანჩხუთი", "მარტვილი", "ამბროლაური",
-  "მესტია", "სტეფანწმინდა",
-];
+const LOCATIONS = ["ყველა ქალაქი", ...CITIES];
 const DEAL_TYPES = ["ყველა", "ყიდვა-გაყიდვა", "გაჩუქება", "შეჯვარება"];
 
 // Slug map so the quick-search button routes to the right section

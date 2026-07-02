@@ -20,6 +20,36 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const body = await req.json();
+    // `type` and internal fields must not be reassigned from client input.
+    delete body._id;
+    delete body.type;
+    delete body.userId;
+    delete body.createdAt;
+    delete body.updatedAt;
+
+    await connectDB();
+    const updated = await ListingModel.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    }).lean();
+    if (!updated) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    return NextResponse.json({ listing: updated });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
