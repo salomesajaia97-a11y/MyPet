@@ -116,7 +116,6 @@ export default async function ListingDetailPage({
                   {listing.breed}
                   {listing.age < 12 ? " ლეკვი" : ""}
                 </h1>
-                <p className="text-stone-500 capitalize">{listing.species}</p>
               </div>
               <div className="flex flex-col items-end gap-1 text-sm text-stone-500">
                 <span className="flex items-center gap-1">
