@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star, MapPin, Phone, Globe, Clock, ArrowLeft } from "lucide-react";
@@ -20,6 +19,9 @@ interface Service {
   openingHours?: string[];
   aggregateRating?: number;
   googleRatingCount?: number;
+  pricePerNight?: number;
+  lat?: number;
+  lng?: number;
 }
 
 const CATEGORY_META: Record<
@@ -79,12 +81,11 @@ export default async function ServiceDetailPage({
           {/* Hero image */}
           <div className="relative aspect-[16/9] bg-stone-100">
             {service.images?.[0] ? (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={service.images[0]}
                 alt={service.name}
-                fill
-                className="object-cover"
-                priority
+                className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-6xl">
@@ -101,7 +102,14 @@ export default async function ServiceDetailPage({
           <div className="p-6 space-y-5">
             {/* Title + rating */}
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-[#0F2830]">{service.name}</h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-2xl font-bold text-[#0F2830]">{service.name}</h1>
+                {service.pricePerNight && (
+                  <span className="shrink-0 text-sm font-bold text-[#0E4A5C] bg-[#0E4A5C]/10 px-3 py-1 rounded-full">
+                    {service.pricePerNight}₾/ღამე
+                  </span>
+                )}
+              </div>
               {typeof service.aggregateRating === "number" &&
                 service.aggregateRating > 0 && (
                   <div className="flex items-center gap-1.5 text-sm">
@@ -164,6 +172,17 @@ export default async function ServiceDetailPage({
                   <MapPin className="w-4 h-4 shrink-0 text-stone-400 mt-0.5" />
                   {address}
                 </p>
+              )}
+              {typeof service.lat === "number" && typeof service.lng === "number" && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${service.lat},${service.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-[#0E4A5C] flex items-center gap-2 hover:underline"
+                >
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  რუკაზე ნახვა
+                </a>
               )}
               {service.website && (
                 <a

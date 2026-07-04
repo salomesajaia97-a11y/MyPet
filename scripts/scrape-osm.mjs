@@ -81,6 +81,17 @@ function toDoc(el, category, label) {
   const website = t.website || t["contact:website"] || undefined;
   const oh = t.opening_hours;
 
+  // OSM occasionally carries a photo via `image` (direct URL) or
+  // `wikimedia_commons` (a "File:..." reference we resolve to a real URL).
+  const images = [];
+  if (t.image?.startsWith("http")) images.push(t.image);
+  else if (t.wikimedia_commons?.startsWith("File:")) {
+    images.push(
+      "https://commons.wikimedia.org/wiki/Special:FilePath/" +
+        encodeURIComponent(t.wikimedia_commons.slice("File:".length))
+    );
+  }
+
   return {
     placeId: `osm:${el.type}/${el.id}`,
     category,
@@ -92,7 +103,7 @@ function toDoc(el, category, label) {
     city,
     phone,
     website,
-    images: [],
+    images,
     tags: [label],
     openingHours: oh ? [oh] : [],
     is24h: oh === "24/7",
