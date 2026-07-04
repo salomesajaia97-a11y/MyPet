@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
-import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
-import { RealBusinessCard } from "@/components/services/RealBusinessCard";
+import { ServicesSearch } from "@/components/services/ServicesSearch";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
 export const dynamic = "force-dynamic";
@@ -17,17 +15,8 @@ export default async function VetClinicsPage() {
           <h1 className="text-3xl font-black text-[#0F2830] mb-1">სერვისები</h1>
           <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
         </div>
-        <Suspense fallback={null}>
-          <ServicesTabs active="vet-clinics" />
-          <MarketplaceSearch />
-        </Suspense>
-        <div className="space-y-4">
-          {businesses.map((biz) => (
-            <Link key={biz._id} href={`/services/vet-clinics/${biz._id}`} className="block">
-              <RealBusinessCard business={biz} />
-            </Link>
-          ))}
-        </div>
+        <ServicesTabs active="vet-clinics" />
+        <ServicesSearch businesses={businesses} category="vet-clinics" />
       </div>
       <Link
         href="/services/new"

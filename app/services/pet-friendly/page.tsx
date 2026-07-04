@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
-import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
-import { RealBusinessCard } from "@/components/services/RealBusinessCard";
+import { ServicesSearch } from "@/components/services/ServicesSearch";
 import { MapPanel } from "@/components/services/MapPanel";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
@@ -18,10 +16,7 @@ export default async function PetFriendlyPage() {
           <h1 className="text-3xl font-black text-[#0F2830] mb-1">Pet-Friendly ადგილები</h1>
           <p className="text-stone-500 text-sm">კაფეები, სასტუმროები და პარკები, სადაც ცხოველი მისასალმებელია</p>
         </div>
-        <Suspense fallback={null}>
-          <ServicesTabs active="pet-friendly" />
-          <MarketplaceSearch />
-        </Suspense>
+        <ServicesTabs active="pet-friendly" />
 
         <div className="flex items-center gap-4 text-xs text-stone-500">
           <span className="flex items-center gap-1.5">
@@ -34,16 +29,10 @@ export default async function PetFriendlyPage() {
           </span>
         </div>
 
-        {/* ─── Split screen: list (left) + map (right) ─── */}
+        {/* ─── Split screen: search + list (left) + map (right) ─── */}
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5 items-start">
-          {/* Left — places */}
-          <div className="space-y-4">
-            {businesses.map((place) => (
-              <Link key={place._id} href={`/services/pet-friendly/${place._id}`} className="block">
-                <RealBusinessCard business={place} />
-              </Link>
-            ))}
-          </div>
+          {/* Left — search + places */}
+          <ServicesSearch businesses={businesses} category="pet-friendly" />
 
           {/* Right — live Leaflet map */}
           <MapPanel businesses={businesses} />

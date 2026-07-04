@@ -62,17 +62,26 @@ export function RealBusinessCard({ business }: Props) {
           </div>
 
           {/* Address */}
-          <p className="text-xs text-stone-500 flex items-center gap-1.5">
-            <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
-            {business.address}, {business.neighborhood}, {business.city}
-          </p>
+          {(() => {
+            const loc = [business.address, business.neighborhood, business.city]
+              .filter(Boolean)
+              .join(", ");
+            return loc ? (
+              <p className="text-xs text-stone-500 flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
+                {loc}
+              </p>
+            ) : null;
+          })()}
 
           {/* Phone & Website */}
           <div className="flex items-center gap-4">
-            <a href={`tel:${business.phone}`} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
-              <Phone className="w-3 h-3 shrink-0" />
-              {business.phone}
-            </a>
+            {business.phone && (
+              <a href={`tel:${business.phone}`} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
+                <Phone className="w-3 h-3 shrink-0" />
+                {business.phone}
+              </a>
+            )}
             {business.website && (
               <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 hover:text-[#0E4A5C]">
                 <Globe className="w-3 h-3" />
