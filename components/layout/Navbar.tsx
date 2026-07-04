@@ -327,7 +327,7 @@ export function Navbar() {
             ))}
           </nav>
           <PhoneLink
-            phone="551 08 09 60"
+            phone="+995 551 08 09 60"
             className="hidden lg:flex items-center gap-1.5 text-xs text-stone-400 shrink-0 ml-4 pb-px hover:text-[#0E4A5C] transition-colors"
           >
             <Phone className="w-3 h-3" />

@@ -49,7 +49,7 @@ const QUICK_CHIPS = [
 // instead of a price.
 // Unsplash placeholder photos (free-to-use) so cards look like a live site
 // until real user-uploaded images exist. `bg` stays as the load-in backdrop.
-const IMG = "?auto=format&fit=crop&w=800&q=80";
+const IMG = "?auto=format&fit=crop&w=400&q=80";
 
 // Shape the cards render. Real listings are mapped into this via `toCard`;
 // the FALLBACK_* arrays share the shape so the grid stays full before the
@@ -378,7 +378,7 @@ export default function HomePage() {
               <PawPrint className="w-5 h-5 text-[#0E4A5C]" />
               <h2 className="font-black text-xl text-[#0F2830]">ახალი განცხადებები</h2>
             </div>
-            <Link href="/buy-sell" className="text-sm text-stone-500 hover:text-[#0E4A5C] font-medium transition-colors">
+            <Link href="/buy-sell?sort=newest" className="text-sm text-stone-500 hover:text-[#0E4A5C] font-medium transition-colors">
               ყველას ნახვა →
             </Link>
           </div>
