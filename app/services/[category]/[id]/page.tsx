@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star, MapPin, Phone, Globe, Clock, ArrowLeft } from "lucide-react";
+import PhoneLink from "@/components/ui/PhoneLink";
 
 interface Service {
   _id: string;
@@ -196,13 +197,13 @@ export default async function ServiceDetailPage({
                 </a>
               )}
               {service.phone && (
-                <a
-                  href={`tel:${service.phone}`}
+                <PhoneLink
+                  phone={service.phone}
                   className="flex items-center justify-center gap-2 w-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors"
                 >
                   <Phone className="w-4 h-4" />
                   {service.phone}
-                </a>
+                </PhoneLink>
               )}
             </div>
           </div>

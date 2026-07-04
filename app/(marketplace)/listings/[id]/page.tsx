@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, User, Calendar, ArrowLeft } from "lucide-react";
+import PhoneLink from "@/components/ui/PhoneLink";
 import type { Listing } from "@/types/marketplace";
 import { auth } from "@/auth";
 import { OwnerControls } from "./OwnerControls";
@@ -249,13 +250,13 @@ export default async function ListingDetailPage({
                     <p className="text-sm text-stone-500">{listing.contactPhone}</p>
                   </div>
                 </div>
-                <a
-                  href={`tel:${listing.contactPhone}`}
+                <PhoneLink
+                  phone={listing.contactPhone}
                   className="flex items-center justify-center gap-2 w-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors"
                 >
                   <Phone className="w-4 h-4" />
                   დარეკვა
-                </a>
+                </PhoneLink>
               </div>
             )}
           </div>

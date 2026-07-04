@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, Globe, ChevronUp, ChevronDown, List, Wallet, UserRound, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
+import PhoneLink from "@/components/ui/PhoneLink";
 
 const SUB_NAV = [
   { href: "/buy-sell", label: "ყიდვა-გაყიდვა" },
@@ -325,13 +326,13 @@ export function Navbar() {
               </Link>
             ))}
           </nav>
-          <a
-            href="tel:551080960"
+          <PhoneLink
+            phone="551 08 09 60"
             className="hidden lg:flex items-center gap-1.5 text-xs text-stone-400 shrink-0 ml-4 pb-px hover:text-[#0E4A5C] transition-colors"
           >
             <Phone className="w-3 h-3" />
             551 08 09 60
-          </a>
+          </PhoneLink>
         </div>
       </div>
     </header>

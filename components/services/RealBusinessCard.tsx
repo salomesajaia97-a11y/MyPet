@@ -1,6 +1,7 @@
 // components/services/RealBusinessCard.tsx
 import { Star, MapPin, Phone, Globe, Clock } from "lucide-react";
 import type { BusinessData } from "@/lib/data/businesses";
+import PhoneLink from "@/components/ui/PhoneLink";
 
 interface Props {
   business: BusinessData;
@@ -77,10 +78,10 @@ export function RealBusinessCard({ business }: Props) {
           {/* Phone & Website */}
           <div className="flex items-center gap-4">
             {business.phone && (
-              <a href={`tel:${business.phone}`} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
+              <PhoneLink phone={business.phone} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
                 <Phone className="w-3 h-3 shrink-0" />
                 {business.phone}
-              </a>
+              </PhoneLink>
             )}
             {business.website && (
               <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 hover:text-[#0E4A5C]">
