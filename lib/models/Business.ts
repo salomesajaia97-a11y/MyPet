@@ -10,6 +10,13 @@ const BusinessSchema = new Schema(
     name: { type: String, required: true },
     description: { type: String, required: true },
     address: { type: String, required: true },
+    // Google Places-style scraped fields. placeId is unique so a re-scrape
+    // upserts instead of duplicating. sparse: user-submitted docs have none.
+    placeId: { type: String, unique: true, sparse: true },
+    openingHours: [String],
+    source: String,
+    lat: Number,
+    lng: Number,
     neighborhood: String,
     city: { type: String, required: true },
     phone: { type: String, required: true },

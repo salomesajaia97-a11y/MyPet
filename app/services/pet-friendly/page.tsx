@@ -4,14 +4,12 @@ import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
 import { MapPanel } from "@/components/services/MapPanel";
-import { PET_FRIENDLY } from "@/lib/data/businesses";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
 export const dynamic = "force-dynamic";
 
 export default async function PetFriendlyPage() {
-  const dbBusinesses = await fetchDBBusinesses("pet-friendly");
-  const businesses = [...dbBusinesses, ...PET_FRIENDLY];
+  const businesses = await fetchDBBusinesses("pet-friendly");
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
@@ -41,7 +39,9 @@ export default async function PetFriendlyPage() {
           {/* Left — places */}
           <div className="space-y-4">
             {businesses.map((place) => (
-              <RealBusinessCard key={place._id} business={place} />
+              <Link key={place._id} href={`/services/pet-friendly/${place._id}`} className="block">
+                <RealBusinessCard business={place} />
+              </Link>
             ))}
           </div>
 

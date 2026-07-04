@@ -25,6 +25,8 @@ export async function fetchDBBusinesses(category: string): Promise<BusinessData[
         googleRatingCount?: number;
         pricePerNight?: number;
         indoorAllowed?: boolean;
+        lat?: number;
+        lng?: number;
       }[]>();
 
     return docs.map((biz) => ({
@@ -46,6 +48,8 @@ export async function fetchDBBusinesses(category: string): Promise<BusinessData[
       reviewCount: biz.googleRatingCount ?? 0,
       pricePerNight: biz.pricePerNight,
       indoorAllowed: biz.indoorAllowed,
+      lat: biz.lat,
+      lng: biz.lng,
     }));
   } catch {
     return [];

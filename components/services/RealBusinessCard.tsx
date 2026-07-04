@@ -11,13 +11,19 @@ export function RealBusinessCard({ business }: Props) {
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
       <div className="flex">
         {/* Image */}
-        <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={business.image}
-            alt={business.name}
-            className="w-full h-full object-cover"
-          />
+        <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0 bg-[#EBF6FA]">
+          {business.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={business.image}
+              alt={business.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-4xl">
+              🐾
+            </div>
+          )}
           {business.is24h && (
             <div className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
               <Clock className="w-3 h-3" /> 24/7

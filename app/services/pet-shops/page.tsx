@@ -3,14 +3,12 @@ import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
-import { PET_SHOPS } from "@/lib/data/businesses";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
 export const dynamic = "force-dynamic";
 
 export default async function PetShopsPage() {
-  const dbBusinesses = await fetchDBBusinesses("pet-shops");
-  const businesses = [...dbBusinesses, ...PET_SHOPS];
+  const businesses = await fetchDBBusinesses("pet-shops");
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
@@ -25,7 +23,9 @@ export default async function PetShopsPage() {
         </Suspense>
         <div className="space-y-4">
           {businesses.map((biz) => (
-            <RealBusinessCard key={biz._id} business={biz} />
+            <Link key={biz._id} href={`/services/pet-shops/${biz._id}`} className="block">
+              <RealBusinessCard business={biz} />
+            </Link>
           ))}
         </div>
       </div>
