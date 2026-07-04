@@ -32,7 +32,7 @@ export default async function MatingPage({
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <Suspense fallback={null}>
           <MarketplaceTabs active="mating" />
-          <MarketplaceSearch filters />
+          <MarketplaceSearch filters type="mating" />
         </Suspense>
 
         {listings.length === 0 ? (

@@ -3,11 +3,15 @@
 // in the DB as English slugs ("dog", "cat", …) but shown to users in Georgian,
 // so we keep both and map between them.
 
+// Canonical species vocabulary — the Georgian labels here MUST match the
+// new-listing form's options, since those are what get stored (as slugs) and
+// what the search maps back. Slug ↔ ka in one place so nothing drifts.
 export const SPECIES = [
   { slug: "dog", ka: "ძაღლი" },
   { slug: "cat", ka: "კატა" },
-  { slug: "bird", ka: "ჩიტი" },
+  { slug: "bird", ka: "ფრინველი" },
   { slug: "rabbit", ka: "კურდღელი" },
+  { slug: "reptile", ka: "რეპტილია" },
   { slug: "other", ka: "სხვა" },
 ] as const;
 
@@ -53,7 +57,16 @@ export const speciesToKa = (slug: string): string =>
   SPECIES.find((s) => s.slug === slug)?.ka ?? "";
 
 /** Filter params forwarded from a results page's URL to the listings API. */
-const FILTER_KEYS = ["species", "city", "q", "pedigree", "status"] as const;
+const FILTER_KEYS = [
+  "species",
+  "city",
+  "q",
+  "pedigree",
+  "status",
+  "sex",
+  "minPrice",
+  "maxPrice",
+] as const;
 
 /** Build the API query string from a page's resolved `searchParams`. */
 export function buildListingQuery(

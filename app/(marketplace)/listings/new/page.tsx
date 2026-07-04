@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { cn } from "@/lib/utils/cn";
 import { CITIES } from "@/lib/marketplace/filters";
@@ -13,6 +13,15 @@ const TYPES: { value: MarketplaceType; label: string }[] = [
   { value: "lost-found", label: "დაკარგული/ნაპოვნი" },
 ];
 
+// Accept `?category=<type>` (e.g. from the SOS banner → "lost-found") to
+// pre-select the listing type. Falls back to "buy-sell" for missing/unknown
+// values so a stray query string can never break the form.
+function initialType(category: string | null): MarketplaceType {
+  return TYPES.some((t) => t.value === category)
+    ? (category as MarketplaceType)
+    : "buy-sell";
+}
+
 const SPECIES: { value: PetSpecies; label: string }[] = [
   { value: "dog", label: "ძაღლი" },
   { value: "cat", label: "კატა" },
@@ -22,9 +31,12 @@ const SPECIES: { value: PetSpecies; label: string }[] = [
   { value: "other", label: "სხვა" },
 ];
 
-export default function NewListingPage() {
+function NewListingForm() {
   const router = useRouter();
-  const [type, setType] = useState<MarketplaceType>("buy-sell");
+  const searchParams = useSearchParams();
+  const [type, setType] = useState<MarketplaceType>(() =>
+    initialType(searchParams.get("category"))
+  );
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -270,5 +282,15 @@ export default function NewListingPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+// `useSearchParams` bails out to client rendering, so wrap the form in a
+// Suspense boundary to keep the route prerenderable (required in this Next.js).
+export default function NewListingPage() {
+  return (
+    <Suspense>
+      <NewListingForm />
+    </Suspense>
   );
 }

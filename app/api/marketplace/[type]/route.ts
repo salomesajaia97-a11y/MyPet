@@ -31,6 +31,15 @@ export async function GET(
     }
     if (searchParams.get("pedigree")) filter.pedigree = searchParams.get("pedigree");
     if (searchParams.get("status")) filter.status = searchParams.get("status");
+    if (searchParams.get("sex")) filter.sex = searchParams.get("sex");
+
+    // Numeric price range (buy-sell / mating). Ignore non-numeric input.
+    const minPrice = Number(searchParams.get("minPrice"));
+    const maxPrice = Number(searchParams.get("maxPrice"));
+    const price: Record<string, number> = {};
+    if (searchParams.get("minPrice") && !Number.isNaN(minPrice)) price.$gte = minPrice;
+    if (searchParams.get("maxPrice") && !Number.isNaN(maxPrice)) price.$lte = maxPrice;
+    if (Object.keys(price).length) filter.price = price;
 
     // City matches the free-text `location` field — either the city itself or
     // any of its known districts (case-insensitive substring).

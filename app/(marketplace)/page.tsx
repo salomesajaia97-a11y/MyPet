@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   ChevronDown,
@@ -18,12 +18,15 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
-import { CITIES } from "@/lib/marketplace/filters";
+import { CITIES, SPECIES as SPECIES_OPTIONS } from "@/lib/marketplace/filters";
+import type { Listing } from "@/types/marketplace";
 
 // Placeholder (index 0) is the default/reset value — `handleSearch` skips it
 // so a blank selection lands on the plain listing page. City list is shared
 // with the listing forms via CITIES so the two never drift apart.
-const SPECIES = ["ყველა სახეობა", "ძაღლი", "კატა", "ფრინველი", "მღრღნელი", "რეპტილია", "თევზი"];
+// Derived from the canonical species list so the quick-search values map
+// cleanly to DB slugs (no more "მღრღნელი"/"თევზი" that match nothing).
+const SPECIES = ["ყველა სახეობა", ...SPECIES_OPTIONS.map((s) => s.ka)];
 const LOCATIONS = ["ყველა ქალაქი", ...CITIES];
 const DEAL_TYPES = ["ყველა", "ყიდვა-გაყიდვა", "გაჩუქება", "შეჯვარება"];
 
@@ -36,7 +39,7 @@ const DEAL_HREF: Record<string, string> = {
 };
 
 const QUICK_CHIPS = [
-  { icon: TrendingUp, label: "ფასების სტატისტიკა", href: "/buy-sell" },
+  { icon: TrendingUp, label: "ყველა განცხადება", href: "/buy-sell" },
   { icon: Gift, label: "გაჩუქება", href: "/adoption" },
   { icon: AlertCircle, label: "დაკარგული", href: "/lost-found" },
   { icon: Stethoscope, label: "ვეტ-კლინიკები", href: "/services/vet-clinics" },
@@ -48,30 +51,93 @@ const QUICK_CHIPS = [
 // until real user-uploaded images exist. `bg` stays as the load-in backdrop.
 const IMG = "?auto=format&fit=crop&w=800&q=80";
 
-const VIP_LISTINGS = [
-  { breed: "German Shepherd", price: "₾ 1,500", location: "თბილისი", age: "3 თვე", bg: "from-amber-50 to-amber-100", img: `https://images.unsplash.com/photo-1568572933382-74d440642117${IMG}`, deal: "sale" },
-  { breed: "British Shorthair", price: "₾ 800", location: "ბათუმი", age: "2 თვე", bg: "from-sky-50 to-sky-100", img: `https://images.unsplash.com/photo-1574158622682-e40e69881006${IMG}`, deal: "sale" },
-  { breed: "Golden Retriever", price: "₾ 2,000", location: "თბილისი", age: "6 კვირა", bg: "from-emerald-50 to-emerald-100", img: `https://images.unsplash.com/photo-1552053831-71594a27632d${IMG}`, deal: "sale" },
-  { breed: "Beagle Mix", price: "₾ 0", location: "ქუთაისი", age: "3 თვე", bg: "from-violet-50 to-violet-100", img: `https://images.unsplash.com/photo-1505628346881-b72b27e84530${IMG}`, deal: "adoption" },
+// Shape the cards render. Real listings are mapped into this via `toCard`;
+// the FALLBACK_* arrays share the shape so the grid stays full before the
+// fetch resolves (and if it returns nothing / errors).
+type CardItem = {
+  id: string;
+  breed: string;
+  price: string;
+  location: string;
+  age: string;
+  bg: string;
+  img: string;
+  deal: string;
+};
+
+// Gradient backdrops cycled by index so a run of cards stays colourful.
+const CARD_BG = [
+  "from-amber-50 to-amber-100",
+  "from-sky-50 to-sky-100",
+  "from-emerald-50 to-emerald-100",
+  "from-violet-50 to-violet-100",
+  "from-stone-50 to-stone-100",
+  "from-pink-50 to-pink-100",
+  "from-yellow-50 to-yellow-100",
+  "from-teal-50 to-teal-100",
 ];
 
-const STANDARD_LISTINGS = [
-  { breed: "Husky", price: "₾ 900", location: "თბილისი", age: "4 თვე", bg: "from-stone-50 to-stone-100", img: `https://images.unsplash.com/photo-1605568427561-40dd23c2acea${IMG}`, deal: "sale" },
-  { breed: "Persian Cat", price: "₾ 600", location: "რუსთავი", age: "5 კვირა", bg: "from-pink-50 to-pink-100", img: `https://images.unsplash.com/photo-1533738363-b7f9aef128ce${IMG}`, deal: "sale" },
-  { breed: "Mixed Kitten", price: "₾ 0", location: "ბათუმი", age: "8 კვირა", bg: "from-yellow-50 to-yellow-100", img: `https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba${IMG}`, deal: "adoption" },
-  { breed: "Scottish Fold", price: "₾ 750", location: "გორი", age: "3 თვე", bg: "from-teal-50 to-teal-100", img: `https://images.unsplash.com/photo-1573865526739-10659fec78a5${IMG}`, deal: "sale" },
+const ageLabel = (months: number) =>
+  months < 12 ? `${months} თვე` : `${Math.floor(months / 12)} წელი`;
+
+// Adoption listings show a "ჩუქდება" badge instead of a price, so their price
+// string is unused; sale/mating format by currency.
+function priceLabel(l: Listing): string {
+  if (l.type === "adoption") return "₾ 0";
+  const sym = "currency" in l && l.currency === "USD" ? "$" : "₾";
+  const p = "price" in l && typeof l.price === "number" ? l.price : 0;
+  return `${sym} ${p.toLocaleString("en-US")}`;
+}
+
+function toCard(l: Listing, i: number): CardItem {
+  return {
+    id: l._id,
+    breed: l.breed,
+    price: priceLabel(l),
+    // `location` is stored as "<city>, <district>" — show the city only.
+    location: (l.location ?? "").split(",")[0].trim() || l.location,
+    age: ageLabel(l.age),
+    bg: CARD_BG[i % CARD_BG.length],
+    img: l.images?.[0] ?? "",
+    deal: l.type === "adoption" ? "adoption" : "sale",
+  };
+}
+
+// `id` maps to the listing's DB `_id` — the card routes to `/listings/${id}`.
+// These placeholders keep both rows full until the live feed loads / if it's
+// empty; their links are well-formed but resolve to demo detail pages.
+const FALLBACK_VIP: CardItem[] = [
+  { id: "vip-1", breed: "German Shepherd", price: "₾ 1,500", location: "თბილისი", age: "3 თვე", bg: "from-amber-50 to-amber-100", img: `https://images.unsplash.com/photo-1568572933382-74d440642117${IMG}`, deal: "sale" },
+  { id: "vip-2", breed: "British Shorthair", price: "₾ 800", location: "ბათუმი", age: "2 თვე", bg: "from-sky-50 to-sky-100", img: `https://images.unsplash.com/photo-1574158622682-e40e69881006${IMG}`, deal: "sale" },
+  { id: "vip-3", breed: "Golden Retriever", price: "₾ 2,000", location: "თბილისი", age: "6 კვირა", bg: "from-emerald-50 to-emerald-100", img: `https://images.unsplash.com/photo-1552053831-71594a27632d${IMG}`, deal: "sale" },
+  { id: "vip-4", breed: "Beagle Mix", price: "₾ 0", location: "ქუთაისი", age: "3 თვე", bg: "from-violet-50 to-violet-100", img: `https://images.unsplash.com/photo-1505628346881-b72b27e84530${IMG}`, deal: "adoption" },
 ];
 
-const CATEGORIES = [
-  { emoji: "🛍️", label: "ყიდვა-გაყიდვა", count: "2,400+", href: "/buy-sell", color: "bg-amber-50" },
-  { emoji: "🎁", label: "გაჩუქება", count: "380+", href: "/adoption", color: "bg-emerald-50" },
-  { emoji: "💞", label: "შეჯვარება", count: "150+", href: "/mating", color: "bg-sky-50" },
-  { emoji: "🔎", label: "დაკარგული/ნაპოვნი", count: "60+", href: "/lost-found", color: "bg-rose-50" },
-  { emoji: "🏥", label: "ვეტ-კლინიკები", count: "120+", href: "/services/vet-clinics", color: "bg-violet-50" },
-  { emoji: "🏨", label: "სასტუმროები", count: "80+", href: "/services/pet-hotels", color: "bg-indigo-50" },
-  { emoji: "🛒", label: "პეთ-მაღაზიები", count: "200+", href: "/services/pet-shops", color: "bg-orange-50" },
-  { emoji: "🐾", label: "Pet-Friendly", count: "350+", href: "/services/pet-friendly", color: "bg-lime-50" },
+const FALLBACK_NEW: CardItem[] = [
+  { id: "new-1", breed: "Husky", price: "₾ 900", location: "თბილისი", age: "4 თვე", bg: "from-stone-50 to-stone-100", img: `https://images.unsplash.com/photo-1605568427561-40dd23c2acea${IMG}`, deal: "sale" },
+  { id: "new-2", breed: "Persian Cat", price: "₾ 600", location: "რუსთავი", age: "5 კვირა", bg: "from-pink-50 to-pink-100", img: `https://images.unsplash.com/photo-1533738363-b7f9aef128ce${IMG}`, deal: "sale" },
+  { id: "new-3", breed: "Mixed Kitten", price: "₾ 0", location: "ბათუმი", age: "8 კვირა", bg: "from-yellow-50 to-yellow-100", img: `https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba${IMG}`, deal: "adoption" },
+  { id: "new-4", breed: "Scottish Fold", price: "₾ 750", location: "გორი", age: "3 თვე", bg: "from-teal-50 to-teal-100", img: `https://images.unsplash.com/photo-1573865526739-10659fec78a5${IMG}`, deal: "sale" },
 ];
+
+// `count` is the live per-category total. Values here are seed placeholders —
+// swap them for a DB aggregation (e.g. counts keyed by `href`) and the grid
+// updates with no markup changes. `formatCount` handles the null/0 fallback.
+const CATEGORIES: { emoji: string; label: string; count?: number; href: string; color: string }[] = [
+  { emoji: "🛍️", label: "ყიდვა-გაყიდვა", count: 2400, href: "/buy-sell", color: "bg-amber-50" },
+  { emoji: "🎁", label: "გაჩუქება", count: 380, href: "/adoption", color: "bg-emerald-50" },
+  { emoji: "💞", label: "შეჯვარება", count: 150, href: "/mating", color: "bg-sky-50" },
+  { emoji: "🔎", label: "დაკარგული/ნაპოვნი", count: 60, href: "/lost-found", color: "bg-rose-50" },
+  { emoji: "🏥", label: "ვეტ-კლინიკები", count: 120, href: "/services/vet-clinics", color: "bg-violet-50" },
+  { emoji: "🏨", label: "სასტუმროები", count: 80, href: "/services/pet-hotels", color: "bg-indigo-50" },
+  { emoji: "🛒", label: "პეთ-მაღაზიები", count: 200, href: "/services/pet-shops", color: "bg-orange-50" },
+  { emoji: "🐾", label: "Pet-Friendly", count: 350, href: "/services/pet-friendly", color: "bg-lime-50" },
+];
+
+// Formats a category total for display: `2400 → "2,400+"`, missing/0 → "0".
+function formatCount(count?: number): string {
+  return count ? `${count.toLocaleString("en-US")}+` : "0";
+}
 
 /** Minimal inline select styled to match the search bar — no extra chrome. */
 function QuickSelect({
@@ -114,6 +180,41 @@ export default function HomePage() {
   const [species, setSpecies] = useState(SPECIES[0]);
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [deal, setDeal] = useState(DEAL_TYPES[0]);
+
+  // Live listings: seeded with the fallbacks so the grid renders full on first
+  // paint, then swapped for real DB data once the fetch resolves. No VIP flag
+  // exists in the schema yet, so VIP = newest 4, "new" = the following 4.
+  const [vipListings, setVipListings] = useState<CardItem[]>(FALLBACK_VIP);
+  const [newListings, setNewListings] = useState<CardItem[]>(FALLBACK_NEW);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const types = ["buy-sell", "adoption", "mating"];
+        const results = await Promise.all(
+          types.map((t) =>
+            fetch(`/api/marketplace/${t}`)
+              .then((r) => (r.ok ? r.json() : { listings: [] }))
+              .catch(() => ({ listings: [] }))
+          )
+        );
+        const all: Listing[] = results.flatMap((r) => r.listings ?? []);
+        // Newest first across all fetched types.
+        all.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+        if (!active || all.length === 0) return;
+        const cards = all.map(toCard);
+        setVipListings(cards.slice(0, 4));
+        const rest = cards.slice(4, 8);
+        if (rest.length) setNewListings(rest);
+      } catch {
+        // Keep the fallbacks on any failure.
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Route to the right results page, carrying the chosen filters as query
   // params (e.g. /buy-sell?species=ძაღლი&city=თბილისი). Defaults are skipped
@@ -193,7 +294,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 -mt-6 relative z-10">
         <Reveal direction="up">
           <Link
-            href="/lost-found"
+            href="/listings/new?category=lost-found"
             className="group flex items-center gap-4 bg-white rounded-2xl border border-stone-200 border-l-4 border-l-rose-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all px-5 py-4"
           >
             <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
@@ -232,8 +333,8 @@ export default function HomePage() {
         </Reveal>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {VIP_LISTINGS.map((item, i) => (
-            <Reveal key={i} direction="up" delay={i * 90}>
+          {vipListings.map((item, i) => (
+            <Reveal key={item.id} direction="up" delay={i * 90}>
               <ListingCard item={item} vip />
             </Reveal>
           ))}
@@ -260,7 +361,7 @@ export default function HomePage() {
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">{cat.label}</p>
-                    <p className="text-[10px] text-stone-400 mt-0.5">{cat.count}</p>
+                    <p className="text-[10px] text-stone-400 mt-0.5">{formatCount(cat.count)}</p>
                   </div>
                 </Link>
               </Reveal>
@@ -284,8 +385,8 @@ export default function HomePage() {
         </Reveal>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {STANDARD_LISTINGS.map((item, i) => (
-            <Reveal key={i} direction="up" delay={i * 90}>
+          {newListings.map((item, i) => (
+            <Reveal key={item.id} direction="up" delay={i * 90}>
               <ListingCard item={item} />
             </Reveal>
           ))}
@@ -328,12 +429,12 @@ function ListingCard({
   item,
   vip = false,
 }: {
-  item: (typeof VIP_LISTINGS)[number];
+  item: CardItem;
   vip?: boolean;
 }) {
   const isAdoption = item.deal === "adoption";
   return (
-    <Link href={isAdoption ? "/adoption" : "/buy-sell"} className="group block">
+    <Link href={`/listings/${item.id}`} className="group block">
       <div
         className={`relative rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br ${item.bg} shadow-sm group-hover:-translate-y-1 group-hover:shadow-xl transition-all duration-300 ${
           vip ? "ring-2 ring-amber-300/70" : "ring-1 ring-black/5"
@@ -341,13 +442,20 @@ function ListingCard({
       >
         {/* Sweeping sheen on hover */}
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:translate-x-full transition-transform duration-700 ease-out" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.img}
-          alt={item.breed}
-          loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        {item.img ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.img}
+            alt={item.breed}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          // No photo → keep the gradient backdrop with a paw glyph.
+          <div className="flex h-full w-full items-center justify-center text-5xl opacity-60">
+            🐾
+          </div>
+        )}
 
         {/* VIP star accent — subtle, corner only */}
         {vip && (

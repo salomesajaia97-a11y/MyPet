@@ -359,10 +359,13 @@ export function Navbar() {
               </Link>
             ))}
           </nav>
-          <span className="hidden lg:flex items-center gap-1.5 text-xs text-stone-400 shrink-0 ml-4 pb-px">
+          <a
+            href="tel:0322800015"
+            className="hidden lg:flex items-center gap-1.5 text-xs text-stone-400 shrink-0 ml-4 pb-px hover:text-[#0E4A5C] transition-colors"
+          >
             <Phone className="w-3 h-3" />
             032 2 80 00 15
-          </span>
+          </a>
         </div>
       </div>
     </header>
