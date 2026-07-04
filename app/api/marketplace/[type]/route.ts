@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { speciesToSlug, locationMatchTerms } from "@/lib/marketplace/filters";
+import { auth } from "@/auth";
 
 /** Escape user text before using it inside a RegExp. */
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -75,9 +76,17 @@ export async function POST(
   }
 
   try {
+    const session = await auth();
     const body = await req.json();
     await connectDB();
-    const listing = await ListingModel.create({ ...body, type });
+    // Attribute the listing to the logged-in user so it surfaces under
+    // "My Listings". `userId` from the client body is ignored in favour of
+    // the session id.
+    const listing = await ListingModel.create({
+      ...body,
+      type,
+      userId: session?.user?.id ?? undefined,
+    });
     return NextResponse.json({ listing }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";

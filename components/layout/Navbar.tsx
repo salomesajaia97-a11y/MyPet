@@ -5,13 +5,6 @@ import { useSession, signOut } from "next-auth/react";
 import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, Globe, ChevronUp, ChevronDown, List, Wallet, UserRound, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
-import { ImageUploader } from "@/components/ui/ImageUploader";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const SUB_NAV = [
   { href: "/buy-sell", label: "ყიდვა-გაყიდვა" },
@@ -154,10 +147,6 @@ function LocaleSelector() {
 
 function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSession>["data"]> }) {
   const [open, setOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [avatar, setAvatar] = useState<string[]>(
-    session.user?.image ? [session.user.image] : []
-  );
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -168,25 +157,13 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  async function handleAvatarChange(urls: string[]) {
-    setAvatar(urls);
-    if (urls[0]) {
-      await fetch("/api/user/avatar", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: urls[0] }),
-      });
-    }
-  }
-
   const name = session.user?.name ?? "";
   const email = session.user?.email ?? "";
   const initial = (name || email).charAt(0).toUpperCase();
-  const avatarUrl = avatar[0] ?? session.user?.image ?? null;
+  const avatarUrl = session.user?.image ?? null;
 
   return (
-    <>
-      <div className="relative" ref={ref}>
+    <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen((v) => !v)}
           className={cn(
@@ -232,8 +209,8 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
                 </Link>
               )}
               {[
-                { icon: List, label: "ჩემი განცხადებები", href: "/buy-sell" },
-                { icon: Wallet, label: "ბალანსის შევსება", href: "#" },
+                { icon: List, label: "ჩემი განცხადებები", href: "/profile/listings" },
+                { icon: Wallet, label: "ბალანსის შევსება", href: "/profile/balance" },
               ].map((item) => (
                 <Link
                   key={item.label}
@@ -246,13 +223,14 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
                 </Link>
               ))}
 
-              <button
-                onClick={() => { setOpen(false); setProfileOpen(true); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
               >
                 <UserRound className="w-4 h-4 text-stone-400 shrink-0" />
                 პროფილი
-              </button>
+              </Link>
 
               <div className="h-px bg-stone-100 mx-4 my-1" />
 
@@ -266,19 +244,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
             </div>
           </div>
         )}
-      </div>
-
-      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>პროფილის ფოტო</DialogTitle>
-          </DialogHeader>
-          <div className="py-2">
-            <ImageUploader value={avatar} onChange={handleAvatarChange} single />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 }
 

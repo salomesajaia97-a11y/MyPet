@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, User, Calendar, ArrowLeft } from "lucide-react";
 import type { Listing } from "@/types/marketplace";
+import { auth } from "@/auth";
 import { OwnerControls } from "./OwnerControls";
 
 async function getListing(id: string): Promise<Listing | null> {
@@ -42,9 +43,10 @@ export default async function ListingDetailPage({
   const listing = await getListing(id);
   if (!listing) notFound();
 
-  // TODO: replace with a real session check (compare listing.userId to the
-  // logged-in user id). Hardcoded for now to inspect the owner layout.
-  const isOwner = true;
+  // The owner sees management controls; everyone else sees the contact block.
+  const session = await auth();
+  const isOwner =
+    !!listing.userId && !!session?.user?.id && listing.userId === session.user.id;
 
   const ageLabel =
     listing.age < 12
