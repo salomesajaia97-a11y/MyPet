@@ -1,19 +1,20 @@
 "use client";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SPECIES, CITIES } from "@/lib/marketplace/filters";
 import type { MarketplaceType } from "@/types/marketplace";
 
 /**
- * Results-page search bar. Reads the active filters straight from the URL so it
- * always reflects whatever the user searched (from the home quick-search or a
- * previous edit here), and stays fully editable. Submitting rewrites the URL
+ * Results-page search + filter bar. Reads the active filters straight from the
+ * URL so it always reflects the current search (from the home quick-search or a
+ * previous edit here), and stays fully editable. Any change rewrites the URL
  * query, which re-runs the server-side listing fetch.
  *
- * `filters` toggles the species/city dropdowns — the marketplace pages pass it;
- * the services pages keep the plain text-only bar. `type` unlocks the
- * type-specific advanced filters (price range, pedigree, lost/found status).
+ * `filters` toggles the filter row (the services pages keep a plain text bar).
+ * `type` decides which type-specific filters show: price range for
+ * buy-sell/mating, pedigree for buy-sell/mating, sex for mating, lost/found
+ * status for lost-found. All are inline and always visible — no hidden panel.
  */
 export function MarketplaceSearch({
   filters = false,
@@ -30,15 +31,6 @@ export function MarketplaceSearch({
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") ?? "");
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") ?? "");
-  const [advanced, setAdvanced] = useState(
-    Boolean(
-      searchParams.get("minPrice") ||
-        searchParams.get("maxPrice") ||
-        searchParams.get("pedigree") ||
-        searchParams.get("status") ||
-        searchParams.get("sex")
-    )
-  );
 
   const species = searchParams.get("species") ?? "";
   const city = searchParams.get("city") ?? "";
@@ -75,16 +67,20 @@ export function MarketplaceSearch({
 
   // Price applies on Enter/blur (not per keystroke) to avoid a navigation storm.
   const applyPrice = () =>
-    apply({
-      minPrice: minPrice.trim(),
-      maxPrice: maxPrice.trim(),
-    });
+    apply({ minPrice: minPrice.trim(), maxPrice: maxPrice.trim() });
 
-  const selectClass =
-    "px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-[#0F2830] focus:outline-none focus:border-[#0E4A5C]/50 cursor-pointer";
+  const controlClass =
+    "px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-[#0F2830] focus:outline-none focus:border-[#0E4A5C]/50";
+  const priceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyPrice();
+    }
+  };
 
   return (
     <div className="space-y-3">
+      {/* Row 1 — free-text breed search */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -111,156 +107,124 @@ export function MarketplaceSearch({
         </button>
       </form>
 
+      {/* Row 2 — always-visible filter controls */}
       {filters && (
-        <>
-          <div className="flex items-center gap-2 flex-wrap">
-            <select
-              value={species}
-              onChange={(e) => apply({ species: e.target.value })}
-              className={selectClass}
-            >
-              <option value="">ყველა ტიპი</option>
-              {SPECIES.map((s) => (
-                <option key={s.slug} value={s.ka}>
-                  {s.ka}
-                </option>
-              ))}
-            </select>
-            <select
-              value={city}
-              onChange={(e) => apply({ city: e.target.value })}
-              className={selectClass}
-            >
-              <option value="">ყველა ქალაქი</option>
-              {CITIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Animal type */}
+          <select
+            value={species}
+            onChange={(e) => apply({ species: e.target.value })}
+            className={`${controlClass} cursor-pointer`}
+            aria-label="სახეობა"
+          >
+            <option value="">ყველა ტიპი</option>
+            {SPECIES.map((s) => (
+              <option key={s.slug} value={s.ka}>
+                {s.ka}
+              </option>
+            ))}
+          </select>
 
-            {/* Advanced-filter toggle — only when the type has extra filters. */}
-            {(showPrice || showPedigree || showStatus || showSex) && (
-              <button
-                type="button"
-                onClick={() => setAdvanced((v) => !v)}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                  advanced
-                    ? "bg-[#0E4A5C] text-white border-[#0E4A5C]"
-                    : "bg-white text-stone-600 border-stone-200 hover:border-[#0E4A5C]/50 hover:text-[#0E4A5C]"
-                }`}
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                ფილტრები
-              </button>
-            )}
+          {/* City */}
+          <select
+            value={city}
+            onChange={(e) => apply({ city: e.target.value })}
+            className={`${controlClass} cursor-pointer`}
+            aria-label="ქალაქი"
+          >
+            <option value="">ყველა ქალაქი</option>
+            {CITIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
-            {hasActiveFilter && (
-              <button
-                type="button"
-                onClick={clearAll}
-                className="inline-flex items-center gap-1 px-3 py-2 text-sm text-stone-500 hover:text-rose-600 transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-                გასუფთავება
-              </button>
-            )}
-          </div>
-
-          {/* Advanced filters panel */}
-          {advanced && (showPrice || showPedigree || showStatus || showSex) && (
-            <div className="flex items-end gap-3 flex-wrap bg-white border border-stone-200 rounded-xl p-4">
-              {showPrice && (
-                <>
-                  <label className="flex flex-col gap-1 text-xs font-medium text-stone-500">
-                    ფასი დან (₾)
-                    <input
-                      type="number"
-                      min="0"
-                      inputMode="numeric"
-                      placeholder="0"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      onBlur={applyPrice}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          applyPrice();
-                        }
-                      }}
-                      className="w-28 px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-[#0E4A5C]/50"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1 text-xs font-medium text-stone-500">
-                    ფასი მდე (₾)
-                    <input
-                      type="number"
-                      min="0"
-                      inputMode="numeric"
-                      placeholder="∞"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      onBlur={applyPrice}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          applyPrice();
-                        }
-                      }}
-                      className="w-28 px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-[#0E4A5C]/50"
-                    />
-                  </label>
-                </>
-              )}
-
-              {showPedigree && (
-                <label className="flex flex-col gap-1 text-xs font-medium text-stone-500">
-                  პედიგრი
-                  <select
-                    value={pedigree}
-                    onChange={(e) => apply({ pedigree: e.target.value })}
-                    className={selectClass}
-                  >
-                    <option value="">ყველა</option>
-                    <option value="FCI">FCI</option>
-                    <option value="FCG">FCG</option>
-                    <option value="none">პედიგრის გარეშე</option>
-                  </select>
-                </label>
-              )}
-
-              {showSex && (
-                <label className="flex flex-col gap-1 text-xs font-medium text-stone-500">
-                  სქესი
-                  <select
-                    value={sex}
-                    onChange={(e) => apply({ sex: e.target.value })}
-                    className={selectClass}
-                  >
-                    <option value="">ყველა</option>
-                    <option value="male">მამრი</option>
-                    <option value="female">მდედრი</option>
-                  </select>
-                </label>
-              )}
-
-              {showStatus && (
-                <label className="flex flex-col gap-1 text-xs font-medium text-stone-500">
-                  სტატუსი
-                  <select
-                    value={status}
-                    onChange={(e) => apply({ status: e.target.value })}
-                    className={selectClass}
-                  >
-                    <option value="">ყველა</option>
-                    <option value="lost">დაკარგული</option>
-                    <option value="found">ნაპოვნი</option>
-                  </select>
-                </label>
-              )}
+          {/* Price range (buy-sell / mating) */}
+          {showPrice && (
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="ფასი დან ₾"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                onBlur={applyPrice}
+                onKeyDown={priceKeyDown}
+                className={`${controlClass} w-28`}
+                aria-label="მინიმალური ფასი"
+              />
+              <span className="text-stone-300">–</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="ფასი მდე ₾"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                onBlur={applyPrice}
+                onKeyDown={priceKeyDown}
+                className={`${controlClass} w-28`}
+                aria-label="მაქსიმალური ფასი"
+              />
             </div>
           )}
-        </>
+
+          {/* Pedigree (buy-sell / mating) */}
+          {showPedigree && (
+            <select
+              value={pedigree}
+              onChange={(e) => apply({ pedigree: e.target.value })}
+              className={`${controlClass} cursor-pointer`}
+              aria-label="პედიგრი"
+            >
+              <option value="">პედიგრი: ყველა</option>
+              <option value="FCI">FCI</option>
+              <option value="FCG">FCG</option>
+              <option value="none">პედიგრის გარეშე</option>
+            </select>
+          )}
+
+          {/* Sex (mating) */}
+          {showSex && (
+            <select
+              value={sex}
+              onChange={(e) => apply({ sex: e.target.value })}
+              className={`${controlClass} cursor-pointer`}
+              aria-label="სქესი"
+            >
+              <option value="">სქესი: ყველა</option>
+              <option value="male">მამრი</option>
+              <option value="female">მდედრი</option>
+            </select>
+          )}
+
+          {/* Status (lost-found) */}
+          {showStatus && (
+            <select
+              value={status}
+              onChange={(e) => apply({ status: e.target.value })}
+              className={`${controlClass} cursor-pointer`}
+              aria-label="სტატუსი"
+            >
+              <option value="">სტატუსი: ყველა</option>
+              <option value="lost">დაკარგული</option>
+              <option value="found">ნაპოვნი</option>
+            </select>
+          )}
+
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="inline-flex items-center gap-1 px-3 py-2 text-sm text-stone-500 hover:text-rose-600 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              გასუფთავება
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
