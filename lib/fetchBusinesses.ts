@@ -25,11 +25,29 @@ export async function fetchDBBusinesses(category: string): Promise<BusinessData[
         googleRatingCount?: number;
         pricePerNight?: number;
         indoorAllowed?: boolean;
+        source?: string;
         lat?: number;
         lng?: number;
       }[]>();
 
-    return docs.map((biz) => ({
+    // Dedupe: the same real place can arrive both as a curated ("seed") row and
+    // an OSM-scraped one, and OSM itself yields node/way pairs. Curated rows
+    // (richer: photos, ratings) always win; then collapse same name+city.
+    const norm = (s?: string) =>
+      (s ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+    const seedNames = new Set(
+      docs.filter((d) => d.source === "seed").map((d) => norm(d.name))
+    );
+    const seen = new Set<string>();
+    const unique = docs.filter((d) => {
+      if (d.source !== "seed" && seedNames.has(norm(d.name))) return false;
+      const key = `${norm(d.name)}|${norm(d.city)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return unique.map((biz) => ({
       _id: biz._id.toString(),
       name: biz.name,
       nameKa: biz.name,
