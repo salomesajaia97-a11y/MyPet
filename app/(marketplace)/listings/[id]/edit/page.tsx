@@ -99,6 +99,15 @@ export default function EditListingPage() {
       body.vaccinated = data.vaccinated === "on";
       body.hasPassport = data.hasPassport === "on";
     }
+    if (type === "adoption") {
+      body.temperament =
+        typeof data.temperament === "string"
+          ? data.temperament.split(",").map((s) => s.trim()).filter(Boolean)
+          : [];
+      body.spayedNeutered = data.spayedNeutered === "on";
+      body.goodWithKids = data.goodWithKids === "on";
+      body.goodWithPets = data.goodWithPets === "on";
+    }
     if (type === "mating") {
       body.price = data.price ? Number(data.price) : null;
       body.weight = Number(data.weight);
@@ -240,6 +249,36 @@ export default function EditListingPage() {
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="hasPassport" defaultChecked={listing.hasPassport} className="rounded" />
                   პასპორტი
+                </label>
+              </div>
+            </>
+          )}
+
+          {listing.type === "adoption" && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  ხასიათი (მძიმით გამოყოფილი)
+                </label>
+                <input
+                  name="temperament"
+                  defaultValue={(listing.temperament ?? []).join(", ")}
+                  placeholder="მაგ: მშვიდი, მოთამაშე, ერთგული"
+                  className={inputCls}
+                />
+              </div>
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+                  <input type="checkbox" name="spayedNeutered" defaultChecked={listing.spayedNeutered} className="rounded" />
+                  დაკასტრირებული / სტერილიზებული
+                </label>
+                <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+                  <input type="checkbox" name="goodWithKids" defaultChecked={listing.goodWithKids} className="rounded" />
+                  ბავშვებთან თავსებადი
+                </label>
+                <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+                  <input type="checkbox" name="goodWithPets" defaultChecked={listing.goodWithPets} className="rounded" />
+                  სხვა ცხოველებთან თავსებადი
                 </label>
               </div>
             </>

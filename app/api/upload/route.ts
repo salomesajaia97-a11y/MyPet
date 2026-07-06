@@ -3,12 +3,26 @@ import cloudinary from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import UploadModel from "@/lib/models/Upload";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rateLimit";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function POST(req: NextRequest) {
-  const formData = await req.formData();
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limited = rateLimit(`upload:${session.user.id}`, 30, 10 * 60_000);
+  if (limited) return limited;
+
+  let formData: FormData;
+  try {
+    formData = await req.formData();
+  } catch {
+    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+  }
   const file = formData.get("file");
 
   if (!(file instanceof File)) {
@@ -52,12 +66,11 @@ export async function POST(req: NextRequest) {
     );
 
     try {
-      const session = await auth();
       await connectDB();
       await UploadModel.create({
         publicId: result.public_id,
         url: result.secure_url,
-        uploadedBy: (session?.user as { id?: string })?.id ?? undefined,
+        uploadedBy: session.user.id,
       });
     } catch (dbErr) {
       console.error("[upload] db tracking failed:", dbErr instanceof Error ? dbErr.message : dbErr);
@@ -67,6 +80,6 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[upload] failed:", msg);
-    return NextResponse.json({ error: "Upload failed", detail: msg }, { status: 500 });
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }

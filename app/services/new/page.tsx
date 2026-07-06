@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 
 const CATEGORIES = [
@@ -17,6 +19,7 @@ export default function NewServicePage() {
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -49,12 +52,36 @@ export default function NewServicePage() {
         const json = await res.json();
         throw new Error(json.error ?? "შეცდომა");
       }
-      router.push(`/services/${data.category}`);
+      // Submission goes to the moderation queue — confirm rather than redirect
+      // to a list where it won't appear until approved.
+      setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "შეცდომა");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-[#EBF6FA] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md w-full text-center space-y-4">
+          <CheckCircle2 className="w-14 h-14 text-emerald-500 mx-auto" />
+          <h1 className="text-xl font-bold text-[#0F2830]">გაგზავნილია განსახილველად</h1>
+          <p className="text-sm text-stone-500">
+            თქვენი სერვისი მიღებულია და გამოქვეყნდება ადმინისტრატორის დადასტურების შემდეგ.
+          </p>
+          <div className="flex gap-3 justify-center pt-2">
+            <Link
+              href="/services"
+              className="bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+            >
+              სერვისებზე დაბრუნება
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

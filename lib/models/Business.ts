@@ -28,6 +28,11 @@ const BusinessSchema = new Schema(
     pricePerNight: Number,
     capacity: Number,
     indoorAllowed: Boolean,
+    // `googleRating` is the immutable Google/curated average; `aggregateRating`
+    // is the blended display value (Google baseline + native reviews) and is
+    // recomputed on every native review. Keeping the baseline separate stops a
+    // native review from wiping the seeded Google score.
+    googleRating: { type: Number, default: 0 },
     aggregateRating: { type: Number, default: 0 },
     googleRatingCount: { type: Number, default: 0 },
     nativeRatingCount: { type: Number, default: 0 },

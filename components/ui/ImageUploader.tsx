@@ -27,6 +27,21 @@ export function ImageUploader({
     value.map((url) => ({ url }))
   );
 
+  // `value` can arrive after mount (e.g. a profile avatar loaded async). When
+  // its contents change and we're not mid-upload, resync so the existing image
+  // shows. Done during render (not an effect) to avoid a cascading re-render;
+  // guarded so it never clobbers slots the user is actively uploading.
+  const valueKey = value.join("|");
+  const [syncedKey, setSyncedKey] = useState(valueKey);
+  if (valueKey !== syncedKey) {
+    setSyncedKey(valueKey);
+    const hasLocalWork = slots.some((s) => "uploading" in s || "error" in s);
+    const currentUrls = slots.filter((s): s is { url: string } => "url" in s).map((s) => s.url).join("|");
+    if (!hasLocalWork && currentUrls !== valueKey) {
+      setSlots(value.map((url) => ({ url })));
+    }
+  }
+
   async function handleFiles(files: FileList | null) {
     if (!files) return;
     const picked = Array.from(files).slice(0, limit - slots.filter(s => "url" in s || "uploading" in s).length);

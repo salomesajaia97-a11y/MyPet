@@ -5,17 +5,20 @@ import { MapPin, Phone, User, Calendar, ArrowLeft } from "lucide-react";
 import PhoneLink from "@/components/ui/PhoneLink";
 import type { Listing } from "@/types/marketplace";
 import { auth } from "@/auth";
+import { isValidObjectId } from "mongoose";
+import { connectDB } from "@/lib/db";
+import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
 
+// Query the DB directly — no self-fetch to our own API (which would need an
+// absolute URL and break outside localhost). JSON round-trip serializes
+// ObjectIds/Dates to plain strings so `userId` compares cleanly to the session.
 async function getListing(id: string): Promise<Listing | null> {
+  if (!isValidObjectId(id)) return null;
   try {
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const res = await fetch(`${base}/api/marketplace/listing/${id}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const { listing } = await res.json();
-    return listing ?? null;
+    await connectDB();
+    const doc = await ListingModel.findById(id).lean();
+    return doc ? (JSON.parse(JSON.stringify(doc)) as Listing) : null;
   } catch {
     return null;
   }
@@ -87,7 +90,9 @@ export default async function ListingDetailPage({
             </div>
             {listing.type === "buy-sell" && (
               <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
-                {listing.price.toLocaleString()} ₾
+                {listing.currency === "USD"
+                  ? `$${listing.price.toLocaleString()}`
+                  : `${listing.price.toLocaleString()} ₾`}
               </div>
             )}
             {listing.type === "mating" && listing.price !== null && (

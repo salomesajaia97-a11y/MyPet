@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import {
   Search,
   ChevronDown,
-  Heart,
   MapPin,
   Rocket,
   TrendingUp,
@@ -18,6 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { CITIES, SPECIES as SPECIES_OPTIONS } from "@/lib/marketplace/filters";
 import type { Listing } from "@/types/marketplace";
 
@@ -47,13 +47,7 @@ const QUICK_CHIPS = [
 
 // `deal` drives the badge logic: "adoption" listings show a soft green badge
 // instead of a price.
-// Unsplash placeholder photos (free-to-use) so cards look like a live site
-// until real user-uploaded images exist. `bg` stays as the load-in backdrop.
-const IMG = "?auto=format&fit=crop&w=400&q=80";
-
-// Shape the cards render. Real listings are mapped into this via `toCard`;
-// the FALLBACK_* arrays share the shape so the grid stays full before the
-// fetch resolves (and if it returns nothing / errors).
+// Shape the cards render. Real listings are mapped into this via `toCard`.
 type CardItem = {
   id: string;
   breed: string;
@@ -103,40 +97,24 @@ function toCard(l: Listing, i: number): CardItem {
   };
 }
 
-// `id` maps to the listing's DB `_id` — the card routes to `/listings/${id}`.
-// These placeholders keep both rows full until the live feed loads / if it's
-// empty; their links are well-formed but resolve to demo detail pages.
-const FALLBACK_VIP: CardItem[] = [
-  { id: "vip-1", breed: "German Shepherd", price: "₾ 1,500", location: "თბილისი", age: "3 თვე", bg: "from-amber-50 to-amber-100", img: `https://images.unsplash.com/photo-1568572933382-74d440642117${IMG}`, deal: "sale" },
-  { id: "vip-2", breed: "British Shorthair", price: "₾ 800", location: "ბათუმი", age: "2 თვე", bg: "from-sky-50 to-sky-100", img: `https://images.unsplash.com/photo-1574158622682-e40e69881006${IMG}`, deal: "sale" },
-  { id: "vip-3", breed: "Golden Retriever", price: "₾ 2,000", location: "თბილისი", age: "6 კვირა", bg: "from-emerald-50 to-emerald-100", img: `https://images.unsplash.com/photo-1552053831-71594a27632d${IMG}`, deal: "sale" },
-  { id: "vip-4", breed: "Beagle Mix", price: "₾ 0", location: "ქუთაისი", age: "3 თვე", bg: "from-violet-50 to-violet-100", img: `https://images.unsplash.com/photo-1505628346881-b72b27e84530${IMG}`, deal: "adoption" },
+// `key` maps to the live-count keys returned by /api/marketplace/stats
+// (listing `type` or business `category`).
+const CATEGORIES: { emoji: string; label: string; key: string; href: string; color: string }[] = [
+  { emoji: "🛍️", label: "ყიდვა-გაყიდვა", key: "buy-sell", href: "/buy-sell", color: "bg-amber-50" },
+  { emoji: "🎁", label: "გაჩუქება", key: "adoption", href: "/adoption", color: "bg-emerald-50" },
+  { emoji: "💞", label: "შეჯვარება", key: "mating", href: "/mating", color: "bg-sky-50" },
+  { emoji: "🔎", label: "დაკარგული/ნაპოვნი", key: "lost-found", href: "/lost-found", color: "bg-rose-50" },
+  { emoji: "🏥", label: "ვეტ-კლინიკები", key: "vet-clinics", href: "/services/vet-clinics", color: "bg-violet-50" },
+  { emoji: "🏨", label: "სასტუმროები", key: "pet-hotels", href: "/services/pet-hotels", color: "bg-indigo-50" },
+  { emoji: "🛒", label: "პეთ-მაღაზიები", key: "pet-shops", href: "/services/pet-shops", color: "bg-orange-50" },
+  { emoji: "🐾", label: "Pet-Friendly", key: "pet-friendly", href: "/services/pet-friendly", color: "bg-lime-50" },
 ];
 
-const FALLBACK_NEW: CardItem[] = [
-  { id: "new-1", breed: "Husky", price: "₾ 900", location: "თბილისი", age: "4 თვე", bg: "from-stone-50 to-stone-100", img: `https://images.unsplash.com/photo-1605568427561-40dd23c2acea${IMG}`, deal: "sale" },
-  { id: "new-2", breed: "Persian Cat", price: "₾ 600", location: "რუსთავი", age: "5 კვირა", bg: "from-pink-50 to-pink-100", img: `https://images.unsplash.com/photo-1533738363-b7f9aef128ce${IMG}`, deal: "sale" },
-  { id: "new-3", breed: "Mixed Kitten", price: "₾ 0", location: "ბათუმი", age: "8 კვირა", bg: "from-yellow-50 to-yellow-100", img: `https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba${IMG}`, deal: "adoption" },
-  { id: "new-4", breed: "Scottish Fold", price: "₾ 750", location: "გორი", age: "3 თვე", bg: "from-teal-50 to-teal-100", img: `https://images.unsplash.com/photo-1573865526739-10659fec78a5${IMG}`, deal: "sale" },
-];
-
-// `count` is the live per-category total. Values here are seed placeholders —
-// swap them for a DB aggregation (e.g. counts keyed by `href`) and the grid
-// updates with no markup changes. `formatCount` handles the null/0 fallback.
-const CATEGORIES: { emoji: string; label: string; count?: number; href: string; color: string }[] = [
-  { emoji: "🛍️", label: "ყიდვა-გაყიდვა", count: 2400, href: "/buy-sell", color: "bg-amber-50" },
-  { emoji: "🎁", label: "გაჩუქება", count: 380, href: "/adoption", color: "bg-emerald-50" },
-  { emoji: "💞", label: "შეჯვარება", count: 150, href: "/mating", color: "bg-sky-50" },
-  { emoji: "🔎", label: "დაკარგული/ნაპოვნი", count: 60, href: "/lost-found", color: "bg-rose-50" },
-  { emoji: "🏥", label: "ვეტ-კლინიკები", count: 120, href: "/services/vet-clinics", color: "bg-violet-50" },
-  { emoji: "🏨", label: "სასტუმროები", count: 80, href: "/services/pet-hotels", color: "bg-indigo-50" },
-  { emoji: "🛒", label: "პეთ-მაღაზიები", count: 200, href: "/services/pet-shops", color: "bg-orange-50" },
-  { emoji: "🐾", label: "Pet-Friendly", count: 350, href: "/services/pet-friendly", color: "bg-lime-50" },
-];
-
-// Formats a category total for display: `2400 → "2,400+"`, missing/0 → "0".
-function formatCount(count?: number): string {
-  return count ? `${count.toLocaleString("en-US")}+` : "0";
+// Formats a live category total for display. `null` (still loading) → "…";
+// a real count renders as e.g. "2,400". Zero shows as "0".
+function formatCount(count: number | null | undefined): string {
+  if (count == null) return "…";
+  return count.toLocaleString("en-US");
 }
 
 /** Minimal inline select styled to match the search bar — no extra chrome. */
@@ -181,11 +159,14 @@ export default function HomePage() {
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [deal, setDeal] = useState(DEAL_TYPES[0]);
 
-  // Live listings: seeded with the fallbacks so the grid renders full on first
-  // paint, then swapped for real DB data once the fetch resolves. No VIP flag
-  // exists in the schema yet, so VIP = newest 4, "new" = the following 4.
-  const [vipListings, setVipListings] = useState<CardItem[]>(FALLBACK_VIP);
-  const [newListings, setNewListings] = useState<CardItem[]>(FALLBACK_NEW);
+  // Live listings from the DB. No VIP flag exists in the schema yet, so
+  // "VIP" = newest 4 and "new" = the following 4.
+  const [vipListings, setVipListings] = useState<CardItem[]>([]);
+  const [newListings, setNewListings] = useState<CardItem[]>([]);
+  const [listingsLoading, setListingsLoading] = useState(true);
+
+  // Live per-category totals; null until the stats fetch resolves.
+  const [counts, setCounts] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -202,15 +183,31 @@ export default function HomePage() {
         const all: Listing[] = results.flatMap((r) => r.listings ?? []);
         // Newest first across all fetched types.
         all.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
-        if (!active || all.length === 0) return;
+        if (!active) return;
         const cards = all.map(toCard);
         setVipListings(cards.slice(0, 4));
-        const rest = cards.slice(4, 8);
-        if (rest.length) setNewListings(rest);
+        setNewListings(cards.slice(4, 8));
       } catch {
-        // Keep the fallbacks on any failure.
+        // Leave lists empty; the empty state renders below.
+      } finally {
+        if (active) setListingsLoading(false);
       }
     })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/marketplace/stats")
+      .then((r) => (r.ok ? r.json() : { counts: {} }))
+      .then((d) => {
+        if (active) setCounts(d.counts ?? {});
+      })
+      .catch(() => {
+        if (active) setCounts({});
+      });
     return () => {
       active = false;
     };
@@ -332,13 +329,19 @@ export default function HomePage() {
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {vipListings.map((item, i) => (
-            <Reveal key={item.id} direction="up" delay={i * 90}>
-              <ListingCard item={item} vip />
-            </Reveal>
-          ))}
-        </div>
+        {listingsLoading ? (
+          <SkeletonGrid />
+        ) : vipListings.length ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {vipListings.map((item, i) => (
+              <Reveal key={item.id} direction="up" delay={i * 90}>
+                <ListingCard item={item} vip />
+              </Reveal>
+            ))}
+          </div>
+        ) : (
+          <EmptyListings />
+        )}
       </section>
 
       {/* ─── Browse by Category ─── */}
@@ -361,7 +364,7 @@ export default function HomePage() {
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">{cat.label}</p>
-                    <p className="text-[10px] text-stone-400 mt-0.5">{formatCount(cat.count)}</p>
+                    <p className="text-[10px] text-stone-400 mt-0.5">{formatCount(counts ? counts[cat.key] ?? 0 : null)}</p>
                   </div>
                 </Link>
               </Reveal>
@@ -384,13 +387,19 @@ export default function HomePage() {
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {newListings.map((item, i) => (
-            <Reveal key={item.id} direction="up" delay={i * 90}>
-              <ListingCard item={item} />
-            </Reveal>
-          ))}
-        </div>
+        {listingsLoading ? (
+          <SkeletonGrid />
+        ) : newListings.length ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {newListings.map((item, i) => (
+              <Reveal key={item.id} direction="up" delay={i * 90}>
+                <ListingCard item={item} />
+              </Reveal>
+            ))}
+          </div>
+        ) : (
+          <EmptyListings />
+        )}
       </section>
 
       {/* ─── CTA banner ─── */}
@@ -420,6 +429,41 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
+    </div>
+  );
+}
+
+/** Placeholder grid shown while the live feed loads. */
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="rounded-2xl aspect-[4/3] bg-stone-100 ring-1 ring-black/5" />
+          <div className="pt-3 space-y-2">
+            <div className="h-5 w-20 bg-stone-100 rounded" />
+            <div className="h-3 w-28 bg-stone-100 rounded" />
+            <div className="h-3 w-24 bg-stone-100 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Empty state when no listings exist yet — invites the first post. */
+function EmptyListings() {
+  return (
+    <div className="flex flex-col items-center justify-center text-center py-12 gap-3">
+      <div className="text-4xl">🐾</div>
+      <p className="text-sm text-stone-500">ჯერ არ არის განცხადებები</p>
+      <Link
+        href="/listings/new"
+        className="inline-flex items-center gap-2 bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        დაამატე პირველი
+      </Link>
     </div>
   );
 }
@@ -465,13 +509,11 @@ function ListingCard({
           </div>
         )}
 
-        {/* Heart */}
-        <button
-          onClick={(e) => e.preventDefault()}
+        {/* Favorite */}
+        <FavoriteButton
+          listingId={item.id}
           className="absolute top-2.5 right-2.5 w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all shadow"
-        >
-          <Heart className="w-3.5 h-3.5 text-stone-400 hover:text-rose-500 transition-colors" />
-        </button>
+        />
       </div>
       <div className="pt-3 pb-1">
         {isAdoption ? (

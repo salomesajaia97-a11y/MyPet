@@ -4,7 +4,16 @@ import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { buildListingQuery } from "@/lib/marketplace/filters";
-import type { BuySellListing } from "@/types/marketplace";
+import type { BuySellListing, PetSpecies } from "@/types/marketplace";
+
+const SPECIES_KA: Record<PetSpecies, string> = {
+  dog: "ძაღლი",
+  cat: "კატა",
+  bird: "ფრინველი",
+  rabbit: "კურდღელი",
+  reptile: "რეპტილია",
+  other: "სხვა",
+};
 
 async function getListings(query: string): Promise<BuySellListing[]> {
   try {
@@ -65,7 +74,9 @@ function ListingCard({ listing }: { listing: BuySellListing }) {
           <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
         )}
         <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">
-          {listing.price.toLocaleString()}₾
+          {listing.currency === "USD"
+            ? `$${listing.price.toLocaleString()}`
+            : `${listing.price.toLocaleString()}₾`}
         </div>
       </div>
       <div className="p-4 space-y-2.5">
@@ -73,7 +84,7 @@ function ListingCard({ listing }: { listing: BuySellListing }) {
           <p className="font-bold text-[#0F2830] text-base">
             {listing.breed} {listing.age < 12 ? "ლეკვი" : ""}
           </p>
-          <p className="text-stone-500 text-sm">{listing.breed} • {listing.age}თვე</p>
+          <p className="text-stone-500 text-sm">{SPECIES_KA[listing.species]} • {listing.age}თვე</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {listing.vaccinated && (

@@ -53,10 +53,28 @@ export async function POST(
   }
 
   try {
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    // Never trust client-supplied moderation/ownership/rating fields.
+    delete body._id;
+    delete body.status;
+    delete body.userId;
+    delete body.source;
+    delete body.placeId;
+    delete body.aggregateRating;
+    delete body.googleRating;
+    delete body.googleRatingCount;
+    delete body.nativeRatingCount;
+
     await connectDB();
     const userId = (session.user as typeof session.user & { id?: string }).id;
-    const business = await BusinessModel.create({ ...body, category, userId, status: "approved" });
+    // User submissions enter the moderation queue as "pending" — they only go
+    // public after an admin approves them.
+    const business = await BusinessModel.create({ ...body, category, userId, status: "pending" });
     return NextResponse.json({ business }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";

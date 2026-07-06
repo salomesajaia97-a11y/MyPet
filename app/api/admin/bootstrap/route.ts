@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { connectDB } from "@/lib/db";
 import UserModel from "@/lib/models/User";
 
 const ADMIN_EMAIL = "salome.sajaia97@gmail.com";
+
+/** Constant-time string comparison that won't leak length via early exit. */
+function secretsMatch(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
 
 // One-time bootstrap: sets ADMIN_EMAIL as admin.
 // Protected by BOOTSTRAP_SECRET env var.
@@ -13,8 +22,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "BOOTSTRAP_SECRET not configured" }, { status: 500 });
   }
 
-  const { secret: provided } = await req.json();
-  if (provided !== secret) {
+  let provided: unknown;
+  try {
+    ({ secret: provided } = await req.json());
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  if (typeof provided !== "string" || !secretsMatch(provided, secret)) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 

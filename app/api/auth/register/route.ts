@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import UserModel from "@/lib/models/User";
 import { hashPassword } from "@/lib/utils/crypto";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(`register:${clientIp(req)}`, 5, 10 * 60_000);
+  if (limited) return limited;
+
   try {
     const { name, email, password } = await req.json();
 
@@ -29,8 +33,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Internal server error";
-    console.error("[register]", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("[register]", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

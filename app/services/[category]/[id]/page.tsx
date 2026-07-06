@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star, MapPin, Phone, Globe, Clock, ArrowLeft } from "lucide-react";
 import PhoneLink from "@/components/ui/PhoneLink";
+import ServiceReviews from "@/components/services/ServiceReviews";
+import { isValidObjectId } from "mongoose";
+import { connectDB } from "@/lib/db";
+import BusinessModel from "@/lib/models/Business";
 
 interface Service {
   _id: string;
@@ -20,6 +24,7 @@ interface Service {
   openingHours?: string[];
   aggregateRating?: number;
   googleRatingCount?: number;
+  nativeRatingCount?: number;
   pricePerNight?: number;
   lat?: number;
   lng?: number;
@@ -35,18 +40,17 @@ const CATEGORY_META: Record<
   "pet-friendly": { label: "Pet-Friendly ადგილები", href: "/services/pet-friendly" },
 };
 
+// Query the DB directly instead of self-fetching our own API (no absolute-URL
+// dependency). Serialize the lean doc to plain JSON for the client boundary.
 async function getService(
   category: string,
   id: string
 ): Promise<Service | null> {
+  if (!isValidObjectId(id)) return null;
   try {
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const res = await fetch(`${base}/api/services/${category}/${id}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const { service } = await res.json();
-    return service ?? null;
+    await connectDB();
+    const doc = await BusinessModel.findOne({ _id: id, category }).lean();
+    return doc ? (JSON.parse(JSON.stringify(doc)) as Service) : null;
   } catch {
     return null;
   }
@@ -65,6 +69,9 @@ export default async function ServiceDetailPage({
   const address = [service.address, service.neighborhood, service.city]
     .filter(Boolean)
     .join(", ");
+
+  const totalRatingCount =
+    (service.googleRatingCount ?? 0) + (service.nativeRatingCount ?? 0);
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
@@ -116,9 +123,9 @@ export default async function ServiceDetailPage({
                   <div className="flex items-center gap-1.5 text-sm">
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                     <span className="font-semibold">{service.aggregateRating}</span>
-                    {service.googleRatingCount ? (
+                    {totalRatingCount > 0 ? (
                       <span className="text-stone-400 text-xs">
-                        ({service.googleRatingCount} შეფასება)
+                        ({totalRatingCount} შეფასება)
                       </span>
                     ) : null}
                   </div>
@@ -208,6 +215,13 @@ export default async function ServiceDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Reviews & ratings */}
+        <ServiceReviews
+          businessId={service._id}
+          aggregateRating={service.aggregateRating ?? 0}
+          totalCount={totalRatingCount}
+        />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, Globe, ChevronUp, ChevronDown, List, Wallet, UserRound, ShieldCheck } from "lucide-react";
+import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 import PhoneLink from "@/components/ui/PhoneLink";
@@ -17,134 +17,6 @@ const SUB_NAV = [
   { href: "/services/pet-shops", label: "მაღაზიები" },
   { href: "/services/pet-friendly", label: "Pet-Friendly" },
 ];
-
-const LANGUAGES = [
-  { code: "ka", label: "ქართული" },
-  { code: "en", label: "English" },
-];
-
-const CURRENCIES = [
-  { code: "GEL", label: "GEL", symbol: "₾" },
-  { code: "EUR", label: "EUR", symbol: "€" },
-];
-
-function LocaleSelector() {
-  const [open, setOpen] = useState(false);
-  const [lang, setLang] = useState("ka");
-  const [currency, setCurrency] = useState("GEL");
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const currentLang = LANGUAGES.find((l) => l.code === lang)!;
-  const currentCurrency = CURRENCIES.find((c) => c.code === currency)!;
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="hidden sm:flex items-center gap-2 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-700 hover:border-stone-300 hover:bg-stone-50 transition-all font-medium"
-      >
-        <Globe className="w-4 h-4 text-stone-500" />
-        <span>{currentLang.label}, {currentCurrency.symbol}</span>
-        {open ? (
-          <ChevronUp className="w-3.5 h-3.5 text-stone-400" />
-        ) : (
-          <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-56 z-50 overflow-hidden">
-          {/* Language section */}
-          <div className="px-4 pt-4 pb-2">
-            <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2.5">
-              ენა
-            </p>
-            <div className="space-y-1">
-              {LANGUAGES.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-stone-50 transition-colors text-left"
-                >
-                  {/* Radio circle */}
-                  <div
-                    className={cn(
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-                      lang === l.code
-                        ? "border-emerald-500 bg-emerald-500"
-                        : "border-stone-300"
-                    )}
-                  >
-                    {lang === l.code && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      lang === l.code ? "text-[#0F2830]" : "text-stone-600"
-                    )}
-                  >
-                    {l.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-px bg-stone-100 mx-4" />
-
-          {/* Currency section */}
-          <div className="px-4 pt-3 pb-4">
-            <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2.5">
-              ვალუტა
-            </p>
-            <div className="space-y-1">
-              {CURRENCIES.map((c) => (
-                <button
-                  key={c.code}
-                  onClick={() => setCurrency(c.code)}
-                  className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-stone-50 transition-colors text-left"
-                >
-                  <div
-                    className={cn(
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-                      currency === c.code
-                        ? "border-emerald-500 bg-emerald-500"
-                        : "border-stone-300"
-                    )}
-                  >
-                    {currency === c.code && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      currency === c.code ? "text-[#0F2830]" : "text-stone-600"
-                    )}
-                  >
-                    {c.label} - {c.symbol}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSession>["data"]> }) {
   const [open, setOpen] = useState(false);
@@ -273,22 +145,23 @@ export function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5">
-          {/* Add listing */}
+          {/* Add listing — visible on mobile too (icon-only on the smallest screens) */}
           <Link
             href="/listings/new"
-            className="hidden sm:flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-4 py-2 text-sm font-semibold"
+            className="flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-3 sm:px-4 py-2 text-sm font-semibold"
           >
             <Plus className="w-4 h-4" />
-            დამატება
+            <span className="hidden sm:inline">დამატება</span>
           </Link>
 
-          {/* Language / Currency selector */}
-          <LocaleSelector />
-
           {/* Favorites */}
-          <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500">
+          <Link
+            href="/profile/favorites"
+            aria-label="ფავორიტები"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
+          >
             <Heart className="w-[18px] h-[18px]" />
-          </button>
+          </Link>
 
           {/* Auth */}
           {status === "loading" ? (

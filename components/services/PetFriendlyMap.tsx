@@ -9,9 +9,11 @@ import { NEIGHBORHOOD_COORDS, type BusinessData } from "@/lib/data/businesses";
 const TBILISI: [number, number] = [41.7151, 44.8271];
 
 // Resolve a business to coordinates: explicit lat/lng → neighborhood → city.
-function coordsFor(b: BusinessData): [number, number] {
+// Returns null when nothing matches, so we can skip it rather than stack a pin
+// on the map's default centre alongside every other unlocated business.
+function coordsFor(b: BusinessData): [number, number] | null {
   if (typeof b.lat === "number" && typeof b.lng === "number") return [b.lat, b.lng];
-  return NEIGHBORHOOD_COORDS[b.neighborhood] ?? NEIGHBORHOOD_COORDS[b.city] ?? TBILISI;
+  return NEIGHBORHOOD_COORDS[b.neighborhood] ?? NEIGHBORHOOD_COORDS[b.city] ?? null;
 }
 
 // Teal pin drawn inline so no marker-image assets need bundling.
@@ -45,7 +47,9 @@ function FitBounds({ points }: { points: [number, number][] }) {
 }
 
 export default function PetFriendlyMap({ businesses }: { businesses: BusinessData[] }) {
-  const located = businesses.map((b) => ({ business: b, pos: coordsFor(b) }));
+  const located = businesses
+    .map((b) => ({ business: b, pos: coordsFor(b) }))
+    .filter((l): l is { business: BusinessData; pos: [number, number] } => l.pos !== null);
   const points = located.map((l) => l.pos);
 
   return (

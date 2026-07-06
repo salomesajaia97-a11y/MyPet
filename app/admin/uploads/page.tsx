@@ -18,8 +18,9 @@ export default function AdminUploadsPage() {
 
   useEffect(() => {
     fetch("/api/admin/uploads")
-      .then((r) => r.json())
-      .then(setUploads)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setUploads(Array.isArray(d) ? d : []))
+      .catch(() => setUploads([]))
       .finally(() => setLoading(false));
   }, []);
 

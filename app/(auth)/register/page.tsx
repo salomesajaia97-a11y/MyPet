@@ -33,8 +33,13 @@ export default function RegisterPage() {
       return;
     }
 
-    // Auto sign-in after registration
-    await signIn("credentials", { email, password, redirect: false });
+    // Auto sign-in after registration. If it fails, send the user to the login
+    // page rather than silently landing on "/" unauthenticated.
+    const signInRes = await signIn("credentials", { email, password, redirect: false });
+    if (signInRes?.error) {
+      router.push("/login");
+      return;
+    }
     router.push("/");
     router.refresh();
   }

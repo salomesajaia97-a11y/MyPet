@@ -1,15 +1,27 @@
 // components/services/RealBusinessCard.tsx
+import Link from "next/link";
 import { Star, MapPin, Phone, Globe, Clock } from "lucide-react";
 import type { BusinessData } from "@/lib/data/businesses";
 import PhoneLink from "@/components/ui/PhoneLink";
 
 interface Props {
   business: BusinessData;
+  // When provided, the whole card links here via a stretched overlay. Phone /
+  // website stay independently clickable (they sit above the overlay) — this
+  // avoids nesting <a> inside <a>, which is invalid HTML and breaks hydration.
+  href?: string;
 }
 
-export function RealBusinessCard({ business }: Props) {
+export function RealBusinessCard({ business, href }: Props) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
+    <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
+      {href && (
+        <Link
+          href={href}
+          aria-label={business.name}
+          className="absolute inset-0 z-[1]"
+        />
+      )}
       <div className="flex">
         {/* Image */}
         <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0 bg-[#EBF6FA]">
@@ -37,7 +49,9 @@ export function RealBusinessCard({ business }: Props) {
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="font-bold text-[#0F2830] text-base leading-tight">{business.name}</p>
-              <p className="text-stone-400 text-xs mt-0.5">{business.nameKa}</p>
+              {business.nameKa && business.nameKa !== business.name && (
+                <p className="text-stone-400 text-xs mt-0.5">{business.nameKa}</p>
+              )}
             </div>
             {business.pricePerNight && (
               <span className="shrink-0 text-sm font-bold text-[#0E4A5C] bg-[#0E4A5C]/10 px-2.5 py-1 rounded-full">
@@ -46,12 +60,17 @@ export function RealBusinessCard({ business }: Props) {
             )}
           </div>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1.5 text-sm">
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-            <span className="font-semibold">{business.rating}</span>
-            <span className="text-stone-400 text-xs">({business.reviewCount} შეფასება)</span>
-          </div>
+          {/* Rating — hidden when there's no score yet (OSM rows), so cards
+              never show a misleading "0 (0 შეფასება)". */}
+          {business.rating > 0 && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="font-semibold">{business.rating}</span>
+              {business.reviewCount > 0 && (
+                <span className="text-stone-400 text-xs">({business.reviewCount} შეფასება)</span>
+              )}
+            </div>
+          )}
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5">
@@ -75,8 +94,9 @@ export function RealBusinessCard({ business }: Props) {
             ) : null;
           })()}
 
-          {/* Phone & Website */}
-          <div className="flex items-center gap-4">
+          {/* Phone & Website — sit above the stretched link overlay so they
+              stay clickable; stop propagation so they don't trigger card nav. */}
+          <div className="relative z-[2] flex items-center gap-4 w-fit">
             {business.phone && (
               <PhoneLink phone={business.phone} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
                 <Phone className="w-3 h-3 shrink-0" />

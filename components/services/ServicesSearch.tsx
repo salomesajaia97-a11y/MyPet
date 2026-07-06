@@ -1,19 +1,21 @@
 "use client";
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Search, MapPin, X } from "lucide-react";
 import { RealBusinessCard } from "@/components/services/RealBusinessCard";
 import type { BusinessData } from "@/lib/data/businesses";
 
 interface Props {
   businesses: BusinessData[];
-  category: string;
+  // Optional: retained for call-site clarity. The detail href is built from
+  // each business's own `category`, so a mixed-category list (the /services
+  // index) links each card correctly.
+  category?: string;
 }
 
 // Client-side search for a services feed: filter by name (free text) and by
 // city (dropdown built from the cities actually present in the data). Filtering
 // happens in the browser over the already-loaded list — instant, no reloads.
-export function ServicesSearch({ businesses, category }: Props) {
+export function ServicesSearch({ businesses }: Props) {
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
 
@@ -93,13 +95,11 @@ export function ServicesSearch({ businesses, category }: Props) {
       ) : (
         <div className="space-y-4">
           {filtered.map((biz) => (
-            <Link
+            <RealBusinessCard
               key={biz._id}
-              href={`/services/${category}/${biz._id}`}
-              className="block"
-            >
-              <RealBusinessCard business={biz} />
-            </Link>
+              business={biz}
+              href={`/services/${biz.category}/${biz._id}`}
+            />
           ))}
         </div>
       )}

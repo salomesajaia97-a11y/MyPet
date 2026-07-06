@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { speciesToSlug, locationMatchTerms } from "@/lib/marketplace/filters";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rateLimit";
 
 /** Escape user text before using it inside a RegExp. */
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -75,17 +76,34 @@ export async function POST(
     return NextResponse.json({ error: "Invalid listing type" }, { status: 400 });
   }
 
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limited = rateLimit(`listing-create:${session.user.id}`, 10, 60 * 60_000);
+  if (limited) return limited;
+
   try {
-    const session = await auth();
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    // Never trust client-supplied ownership or timestamps.
+    delete body._id;
+    delete body.userId;
+    delete body.createdAt;
+    delete body.updatedAt;
+
     await connectDB();
     // Attribute the listing to the logged-in user so it surfaces under
-    // "My Listings". `userId` from the client body is ignored in favour of
-    // the session id.
+    // "My Listings".
     const listing = await ListingModel.create({
       ...body,
       type,
-      userId: session?.user?.id ?? undefined,
+      userId: session.user.id,
     });
     return NextResponse.json({ listing }, { status: 201 });
   } catch (err) {

@@ -17,8 +17,9 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetch("/api/admin/users")
-      .then((r) => r.json())
-      .then(setUsers)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setUsers(Array.isArray(d) ? d : []))
+      .catch(() => setUsers([]))
       .finally(() => setLoading(false));
   }, []);
 

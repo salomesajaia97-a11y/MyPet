@@ -28,9 +28,24 @@ export function MarketplaceSearch({
   const searchParams = useSearchParams();
 
   // Seed local state from the URL so the bar shows the current search.
-  const [q, setQ] = useState(searchParams.get("q") ?? "");
-  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") ?? "");
-  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") ?? "");
+  const urlQ = searchParams.get("q") ?? "";
+  const urlMin = searchParams.get("minPrice") ?? "";
+  const urlMax = searchParams.get("maxPrice") ?? "";
+  const [q, setQ] = useState(urlQ);
+  const [minPrice, setMinPrice] = useState(urlMin);
+  const [maxPrice, setMaxPrice] = useState(urlMax);
+
+  // Resync the free-text inputs when the URL changes underneath us (browser
+  // back/forward, or an external link). Done during render, keyed on the URL
+  // values, so typing isn't clobbered (URL is unchanged while typing).
+  const [syncedKey, setSyncedKey] = useState(`${urlQ}|${urlMin}|${urlMax}`);
+  const urlKey = `${urlQ}|${urlMin}|${urlMax}`;
+  if (urlKey !== syncedKey) {
+    setSyncedKey(urlKey);
+    setQ(urlQ);
+    setMinPrice(urlMin);
+    setMaxPrice(urlMax);
+  }
 
   const species = searchParams.get("species") ?? "";
   const city = searchParams.get("city") ?? "";

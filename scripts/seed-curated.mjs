@@ -28,6 +28,7 @@ function toDoc(b) {
     hasEmergency: !!b.hasEmergency,
     indoorAllowed: b.indoorAllowed,
     pricePerNight: b.pricePerNight,
+    googleRating: b.rating ?? 0,
     aggregateRating: b.rating ?? 0,
     googleRatingCount: b.reviewCount ?? 0,
     lat: b.lat,

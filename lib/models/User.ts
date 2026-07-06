@@ -8,6 +8,7 @@ export interface IUser {
   image?: string;
   balance: number;
   role: "user" | "admin";
+  favorites: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +21,8 @@ const UserSchema = new Schema<IUser>(
     image: { type: String, required: false },
     balance: { type: Number, default: 0 },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    // Listings the user has hearted.
+    favorites: [{ type: Schema.Types.ObjectId, ref: "Listing" }],
   },
   { timestamps: true }
 );
