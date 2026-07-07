@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -25,6 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main" className="min-h-[calc(100vh-6rem)]">{children}</main>
           <Footer />
         </Providers>
+        {/* Web Insights analytics — loads after hydration (afterInteractive). */}
+        <Script
+          src="https://webinsights.vercel.app/js/script.js"
+          data-site-id="lK3fT5Ml5zqa"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
