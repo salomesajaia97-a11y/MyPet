@@ -14,7 +14,10 @@ pet shops, pet-friendly places) with these capabilities:
    recomputed.
 4. **Rating breakdown bar** — a summary showing the average, total count, and a
    per-star (5→1) distribution of native reviews.
-5. **Real ratings only** — a business's displayed rating and count come solely
+5. **Star-only reviews** — the comment text is **optional**. A user can submit a
+   star rating with no text. Rating stays required (1–5); text, if given, is just
+   stored and shown.
+6. **Real ratings only** — a business's displayed rating and count come solely
    from actual native reviews written on the platform. The fabricated
    "Google baseline" (hand-typed `rating`/`reviewCount` from
    `lib/data/businesses.ts`, seeded into `googleRating`/`googleRatingCount`) is
@@ -70,6 +73,9 @@ Existing native reviews created before this change have no `userId`; edit / dele
 controls are gated on `userId` presence, so they simply aren't editable (they can
 still be voted on and replied to).
 
+Also relax the existing `text` field: change `required: true` → optional
+(`default: ""`), so a star-only review is valid.
+
 ### 2. Shared helper — `lib/recomputeRating.ts`
 
 Extract the Google-baseline + native-blend math (currently inline in the POST
@@ -90,11 +96,13 @@ all call it — one source of truth, no divergence. The old blend + first-review
 All routes keep the existing patterns: `auth()` for identity, `rateLimit()`,
 session-derived identity (never client-supplied), `isValidObjectId` guards.
 
-- **`POST /api/reviews`** (existing, extended) — additionally persist `userId`
+- **`POST /api/reviews`** (existing, extended) — drop the `text ≥ 10 chars`
+  requirement: `text` is now optional (trimmed; `""` allowed, capped at a sane max
+  e.g. 2000 chars). Rating stays required (int 1–5). Additionally persist `userId`
   (from session) and `photos` (validated array of strings, ≤ 3). Then
   `recomputeBusinessRating`.
 - **`PATCH /api/reviews/[id]`** (new) — author-only (`review.userId ===
-  session.user.id`). Updates `rating` (int 1–5), `text` (≥ 10 chars), `photos`
+  session.user.id`). Updates `rating` (int 1–5), `text` (optional), `photos`
   (≤ 3). Sets `editedAt`. Rejects Google-source reviews. Then recompute.
 - **`DELETE /api/reviews/[id]`** (new) — author-only. Deletes the review, then
   recompute.
@@ -124,9 +132,11 @@ The container is already large and will grow; split into focused units:
   controls (only when the viewer is the author), and the owner-reply block. When
   the viewer is the business owner, shows an inline reply form (add / edit /
   delete).
-- **`ReviewForm.tsx`** — star picker, textarea (≥ 10 chars), and photo uploader
-  (reuses `/api/upload`, ≤ 3 images, JPEG/PNG/WebP ≤ 5 MB, with per-file preview
-  and remove). Used for both **create** and **edit** (pre-filled in edit mode).
+- **`ReviewForm.tsx`** — star picker (required), optional textarea (no min
+  length), and photo uploader (reuses `/api/upload`, ≤ 3 images, JPEG/PNG/WebP
+  ≤ 5 MB, with per-file preview and remove). Submit is enabled once a rating is
+  picked; empty text is fine. Used for both **create** and **edit** (pre-filled in
+  edit mode). `ReviewCard` renders the text block only when text is non-empty.
 - **`RatingSummary.tsx`** — header block: big average, star row, total count, and
   a 5→1 distribution — one bar per star level showing that level's share of
   reviews. Counts are derived client-side from the fetched native review list, so
