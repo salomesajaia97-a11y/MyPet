@@ -35,6 +35,23 @@ export default async function LostFoundPage({
           <MarketplaceSearch filters type="lost-found" />
         </Suspense>
 
+        {/* AI photo matcher entry point */}
+        <Link
+          href="/lost-found/match"
+          className="group flex items-center gap-3 bg-white rounded-2xl border border-[#0E4A5C]/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all px-5 py-4"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0E4A5C]/10 text-[#0E4A5C] text-xl">
+            ✨
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[#0F2830] text-sm sm:text-base">AI ფოტო-ძებნა</p>
+            <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+              ატვირთე ფოტო — AI იპოვის მსგავს დაკარგულ/ნაპოვნ ცხოველს
+            </p>
+          </div>
+          <span className="text-[#0E4A5C] text-sm font-semibold shrink-0 group-hover:translate-x-0.5 transition-transform">→</span>
+        </Link>
+
         {listings.length === 0 ? (
           <div className="py-20 text-center text-stone-400">
             <div className="text-5xl mb-4">🐾</div>

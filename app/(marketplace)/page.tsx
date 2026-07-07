@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
+import { SmartSearch } from "@/components/ai/SmartSearch";
 import { CITIES, SPECIES as SPECIES_OPTIONS } from "@/lib/marketplace/filters";
 import type { Listing } from "@/types/marketplace";
 
@@ -266,6 +267,13 @@ export default function HomePage() {
                 <Search className="w-4 h-4 transition-transform group-hover:scale-110" />
                 ძება
               </button>
+            </div>
+          </Reveal>
+
+          {/* AI natural-language search */}
+          <Reveal direction="up" delay={110}>
+            <div className="mt-3">
+              <SmartSearch />
             </div>
           </Reveal>
 

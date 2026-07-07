@@ -9,6 +9,7 @@ import { isValidObjectId } from "mongoose";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
+import { ContactSellerBox } from "./ContactSellerBox";
 
 // Query the DB directly — no self-fetch to our own API (which would need an
 // absolute URL and break outside localhost). JSON round-trip serializes
@@ -262,6 +263,7 @@ export default async function ListingDetailPage({
                   <Phone className="w-4 h-4" />
                   დარეკვა
                 </PhoneLink>
+                {listing.userId && <ContactSellerBox listingId={id} />}
               </div>
             )}
           </div>
