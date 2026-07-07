@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck, MessageCircle } from "lucide-react";
+import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck, MessageCircle, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 import PhoneLink from "@/components/ui/PhoneLink";
@@ -162,6 +162,12 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
 export function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Collapse the mobile menu whenever navigation lands on a new route.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -224,7 +230,8 @@ export function Navbar() {
       {/* Row 2 — sub-nav */}
       <div className="border-t border-stone-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <nav className="flex items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Desktop: full inline sub-nav */}
+          <nav className="hidden lg:flex items-center">
             {SUB_NAV.map((item) => (
               <Link
                 key={item.href}
@@ -240,6 +247,19 @@ export function Navbar() {
               </Link>
             ))}
           </nav>
+
+          {/* Mobile: hamburger toggle instead of the overflowing nav */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-label="მენიუ"
+            className="lg:hidden flex items-center gap-2 py-2.5 text-[13px] font-semibold text-stone-600 hover:text-[#0E4A5C] transition-colors"
+          >
+            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            მენიუ
+          </button>
+
           <PhoneLink
             phone="+995 551 08 09 60"
             className="hidden lg:flex items-center gap-1.5 text-xs text-stone-400 shrink-0 ml-4 pb-px hover:text-[#0E4A5C] transition-colors"
@@ -248,6 +268,35 @@ export function Navbar() {
             551 08 09 60
           </PhoneLink>
         </div>
+
+        {/* Mobile: collapsible panel */}
+        {mobileOpen && (
+          <div className="lg:hidden border-t border-stone-100 bg-white shadow-sm">
+            <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col">
+              {SUB_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "py-2.5 text-sm font-medium border-b border-stone-100 last:border-b-0 transition-colors",
+                    isActive(item.href)
+                      ? "text-[#0E4A5C]"
+                      : "text-stone-600 hover:text-[#0E4A5C]"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <PhoneLink
+                phone="+995 551 08 09 60"
+                className="flex items-center gap-1.5 py-2.5 text-sm text-stone-500 hover:text-[#0E4A5C] transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                551 08 09 60
+              </PhoneLink>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

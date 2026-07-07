@@ -15,6 +15,12 @@ import {
   Star,
   Plus,
   ArrowRight,
+  ShoppingBag,
+  HeartHandshake,
+  Hotel,
+  Store,
+  Cake,
+  type LucideIcon,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
@@ -99,16 +105,17 @@ function toCard(l: Listing, i: number): CardItem {
 }
 
 // `key` maps to the live-count keys returned by /api/marketplace/stats
-// (listing `type` or business `category`).
-const CATEGORIES: { emoji: string; label: string; key: string; href: string; color: string }[] = [
-  { emoji: "🛍️", label: "ყიდვა-გაყიდვა", key: "buy-sell", href: "/buy-sell", color: "bg-amber-50" },
-  { emoji: "🎁", label: "გაჩუქება", key: "adoption", href: "/adoption", color: "bg-emerald-50" },
-  { emoji: "💞", label: "შეჯვარება", key: "mating", href: "/mating", color: "bg-sky-50" },
-  { emoji: "🔎", label: "დაკარგული/ნაპოვნი", key: "lost-found", href: "/lost-found", color: "bg-rose-50" },
-  { emoji: "🏥", label: "ვეტ-კლინიკები", key: "vet-clinics", href: "/services/vet-clinics", color: "bg-violet-50" },
-  { emoji: "🏨", label: "სასტუმროები", key: "pet-hotels", href: "/services/pet-hotels", color: "bg-indigo-50" },
-  { emoji: "🛒", label: "პეთ-მაღაზიები", key: "pet-shops", href: "/services/pet-shops", color: "bg-orange-50" },
-  { emoji: "🐾", label: "Pet-Friendly", key: "pet-friendly", href: "/services/pet-friendly", color: "bg-lime-50" },
+// (listing `type` or business `category`). Icons are lucide outline glyphs,
+// unified under the brand green so the grid reads as one system.
+const CATEGORIES: { Icon: LucideIcon; label: string; key: string; href: string }[] = [
+  { Icon: ShoppingBag, label: "ყიდვა-გაყიდვა", key: "buy-sell", href: "/buy-sell" },
+  { Icon: Gift, label: "გაჩუქება", key: "adoption", href: "/adoption" },
+  { Icon: HeartHandshake, label: "შეჯვარება", key: "mating", href: "/mating" },
+  { Icon: Search, label: "დაკარგული/ნაპოვნი", key: "lost-found", href: "/lost-found" },
+  { Icon: Stethoscope, label: "ვეტ-კლინიკები", key: "vet-clinics", href: "/services/vet-clinics" },
+  { Icon: Hotel, label: "სასტუმროები", key: "pet-hotels", href: "/services/pet-hotels" },
+  { Icon: Store, label: "პეთ-მაღაზიები", key: "pet-shops", href: "/services/pet-shops" },
+  { Icon: PawPrint, label: "Pet-Friendly", key: "pet-friendly", href: "/services/pet-friendly" },
 ];
 
 // Formats a live category total for display. `null` (still loading) → "…";
@@ -308,9 +315,9 @@ export default function HomePage() {
         <Reveal direction="up">
           <Link
             href="/listings/new?category=lost-found"
-            className="group flex items-center gap-4 bg-white rounded-2xl border border-stone-200 border-l-4 border-l-rose-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all px-5 py-4"
+            className="group flex items-center gap-4 rounded-2xl border border-rose-100 border-l-4 border-l-rose-400 bg-gradient-to-r from-rose-50 via-rose-50/60 to-orange-50/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all px-5 py-4"
           >
-            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-rose-500 ring-1 ring-rose-100 shadow-sm">
               <span className="absolute inline-flex h-full w-full rounded-xl bg-rose-400/30 animate-ping" />
               <AlertCircle className="relative w-5 h-5" />
             </span>
@@ -375,8 +382,8 @@ export default function HomePage() {
                   href={cat.href}
                   className="group flex flex-col items-center gap-2.5 bg-white rounded-2xl p-4 border border-stone-100 hover:border-[#0E4A5C]/30 hover:-translate-y-1 hover:shadow-md transition-all h-full"
                 >
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl leading-none ${cat.color} transition-transform group-hover:scale-110 group-hover:-rotate-6`}>
-                    <span aria-hidden="true">{cat.emoji}</span>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-emerald-50 text-[#0E4A5C] ring-1 ring-emerald-100 transition-all group-hover:bg-[#0E4A5C] group-hover:text-white group-hover:scale-105">
+                    <cat.Icon className="w-5 h-5" strokeWidth={1.75} aria-hidden="true" />
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">{cat.label}</p>
@@ -541,10 +548,16 @@ function ListingCard({
           <p className="font-black text-[#0F2830] text-lg leading-tight">{item.price}</p>
         )}
         <p className="text-sm text-stone-600 font-medium mt-1.5">{item.breed}</p>
-        <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
-          <MapPin className="w-3 h-3 shrink-0" />
-          {item.location} · {item.age}
-        </p>
+        <div className="mt-1.5 flex items-center gap-3 text-xs text-stone-400">
+          <span className="inline-flex items-center gap-1 min-w-0">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-[#0E4A5C]/60" strokeWidth={1.75} />
+            <span className="truncate">{item.location}</span>
+          </span>
+          <span className="inline-flex items-center gap-1 shrink-0">
+            <Cake className="w-3.5 h-3.5 text-[#0E4A5C]/60" strokeWidth={1.75} />
+            {item.age}
+          </span>
+        </div>
       </div>
     </Link>
   );
