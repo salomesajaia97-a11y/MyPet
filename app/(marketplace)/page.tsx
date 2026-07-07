@@ -185,9 +185,17 @@ export default function HomePage() {
         // Newest first across all fetched types.
         all.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
         if (!active) return;
-        const cards = all.map(toCard);
-        setVipListings(cards.slice(0, 4));
-        setNewListings(cards.slice(4, 8));
+
+        // VIP row = admin-featured listings first (newest), topped up with the
+        // newest non-featured to fill 4 slots. "New" row = the next newest,
+        // excluding whatever is already shown as VIP.
+        const featured = all.filter((l) => l.isFeatured);
+        const vip = [...featured, ...all.filter((l) => !l.isFeatured)].slice(0, 4);
+        const vipIds = new Set(vip.map((l) => l._id));
+        const rest = all.filter((l) => !vipIds.has(l._id)).slice(0, 4);
+
+        setVipListings(vip.map(toCard));
+        setNewListings(rest.map(toCard));
       } catch {
         // Leave lists empty; the empty state renders below.
       } finally {

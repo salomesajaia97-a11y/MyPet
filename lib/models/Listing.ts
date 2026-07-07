@@ -32,11 +32,14 @@ const ListingSchema = new Schema(
     lastSeenDate: String,
     reward: Number,
     isResolved: { type: Boolean, default: false },
+    // Admin-controlled: featured listings surface in the homepage "VIP" row.
+    isFeatured: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
 ListingSchema.index({ type: 1 });
 ListingSchema.index({ species: 1 });
+ListingSchema.index({ isFeatured: 1, createdAt: -1 });
 
 export default models.Listing || model("Listing", ListingSchema);

@@ -15,6 +15,7 @@ export interface BaseListing {
   contactPhone: string;
   createdAt: string;
   userId: string;
+  isFeatured?: boolean;
 }
 
 export interface BuySellListing extends BaseListing {
