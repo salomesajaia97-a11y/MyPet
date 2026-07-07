@@ -3,8 +3,22 @@ import { isValidObjectId } from "mongoose";
 import { connectDB } from "@/lib/db";
 import ReviewModel from "@/lib/models/Review";
 import BusinessModel from "@/lib/models/Business";
+import { recomputeBusinessRating } from "@/lib/recomputeRating";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rateLimit";
+
+const MAX_TEXT = 2000;
+const MAX_PHOTOS = 3;
+
+// Validate a client-supplied photos value into a clean string[] (≤ MAX_PHOTOS).
+// Returns null when the shape is invalid.
+function parsePhotos(input: unknown): string[] | null {
+  if (input === undefined || input === null) return [];
+  if (!Array.isArray(input)) return null;
+  if (input.length > MAX_PHOTOS) return null;
+  if (!input.every((p) => typeof p === "string" && p.length > 0)) return null;
+  return input;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -35,13 +49,13 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
 
   try {
-    let body: { businessId?: string; rating?: unknown; text?: unknown };
+    let body: { businessId?: string; rating?: unknown; text?: unknown; photos?: unknown };
     try {
       body = await req.json();
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
-    const { businessId, text } = body;
+    const { businessId } = body;
     const rating = Number(body.rating);
 
     if (!businessId || !isValidObjectId(businessId)) {
@@ -50,56 +64,38 @@ export async function POST(req: NextRequest) {
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
       return NextResponse.json({ error: "Rating must be an integer 1–5" }, { status: 400 });
     }
-    if (typeof text !== "string" || text.trim().length < 10) {
-      return NextResponse.json({ error: "Review text must be at least 10 characters" }, { status: 400 });
+    // Text is optional — a star-only review is valid. Reject only wrong types.
+    if (body.text !== undefined && body.text !== null && typeof body.text !== "string") {
+      return NextResponse.json({ error: "Invalid review text" }, { status: 400 });
+    }
+    const text = typeof body.text === "string" ? body.text.trim().slice(0, MAX_TEXT) : "";
+
+    const photos = parsePhotos(body.photos);
+    if (photos === null) {
+      return NextResponse.json({ error: `Up to ${MAX_PHOTOS} valid image URLs allowed` }, { status: 400 });
     }
 
     await connectDB();
 
     // The business must exist before we attach a review / recompute its rating.
-    const business = await BusinessModel.findById(businessId);
+    const business = await BusinessModel.findById(businessId).select("_id");
     if (!business) {
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
-    }
-
-    const googleCount = business.googleRatingCount ?? 0;
-
-    // Establish the Google baseline. Docs seeded before the `googleRating`
-    // field lack it; on their FIRST native review the current aggregateRating
-    // still equals the pristine Google average, so backfill it then.
-    let googleRating = business.googleRating ?? 0;
-    if (!googleRating && googleCount > 0) {
-      const priorNativeCount = await ReviewModel.countDocuments({
-        businessId,
-        source: "native",
-      });
-      if (priorNativeCount === 0) {
-        googleRating = business.aggregateRating ?? 0;
-        business.googleRating = googleRating;
-      }
     }
 
     // Identity comes from the session, never the client — reviews can't be spoofed.
     const review = await ReviewModel.create({
       businessId,
       source: "native",
+      userId: session.user.id,
       reviewerName: session.user.name ?? session.user.email ?? "მომხმარებელი",
       reviewerAvatar: session.user.image ?? undefined,
       rating,
-      text: text.trim(),
+      text,
+      photos,
     });
 
-    // Blend the immutable Google baseline with all native reviews so a native
-    // review never overwrites the seeded Google score.
-    const natives = await ReviewModel.find({ businessId, source: "native" }).lean();
-    const nativeCount = natives.length;
-    const nativeSum = natives.reduce((sum, r) => sum + r.rating, 0);
-    const totalCount = googleCount + nativeCount;
-    const avg = totalCount > 0 ? (googleRating * googleCount + nativeSum) / totalCount : 0;
-
-    business.aggregateRating = Math.round(avg * 10) / 10;
-    business.nativeRatingCount = nativeCount;
-    await business.save();
+    await recomputeBusinessRating(businessId);
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (err) {

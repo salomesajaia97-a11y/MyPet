@@ -28,9 +28,13 @@ function toDoc(b) {
     hasEmergency: !!b.hasEmergency,
     indoorAllowed: b.indoorAllowed,
     pricePerNight: b.pricePerNight,
-    googleRating: b.rating ?? 0,
-    aggregateRating: b.rating ?? 0,
-    googleRatingCount: b.reviewCount ?? 0,
+    // Ratings are real-only: seeded businesses start with no rating and earn
+    // it from genuine native reviews. The old b.rating / b.reviewCount fakes
+    // are intentionally NOT copied.
+    googleRating: 0,
+    aggregateRating: 0,
+    googleRatingCount: 0,
+    nativeRatingCount: 0,
     lat: b.lat,
     lng: b.lng,
     status: "approved",

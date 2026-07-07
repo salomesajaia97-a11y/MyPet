@@ -22,7 +22,7 @@ export async function fetchDBBusinesses(category: string): Promise<BusinessData[
         is24h?: boolean;
         hasEmergency?: boolean;
         aggregateRating?: number;
-        googleRatingCount?: number;
+        nativeRatingCount?: number;
         pricePerNight?: number;
         indoorAllowed?: boolean;
         source?: string;
@@ -63,7 +63,7 @@ export async function fetchDBBusinesses(category: string): Promise<BusinessData[
       is24h: biz.is24h ?? false,
       hasEmergency: biz.hasEmergency ?? false,
       rating: biz.aggregateRating ?? 0,
-      reviewCount: biz.googleRatingCount ?? 0,
+      reviewCount: biz.nativeRatingCount ?? 0,
       pricePerNight: biz.pricePerNight,
       indoorAllowed: biz.indoorAllowed,
       lat: biz.lat,

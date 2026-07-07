@@ -23,11 +23,11 @@ interface Service {
   hasEmergency?: boolean;
   openingHours?: string[];
   aggregateRating?: number;
-  googleRatingCount?: number;
   nativeRatingCount?: number;
   pricePerNight?: number;
   lat?: number;
   lng?: number;
+  userId?: string;
 }
 
 const CATEGORY_META: Record<
@@ -70,8 +70,8 @@ export default async function ServiceDetailPage({
     .filter(Boolean)
     .join(", ");
 
-  const totalRatingCount =
-    (service.googleRatingCount ?? 0) + (service.nativeRatingCount ?? 0);
+  // Real ratings only: show the badge solely when genuine native reviews exist.
+  const nativeCount = service.nativeRatingCount ?? 0;
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
@@ -118,18 +118,15 @@ export default async function ServiceDetailPage({
                   </span>
                 )}
               </div>
-              {typeof service.aggregateRating === "number" &&
-                service.aggregateRating > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <span className="font-semibold">{service.aggregateRating}</span>
-                    {totalRatingCount > 0 ? (
-                      <span className="text-stone-400 text-xs">
-                        ({totalRatingCount} შეფასება)
-                      </span>
-                    ) : null}
-                  </div>
-                )}
+              {nativeCount > 0 && typeof service.aggregateRating === "number" && (
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="font-semibold">{service.aggregateRating}</span>
+                  <span className="text-stone-400 text-xs">
+                    ({nativeCount} შეფასება)
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Tags */}
@@ -217,11 +214,7 @@ export default async function ServiceDetailPage({
         </div>
 
         {/* Reviews & ratings */}
-        <ServiceReviews
-          businessId={service._id}
-          aggregateRating={service.aggregateRating ?? 0}
-          totalCount={totalRatingCount}
-        />
+        <ServiceReviews businessId={service._id} ownerId={service.userId} />
       </div>
     </div>
   );
