@@ -44,7 +44,8 @@ export async function GET(req: NextRequest) {
         location?: string;
         status?: string;
         isResolved?: boolean;
-        isFeatured?: boolean;
+        isVip?: boolean;
+        vipUntil?: Date | null;
         userId?: { toString(): string };
         createdAt: Date;
       }[]
@@ -68,7 +69,8 @@ export async function GET(req: NextRequest) {
     location: (l.location ?? "").split(",")[0].trim(),
     status: l.status ?? "",
     isResolved: !!l.isResolved,
-    isFeatured: !!l.isFeatured,
+    isVip: !!l.isVip,
+    vipUntil: l.vipUntil ? l.vipUntil.toISOString() : null,
     owner: l.userId ? ownerMap.get(l.userId.toString()) ?? "—" : "—",
     createdAt: l.createdAt,
   }));

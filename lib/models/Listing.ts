@@ -32,14 +32,17 @@ const ListingSchema = new Schema(
     lastSeenDate: String,
     reward: Number,
     isResolved: { type: Boolean, default: false },
-    // Admin-controlled: featured listings surface in the homepage "VIP" row.
-    isFeatured: { type: Boolean, default: false },
+    // Paid VIP promotion. New listings default to non-VIP; `isVip` flips only
+    // after payment (future) or an admin grant. `vipUntil` bounds the paid
+    // period — null means no expiry. Homepage VIP row filters via isVipActive().
+    isVip: { type: Boolean, default: false },
+    vipUntil: { type: Date, default: null },
   },
   { timestamps: true }
 );
 
 ListingSchema.index({ type: 1 });
 ListingSchema.index({ species: 1 });
-ListingSchema.index({ isFeatured: 1, createdAt: -1 });
+ListingSchema.index({ isVip: 1, vipUntil: 1, createdAt: -1 });
 
 export default models.Listing || model("Listing", ListingSchema);

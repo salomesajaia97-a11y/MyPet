@@ -15,7 +15,8 @@ interface Row {
   location: string;
   status: string;
   isResolved: boolean;
-  isFeatured: boolean;
+  isVip: boolean;
+  vipUntil: string | null;
   owner: string;
   createdAt: string;
 }
@@ -153,7 +154,7 @@ export default function AdminListingsPage() {
                   <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{TYPE_LABEL[r.type] ?? r.type}</td>
                   <td className="px-3 py-2 text-gray-900">
                     {r.breed}
-                    {r.isFeatured && (
+                    {r.isVip && (
                       <span className="ml-2 inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
                         <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" /> VIP
                       </span>
@@ -178,16 +179,16 @@ export default function AdminListingsPage() {
                         <Pencil size={15} />
                       </Link>
                       <button
-                        onClick={() => patch(r._id, { isFeatured: !r.isFeatured })}
+                        onClick={() => patch(r._id, { isVip: !r.isVip, vipUntil: null })}
                         disabled={busy === r._id}
-                        title={r.isFeatured ? "Unfeature" : "Feature (VIP)"}
+                        title={r.isVip ? "Remove VIP" : "Grant VIP"}
                         className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${
-                          r.isFeatured
+                          r.isVip
                             ? "text-amber-600 bg-amber-50 hover:bg-amber-100"
                             : "text-gray-500 hover:bg-gray-100 hover:text-amber-600"
                         }`}
                       >
-                        <Star size={15} className={r.isFeatured ? "fill-amber-400" : ""} />
+                        <Star size={15} className={r.isVip ? "fill-amber-400" : ""} />
                       </button>
                       {r.type === "lost-found" && (
                         <button

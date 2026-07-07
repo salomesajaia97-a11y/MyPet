@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Star, Sparkles } from "lucide-react";
 
 /**
  * Owner-only action toolbar for a listing. Rendered instead of the buyer
@@ -14,9 +14,11 @@ import { Pencil, Trash2 } from "lucide-react";
 export function OwnerControls({
   id,
   backHref,
+  isVip = false,
 }: {
   id: string;
   backHref: string;
+  isVip?: boolean;
 }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
@@ -39,6 +41,40 @@ export function OwnerControls({
 
   return (
     <div className="border-t pt-5">
+      {/* Promote-to-VIP note. Placeholder for the future paid-promotion flow —
+          the button is intentionally inert until checkout is wired up. Hidden
+          once the listing is already VIP. */}
+      {isVip ? (
+        <div className="mb-5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm font-semibold text-amber-700">
+          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+          თქვენი განცხადება VIP-ია — გამოჩნდება მთავარ გვერდზე
+        </div>
+      ) : (
+        <div className="mb-5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 px-4 py-3.5">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+              <Sparkles className="w-4 h-4" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-[#0F2830]">
+                გაზარდე ხილვადობა — VIP-ად დაწინაურება
+              </p>
+              <p className="mt-0.5 text-xs text-stone-500">
+                VIP განცხადება მთავარ გვერდზე პირველ რიგში ჩანს. მცირე საფასურად.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled
+              title="მალე"
+              className="shrink-0 self-center cursor-not-allowed rounded-lg bg-amber-500/90 px-3 py-2 text-xs font-bold text-white opacity-80"
+            >
+              დაწინაურება
+            </button>
+          </div>
+        </div>
+      )}
+
       <p className="text-sm font-semibold text-[#0F2830] mb-3">
         განცხადების მართვა
       </p>

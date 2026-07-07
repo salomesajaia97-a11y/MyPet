@@ -60,9 +60,11 @@ export async function POST(
     delete body.userId;
     delete body.createdAt;
     delete body.updatedAt;
-    // `isFeatured` (homepage VIP placement) is admin-only; `isResolved`
-    // defaults to false on the model. A new listing must never set either.
-    delete body.isFeatured;
+    // VIP promotion (`isVip`/`vipUntil`) is granted only via payment or an
+    // admin; `isResolved` defaults to false on the model. A new listing must
+    // never set any of these from client input — it is created as non-VIP.
+    delete body.isVip;
+    delete body.vipUntil;
     delete body.isResolved;
 
     await connectDB();

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Phone, User, Calendar, ArrowLeft } from "lucide-react";
+import { MapPin, Phone, User, Calendar, ArrowLeft, Star } from "lucide-react";
 import PhoneLink from "@/components/ui/PhoneLink";
 import type { Listing } from "@/types/marketplace";
 import { auth } from "@/auth";
@@ -10,6 +10,7 @@ import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
 import { ContactSellerBox } from "./ContactSellerBox";
+import { isVipActive } from "@/lib/marketplace/vip";
 
 // Query the DB directly — no self-fetch to our own API (which would need an
 // absolute URL and break outside localhost). JSON round-trip serializes
@@ -52,6 +53,7 @@ export default async function ListingDetailPage({
   const session = await auth();
   const isOwner =
     !!listing.userId && !!session?.user?.id && listing.userId === session.user.id;
+  const vip = isVipActive(listing);
 
   const ageLabel =
     listing.age < 12
@@ -86,8 +88,16 @@ export default async function ListingDetailPage({
                 🐾
               </div>
             )}
-            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-[#0F2830]">
-              {typeLabels[listing.type]}
+            <div className="absolute top-3 left-3 flex items-center gap-2">
+              <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-[#0F2830]">
+                {typeLabels[listing.type]}
+              </span>
+              {vip && (
+                <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-black text-amber-600">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  VIP
+                </span>
+              )}
             </div>
             {listing.type === "buy-sell" && (
               <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
@@ -243,6 +253,7 @@ export default async function ListingDetailPage({
               <OwnerControls
                 id={id}
                 backHref={backHref[listing.type] ?? "/buy-sell"}
+                isVip={vip}
               />
             ) : (
               <div className="border-t pt-5 space-y-3">

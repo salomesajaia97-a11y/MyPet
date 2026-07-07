@@ -15,7 +15,11 @@ export interface BaseListing {
   contactPhone: string;
   createdAt: string;
   userId: string;
-  isFeatured?: boolean;
+  // Paid VIP promotion. `isVip` is set only after payment (or by an admin);
+  // `vipUntil` is the expiry of the paid period (null = no expiry). A listing
+  // surfaces in the homepage VIP row only while both hold — see isVipActive().
+  isVip?: boolean;
+  vipUntil?: string | null;
 }
 
 export interface BuySellListing extends BaseListing {

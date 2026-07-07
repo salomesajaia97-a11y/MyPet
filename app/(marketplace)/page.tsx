@@ -26,6 +26,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { SmartSearch } from "@/components/ai/SmartSearch";
 import { CITIES, SPECIES as SPECIES_OPTIONS } from "@/lib/marketplace/filters";
+import { isVipActive } from "@/lib/marketplace/vip";
 import type { Listing } from "@/types/marketplace";
 
 // Placeholder (index 0) is the default/reset value — `handleSearch` skips it
@@ -167,8 +168,8 @@ export default function HomePage() {
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [deal, setDeal] = useState(DEAL_TYPES[0]);
 
-  // Live listings from the DB. No VIP flag exists in the schema yet, so
-  // "VIP" = newest 4 and "new" = the following 4.
+  // Live listings from the DB. "VIP" = paid-promoted listings with an active
+  // VIP period only; "new" = the newest listings regardless of VIP status.
   const [vipListings, setVipListings] = useState<CardItem[]>([]);
   const [newListings, setNewListings] = useState<CardItem[]>([]);
   const [listingsLoading, setListingsLoading] = useState(true);
@@ -193,13 +194,12 @@ export default function HomePage() {
         all.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
         if (!active) return;
 
-        // VIP row = admin-featured listings first (newest), topped up with the
-        // newest non-featured to fill 4 slots. "New" row = the next newest,
-        // excluding whatever is already shown as VIP.
-        const featured = all.filter((l) => l.isFeatured);
-        const vip = [...featured, ...all.filter((l) => !l.isFeatured)].slice(0, 4);
-        const vipIds = new Set(vip.map((l) => l._id));
-        const rest = all.filter((l) => !vipIds.has(l._id)).slice(0, 4);
+        // VIP row = paid-promoted listings ONLY, with an unexpired VIP period.
+        // No padding with plain listings — an unpaid listing must never wear the
+        // VIP badge. Empty when nothing is VIP. "New" row = all recent listings
+        // regardless of VIP status, newest first (already sorted above).
+        const vip = all.filter(isVipActive).slice(0, 4);
+        const rest = all.slice(0, 8);
 
         setVipListings(vip.map(toCard));
         setNewListings(rest.map(toCard));
