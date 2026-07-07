@@ -6,7 +6,7 @@
 ## Goal
 
 Extend the existing service-business review feature (vet clinics, pet hotels,
-pet shops, pet-friendly places) with three capabilities:
+pet shops, pet-friendly places) with these capabilities:
 
 1. **Photos + helpful votes** on reviews.
 2. **Owner replies** — the user who submitted a business can reply to reviews.
@@ -14,9 +14,23 @@ pet shops, pet-friendly places) with three capabilities:
    recomputed.
 4. **Rating breakdown bar** — a summary showing the average, total count, and a
    per-star (5→1) distribution of native reviews.
+5. **Real ratings only** — a business's displayed rating and count come solely
+   from actual native reviews written on the platform. The fabricated
+   "Google baseline" (hand-typed `rating`/`reviewCount` from
+   `lib/data/businesses.ts`, seeded into `googleRating`/`googleRatingCount`) is
+   removed from both the DB and the display. A business with no native reviews
+   shows "no ratings yet."
 
-Out of scope: seller (buy-sell listing) reviews, a moderation queue, and any
-change to how Google-sourced reviews behave (they stay immutable).
+Out of scope: seller (buy-sell listing) reviews and a moderation queue.
+
+### Why real-only (the trigger for this work)
+
+The rating shown today (e.g. "4.6 (52)") is **not real**. There is no live
+Google integration: `scripts/scrape-osm.mjs` sets rating 0, and
+`scripts/seed-curated.mjs` copies made-up `rating`/`reviewCount` numbers from
+`lib/data/businesses.ts` into `googleRating`/`aggregateRating`/
+`googleRatingCount`. Every star currently displayed is fabricated. This spec
+makes ratings reflect only genuine user reviews.
 
 ## Current state
 
@@ -26,7 +40,7 @@ change to how Google-sourced reviews behave (they stay immutable).
   no replies.
 - `app/api/reviews/route.ts` — `GET ?businessId=` lists; `POST` creates a native
   review (identity from session, rate-limited 5 / 10 min) and recomputes the
-  business's blended `aggregateRating` inline.
+  business's blended `aggregateRating` inline (blend logic removed by this spec).
 - `components/services/ServiceReviews.tsx` — ~225-line client component: fetches,
   lists, and hosts the write form. Rendered by
   `app/services/[category]/[id]/page.tsx`.
@@ -65,11 +79,11 @@ handler) into:
 async function recomputeBusinessRating(businessId): Promise<void>
 ```
 
-It: backfills `googleRating` from the pristine aggregate on the first native
-review (preserving today's behavior), blends
-`(googleRating*googleCount + nativeSum) / (googleCount + nativeCount)`, rounds to
-1 decimal, and saves `aggregateRating` + `nativeRatingCount`. `POST`, `PATCH`,
-and `DELETE` all call it — one source of truth, no divergence.
+It computes the **native-only** average: `nativeSum / nativeCount`, rounded to
+1 decimal (0 when there are no native reviews), and saves `aggregateRating` +
+`nativeRatingCount`. No Google baseline, no blend. `POST`, `PATCH`, and `DELETE`
+all call it — one source of truth, no divergence. The old blend + first-review
+`googleRating` backfill are deleted from the POST handler.
 
 ### 3. API routes
 
@@ -115,21 +129,40 @@ The container is already large and will grow; split into focused units:
   and remove). Used for both **create** and **edit** (pre-filled in edit mode).
 - **`RatingSummary.tsx`** — header block: big average, star row, total count, and
   a 5→1 distribution — one bar per star level showing that level's share of
-  reviews. Counts are derived client-side from the fetched review list, so the bar
-  updates for free after any create/edit/delete. Covers **native** reviews (Google
-  reviews carry only an aggregate + count, no per-star breakdown); when native
-  reviews exist the bar reflects them, otherwise it hides and only the average +
-  count show.
+  reviews. Counts are derived client-side from the fetched native review list, so
+  the bar updates for free after any create/edit/delete. When there are **zero**
+  reviews it renders "no ratings yet" — no number, no stars.
 - **`ServiceReviews.tsx`** — container: fetches the list, renders `RatingSummary`
   + `ReviewForm` (create) + a list of `ReviewCard`, and wires the action callbacks
   (submit, edit, delete, vote, reply). Refetches after mutations.
 
 The detail page (`app/services/[category]/[id]/page.tsx`) passes a new
 `ownerId={service.userId}` prop so the component knows whether the viewer may
-reply. `Service` interface + `getService` projection include `userId`.
+reply. `Service` interface + `getService` projection include `userId`. The
+page's own rating badge (currently `aggregateRating` + `googleRatingCount +
+nativeRatingCount`) is changed to show a rating **only when
+`nativeRatingCount > 0`**, using `nativeRatingCount` as the count — no Google
+fields.
 
 Current user id comes from `useSession().data?.user?.id` on the client for
 author/owner checks (server always re-verifies).
+
+### 5. Remove fabricated ratings
+
+The fake ratings must disappear from both code and existing data:
+
+- **Stop seeding fakes** — `scripts/seed-curated.mjs` sets `googleRating`,
+  `aggregateRating`, `googleRatingCount` to `0` (drop the `b.rating` /
+  `b.reviewCount` copy). `scripts/scrape-osm.mjs` already writes 0.
+- **One-off cleanup script** — `scripts/clear-fake-ratings.mjs`: sets
+  `googleRating = 0`, `googleRatingCount = 0`, and recomputes `aggregateRating` /
+  `nativeRatingCount` from real native reviews for every business (0 when none).
+  Idempotent, safe to re-run.
+- **Category listing** — wherever cards read rating (`app/api/services/route.ts`,
+  `app/api/services/[category]/route.ts`, and the card component), display a
+  rating only when there are real native reviews; otherwise show no stars. The
+  `googleRating` field stays in the schema (unused, always 0) to avoid a
+  breaking migration.
 
 ## Data flow
 
@@ -152,12 +185,11 @@ author/owner checks (server always re-verifies).
 
 ## Testing
 
-- Unit: `recomputeBusinessRating` — Google-only, native-only, blended, first-native
-  backfill, and delete-back-to-zero cases (mongodb-memory-server is already a dev
-  dep).
+- Unit: `recomputeBusinessRating` — no reviews → 0, single review, multiple
+  reviews (average + rounding), and delete-back-to-zero (mongodb-memory-server is
+  already a dev dep).
 - API: author-only edit/delete enforcement, owner-only reply enforcement,
-  self-vote block, vote toggle idempotency, photo count cap, Google-review
-  immutability.
+  self-vote block, vote toggle idempotency, photo count cap.
 - Manual: create with photos → vote → edit → owner reply → delete, verifying the
   aggregate rating and the distribution bar update correctly at each step.
 
