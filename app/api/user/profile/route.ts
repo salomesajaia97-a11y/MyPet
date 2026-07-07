@@ -28,10 +28,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name } = (await req.json()) as { name?: string };
-  const trimmed = name?.trim();
+  let body: { name?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const trimmed = typeof body.name === "string" ? body.name.trim() : "";
   if (!trimmed) {
     return NextResponse.json({ error: "name required" }, { status: 400 });
+  }
+  if (trimmed.length > 100) {
+    return NextResponse.json({ error: "name too long" }, { status: 400 });
   }
 
   await connectDB();
@@ -42,6 +51,10 @@ export async function PATCH(req: NextRequest) {
   )
     .select("name email image balance role")
     .lean();
+
+  if (!user) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ user });
 }

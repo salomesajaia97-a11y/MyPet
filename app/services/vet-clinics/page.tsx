@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { ServicesSearch } from "@/components/services/ServicesSearch";
+import { ServicesFab } from "@/components/services/ServicesFab";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
 export const dynamic = "force-dynamic";
@@ -12,18 +12,13 @@ export default async function VetClinicsPage() {
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <div>
-          <h1 className="text-3xl font-black text-[#0F2830] mb-1">სერვისები</h1>
-          <p className="text-stone-500 text-sm">იპოვეთ საუკეთესო სერვისები თქვენი შინაური ცხოველისთვის</p>
+          <h1 className="text-3xl font-black text-[#0F2830] mb-1">ვეტ კლინიკები</h1>
+          <p className="text-stone-500 text-sm">სანდო ვეტერინარული კლინიკები და ექიმები თქვენს ახლოს</p>
         </div>
         <ServicesTabs active="vet-clinics" />
         <ServicesSearch businesses={businesses} category="vet-clinics" />
       </div>
-      <Link
-        href="/services/new"
-        className="fixed bottom-6 right-6 flex items-center gap-2 bg-[#0E4A5C] text-white rounded-full shadow-lg px-5 py-3 text-sm font-semibold hover:bg-[#0B3D4E] transition-colors z-50"
-      >
-        + ბიზნესის დამატება
-      </Link>
+      <ServicesFab />
     </div>
   );
 }

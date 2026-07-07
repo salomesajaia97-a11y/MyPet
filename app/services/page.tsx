@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { ServicesSearch } from "@/components/services/ServicesSearch";
+import { ServicesFab } from "@/components/services/ServicesFab";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
 export const dynamic = "force-dynamic";
@@ -24,12 +24,7 @@ export default async function ServicesPage() {
         <ServicesTabs active="" />
         <ServicesSearch businesses={businesses} />
       </div>
-      <Link
-        href="/services/new"
-        className="fixed bottom-6 right-6 flex items-center gap-2 bg-[#0E4A5C] text-white rounded-full shadow-lg px-5 py-3 text-sm font-semibold hover:bg-[#0B3D4E] transition-colors z-50"
-      >
-        + ბიზნესის დამატება
-      </Link>
+      <ServicesFab />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { Plus } from "lucide-react";
 import type { Listing } from "@/types/marketplace";
 
@@ -76,8 +77,13 @@ function ListingCard({ listing }: { listing: Listing }) {
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
         <div className="relative aspect-[4/3] bg-stone-100">
           {listing.images[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={listing.images[0]} alt={listing.breed} className="w-full h-full object-cover" />
+            <Image
+              src={listing.images[0]}
+              alt={listing.breed}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
           )}

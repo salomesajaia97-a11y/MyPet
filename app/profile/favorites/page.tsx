@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Heart, MapPin } from "lucide-react";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
@@ -69,8 +70,13 @@ export default async function FavoritesPage() {
                 >
                   <div className="relative aspect-[4/3] bg-stone-100">
                     {l.images?.[0] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={l.images[0]} alt={l.breed} className="w-full h-full object-cover" />
+                      <Image
+                        src={l.images[0]}
+                        alt={l.breed}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
                     )}

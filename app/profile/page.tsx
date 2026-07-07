@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [avatar, setAvatar] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -42,29 +43,36 @@ export default function ProfilePage() {
 
   async function handleAvatarChange(urls: string[]) {
     setAvatar(urls);
-    if (urls[0]) {
-      await fetch("/api/user/avatar", {
+    setError(null);
+    // urls[0] sets a new photo; empty array clears it — both must persist.
+    try {
+      const res = await fetch("/api/user/avatar", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: urls[0] }),
+        body: JSON.stringify({ url: urls[0] ?? "" }),
       });
+      if (!res.ok) throw new Error();
       await update();
+    } catch {
+      setError("ფოტოს განახლება ვერ მოხერხდა. სცადეთ თავიდან.");
     }
   }
 
   async function handleSave() {
     setSaving(true);
     setSaved(false);
+    setError(null);
     try {
       const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      if (res.ok) {
-        await update();
-        setSaved(true);
-      }
+      if (!res.ok) throw new Error();
+      await update();
+      setSaved(true);
+    } catch {
+      setError("შენახვა ვერ მოხერხდა. სცადეთ თავიდან.");
     } finally {
       setSaving(false);
     }
@@ -91,8 +99,9 @@ export default function ProfilePage() {
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">სახელი</label>
+            <label htmlFor="profile-name" className="block text-sm font-semibold text-stone-700 mb-2">სახელი</label>
             <input
+              id="profile-name"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -122,6 +131,10 @@ export default function ProfilePage() {
             </button>
             {saved && <span className="text-sm text-emerald-600">შენახულია ✓</span>}
           </div>
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>
+          )}
         </div>
       </div>
     </div>

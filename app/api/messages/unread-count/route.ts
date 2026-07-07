@@ -25,16 +25,19 @@ export async function GET() {
       }[]
     >();
 
-  let total = 0;
-  for (const t of threads) {
-    const iAmBuyer = t.buyerId.toString() === me;
-    const myReadAt = iAmBuyer ? t.buyerReadAt : t.ownerReadAt;
-    total += await MessageModel.countDocuments({
-      threadId: t._id,
-      senderId: { $ne: me },
-      ...(myReadAt ? { createdAt: { $gt: myReadAt } } : {}),
-    });
-  }
+  // Count each thread's unread messages concurrently rather than serially.
+  const perThread = await Promise.all(
+    threads.map((t) => {
+      const iAmBuyer = t.buyerId.toString() === me;
+      const myReadAt = iAmBuyer ? t.buyerReadAt : t.ownerReadAt;
+      return MessageModel.countDocuments({
+        threadId: t._id,
+        senderId: { $ne: me },
+        ...(myReadAt ? { createdAt: { $gt: myReadAt } } : {}),
+      });
+    })
+  );
+  const total = perThread.reduce((sum, n) => sum + n, 0);
 
   return NextResponse.json({ count: total });
 }

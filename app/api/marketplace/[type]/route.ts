@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
-import { speciesToSlug, locationMatchTerms } from "@/lib/marketplace/filters";
+import { getListings } from "@/lib/marketplace/queries";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rateLimit";
-
-/** Escape user text before using it inside a RegExp. */
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+import { handleMutationError } from "@/lib/api/errors";
 
 const VALID_TYPES = ["buy-sell", "adoption", "mating", "lost-found"];
 
@@ -21,45 +19,11 @@ export async function GET(
   }
 
   try {
-    await connectDB();
     const { searchParams } = new URL(req.url);
-    const filter: Record<string, unknown> = { type };
-
-    // Species arrives in Georgian ("ძაღლი"); the DB stores English slugs.
-    const speciesParam = searchParams.get("species");
-    if (speciesParam) {
-      const slug = speciesToSlug(speciesParam) || speciesParam;
-      filter.species = slug;
-    }
-    if (searchParams.get("pedigree")) filter.pedigree = searchParams.get("pedigree");
-    if (searchParams.get("status")) filter.status = searchParams.get("status");
-    if (searchParams.get("sex")) filter.sex = searchParams.get("sex");
-
-    // Numeric price range (buy-sell / mating). Ignore non-numeric input.
-    const minPrice = Number(searchParams.get("minPrice"));
-    const maxPrice = Number(searchParams.get("maxPrice"));
-    const price: Record<string, number> = {};
-    if (searchParams.get("minPrice") && !Number.isNaN(minPrice)) price.$gte = minPrice;
-    if (searchParams.get("maxPrice") && !Number.isNaN(maxPrice)) price.$lte = maxPrice;
-    if (Object.keys(price).length) filter.price = price;
-
-    // City matches the free-text `location` field — either the city itself or
-    // any of its known districts (case-insensitive substring).
-    const city = searchParams.get("city");
-    if (city) {
-      const pattern = locationMatchTerms(city).map(escapeRegex).join("|");
-      filter.location = { $regex: pattern, $options: "i" };
-    }
-
-    // Free-text query matches the breed.
-    const q = searchParams.get("q");
-    if (q) filter.breed = { $regex: escapeRegex(q), $options: "i" };
-
-    const listings = await ListingModel.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
-
+    const listings = await getListings(
+      type,
+      Object.fromEntries(searchParams.entries())
+    );
     return NextResponse.json({ listings });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -96,6 +60,10 @@ export async function POST(
     delete body.userId;
     delete body.createdAt;
     delete body.updatedAt;
+    // `isFeatured` (homepage VIP placement) is admin-only; `isResolved`
+    // defaults to false on the model. A new listing must never set either.
+    delete body.isFeatured;
+    delete body.isResolved;
 
     await connectDB();
     // Attribute the listing to the logged-in user so it surfaces under
@@ -107,7 +75,6 @@ export async function POST(
     });
     return NextResponse.json({ listing }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleMutationError(err, "marketplace/[type] POST");
   }
 }

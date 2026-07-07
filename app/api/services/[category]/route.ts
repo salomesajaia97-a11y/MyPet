@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
 import { auth } from "@/auth";
+import { handleMutationError } from "@/lib/api/errors";
 
 const VALID_CATEGORIES = ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"];
 
@@ -48,7 +49,7 @@ export async function POST(
   }
 
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -71,13 +72,16 @@ export async function POST(
     delete body.nativeRatingCount;
 
     await connectDB();
-    const userId = (session.user as typeof session.user & { id?: string }).id;
     // User submissions enter the moderation queue as "pending" — they only go
     // public after an admin approves them.
-    const business = await BusinessModel.create({ ...body, category, userId, status: "pending" });
+    const business = await BusinessModel.create({
+      ...body,
+      category,
+      userId: session.user.id,
+      status: "pending",
+    });
     return NextResponse.json({ business }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleMutationError(err, "services/[category] POST");
   }
 }

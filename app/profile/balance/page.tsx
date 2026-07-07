@@ -45,10 +45,11 @@ export default function BalancePage() {
 
           {/* Top-up placeholder — wired up later */}
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-stone-700">
+            <label htmlFor="topup-amount" className="block text-sm font-semibold text-stone-700">
               შევსების თანხა
             </label>
             <input
+              id="topup-amount"
               type="number"
               min="0"
               disabled

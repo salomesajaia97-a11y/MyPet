@@ -80,3 +80,69 @@ export function buildListingQuery(
   }
   return params.toString();
 }
+
+/** Escape user text before using it inside a RegExp. */
+export const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Build the MongoDB filter for a listing query from a plain params object.
+ * Pure (no DB access) so it's shared by the API route and the direct-DB
+ * page helper — the single source of truth for how a search maps to a query.
+ */
+export function buildListingFilter(
+  type: string,
+  params: Record<string, string | string[] | undefined>
+): Record<string, unknown> {
+  const get = (k: string): string | undefined => {
+    const v = params[k];
+    return Array.isArray(v) ? v[0] : v;
+  };
+
+  const filter: Record<string, unknown> = { type };
+
+  // Species arrives in Georgian ("ძაღლი"); the DB stores English slugs.
+  const species = get("species");
+  if (species) filter.species = speciesToSlug(species) || species;
+
+  const pedigree = get("pedigree");
+  if (pedigree) filter.pedigree = pedigree;
+  const status = get("status");
+  if (status) filter.status = status;
+  const sex = get("sex");
+  if (sex) filter.sex = sex;
+
+  // Numeric price range (buy-sell / mating). Ignore non-numeric input.
+  const price: Record<string, number> = {};
+  const minRaw = get("minPrice");
+  const maxRaw = get("maxPrice");
+  const min = Number(minRaw);
+  const max = Number(maxRaw);
+  if (minRaw && !Number.isNaN(min)) price.$gte = min;
+  if (maxRaw && !Number.isNaN(max)) price.$lte = max;
+  if (Object.keys(price).length) filter.price = price;
+
+  // City matches the free-text `location` field — the city itself or any of
+  // its known districts (case-insensitive substring).
+  const city = get("city");
+  if (city) {
+    const pattern = locationMatchTerms(city).map(escapeRegex).join("|");
+    filter.location = { $regex: pattern, $options: "i" };
+  }
+
+  // Free-text query matches breed, description, or location — plus the species
+  // slug when the query is itself a Georgian species label ("ძაღლი" → "dog").
+  const q = get("q");
+  if (q) {
+    const rx = { $regex: escapeRegex(q), $options: "i" };
+    const or: Record<string, unknown>[] = [
+      { breed: rx },
+      { description: rx },
+      { location: rx },
+    ];
+    const slug = speciesToSlug(q);
+    if (slug) or.push({ species: slug });
+    filter.$or = or;
+  }
+
+  return filter;
+}

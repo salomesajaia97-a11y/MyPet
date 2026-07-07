@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isValidObjectId } from "mongoose";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import UploadModel from "@/lib/models/Upload";
@@ -16,12 +17,20 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
-  await connectDB();
-  const upload = await UploadModel.findById(id);
-  if (!upload) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!isValidObjectId(id)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
-  await cloudinary.uploader.destroy(upload.publicId);
-  await upload.deleteOne();
+  try {
+    await connectDB();
+    const upload = await UploadModel.findById(id);
+    if (!upload) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  return NextResponse.json({ success: true });
+    await cloudinary.uploader.destroy(upload.publicId);
+    await upload.deleteOne();
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

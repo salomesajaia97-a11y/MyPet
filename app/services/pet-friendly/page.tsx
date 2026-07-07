@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { ServicesSearch } from "@/components/services/ServicesSearch";
+import { ServicesFab } from "@/components/services/ServicesFab";
 import { MapPanel } from "@/components/services/MapPanel";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 
@@ -38,12 +38,7 @@ export default async function PetFriendlyPage() {
           <MapPanel businesses={businesses} />
         </div>
       </div>
-      <Link
-        href="/services/new"
-        className="fixed bottom-6 right-6 flex items-center gap-2 bg-[#0E4A5C] text-white rounded-full shadow-lg px-5 py-3 text-sm font-semibold hover:bg-[#0B3D4E] transition-colors z-50"
-      >
-        + ბიზნესის დამატება
-      </Link>
+      <ServicesFab />
     </div>
   );
 }

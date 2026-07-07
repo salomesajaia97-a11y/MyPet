@@ -50,8 +50,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[#0F2830]">ელ-ფოსტა</label>
+              <label htmlFor="email" className="text-sm font-medium text-[#0F2830]">ელ-ფოსტა</label>
               <input
+                id="email"
                 name="email"
                 type="email"
                 required
@@ -61,8 +62,9 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[#0F2830]">პაროლი</label>
+              <label htmlFor="password" className="text-sm font-medium text-[#0F2830]">პაროლი</label>
               <input
+                id="password"
                 name="password"
                 type="password"
                 required

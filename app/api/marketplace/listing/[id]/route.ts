@@ -3,6 +3,7 @@ import { isValidObjectId } from "mongoose";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { auth } from "@/auth";
+import { handleMutationError } from "@/lib/api/errors";
 
 export async function GET(
   _req: NextRequest,
@@ -54,6 +55,12 @@ export async function PATCH(
     delete body.userId;
     delete body.createdAt;
     delete body.updatedAt;
+    // `isFeatured` (homepage VIP placement) is admin-only — an owner editing
+    // their own listing must not be able to grant themselves VIP. Admins keep
+    // it (this is the route the admin manager uses to toggle featuring).
+    if (session.user.role !== "admin") {
+      delete body.isFeatured;
+    }
 
     await connectDB();
     const listing = await ListingModel.findById(id);
@@ -70,8 +77,7 @@ export async function PATCH(
     await listing.save();
     return NextResponse.json({ listing: listing.toObject() });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleMutationError(err, "marketplace/listing/[id] PATCH");
   }
 }
 

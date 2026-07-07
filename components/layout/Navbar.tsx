@@ -64,8 +64,15 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, []);
 
   const name = session.user?.name ?? "";
@@ -77,8 +84,11 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
     <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-label="მომხმარებლის მენიუ"
           className={cn(
-            "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all",
+            "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E4A5C]/40",
             open ? "border-stone-300 bg-stone-50" : "border-stone-200 hover:border-stone-300"
           )}
         >
@@ -95,7 +105,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
         </button>
 
         {open && (
-          <div className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-64 z-50 overflow-hidden">
+          <div role="menu" className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-64 z-50 overflow-hidden">
             <div className="flex items-center gap-3 px-4 py-4 border-b border-stone-100">
               <div className="w-10 h-10 rounded-full bg-[#0E4A5C] flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
                 {avatarUrl ? (

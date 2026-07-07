@@ -6,6 +6,7 @@ import BusinessModel from "@/lib/models/Business";
 import { recomputeBusinessRating } from "@/lib/recomputeRating";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { handleMutationError } from "@/lib/api/errors";
 
 const MAX_TEXT = 2000;
 const MAX_PHOTOS = 3;
@@ -83,6 +84,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
     }
 
+    // One native review per user per business — prevents a single user from
+    // inflating (or tanking) a business's aggregate rating with repeats.
+    const already = await ReviewModel.findOne({
+      businessId,
+      userId: session.user.id,
+      source: "native",
+    }).select("_id");
+    if (already) {
+      return NextResponse.json(
+        { error: "თქვენ უკვე დატოვეთ შეფასება ამ ბიზნესზე" },
+        { status: 409 }
+      );
+    }
+
     // Identity comes from the session, never the client — reviews can't be spoofed.
     const review = await ReviewModel.create({
       businessId,
@@ -99,7 +114,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleMutationError(err, "reviews POST");
   }
 }

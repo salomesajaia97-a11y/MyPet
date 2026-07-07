@@ -9,16 +9,42 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { url } = await req.json() as { url: string };
-  if (!url || typeof url !== "string") {
-    return NextResponse.json({ error: "url required" }, { status: 400 });
+  let body: { url?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  await connectDB();
-  await UserModel.findOneAndUpdate(
-    { email: session.user.email },
-    { image: url }
-  );
+  const url = typeof body.url === "string" ? body.url : "";
+  // An empty string clears the avatar. Any non-empty value must be one of our
+  // own Cloudinary uploads — reject anything else so an arbitrary/`javascript:`
+  // URL can't be stored and later rendered.
+  if (url !== "") {
+    let isCloudinary = false;
+    try {
+      const parsed = new URL(url);
+      isCloudinary =
+        parsed.protocol === "https:" && parsed.hostname === "res.cloudinary.com";
+    } catch {
+      isCloudinary = false;
+    }
+    if (!isCloudinary) {
+      return NextResponse.json({ error: "invalid image url" }, { status: 400 });
+    }
+  }
 
-  return NextResponse.json({ ok: true });
+  try {
+    await connectDB();
+    const updated = await UserModel.findOneAndUpdate(
+      { email: session.user.email },
+      { image: url }
+    );
+    if (!updated) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to update avatar" }, { status: 500 });
+  }
 }
