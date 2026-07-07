@@ -12,6 +12,8 @@ pet shops, pet-friendly places) with three capabilities:
 2. **Owner replies** — the user who submitted a business can reply to reviews.
 3. **Edit / delete** of a reviewer's own review, with the business rating
    recomputed.
+4. **Rating breakdown bar** — a summary showing the average, total count, and a
+   per-star (5→1) distribution of native reviews.
 
 Out of scope: seller (buy-sell listing) reviews, a moderation queue, and any
 change to how Google-sourced reviews behave (they stay immutable).
@@ -111,9 +113,16 @@ The container is already large and will grow; split into focused units:
 - **`ReviewForm.tsx`** — star picker, textarea (≥ 10 chars), and photo uploader
   (reuses `/api/upload`, ≤ 3 images, JPEG/PNG/WebP ≤ 5 MB, with per-file preview
   and remove). Used for both **create** and **edit** (pre-filled in edit mode).
-- **`ServiceReviews.tsx`** — container: fetches the list, renders `ReviewForm`
-  (create) + a list of `ReviewCard`, and wires the action callbacks (submit,
-  edit, delete, vote, reply). Refetches after mutations.
+- **`RatingSummary.tsx`** — header block: big average, star row, total count, and
+  a 5→1 distribution — one bar per star level showing that level's share of
+  reviews. Counts are derived client-side from the fetched review list, so the bar
+  updates for free after any create/edit/delete. Covers **native** reviews (Google
+  reviews carry only an aggregate + count, no per-star breakdown); when native
+  reviews exist the bar reflects them, otherwise it hides and only the average +
+  count show.
+- **`ServiceReviews.tsx`** — container: fetches the list, renders `RatingSummary`
+  + `ReviewForm` (create) + a list of `ReviewCard`, and wires the action callbacks
+  (submit, edit, delete, vote, reply). Refetches after mutations.
 
 The detail page (`app/services/[category]/[id]/page.tsx`) passes a new
 `ownerId={service.userId}` prop so the component knows whether the viewer may
@@ -150,7 +159,7 @@ author/owner checks (server always re-verifies).
   self-vote block, vote toggle idempotency, photo count cap, Google-review
   immutability.
 - Manual: create with photos → vote → edit → owner reply → delete, verifying the
-  aggregate rating updates correctly at each step.
+  aggregate rating and the distribution bar update correctly at each step.
 
 ## Non-goals / YAGNI
 
