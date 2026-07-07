@@ -1,20 +1,23 @@
 import Link from "next/link";
 import { PawPrint, Send, MessageCircle, Mail } from "lucide-react";
 
-// Sitemap-style quick links reuse the marketplace routes so the footer
-// stays in step with the sub-nav.
+// Sitemap-style quick links reuse the marketplace + services routes so the
+// footer stays in step with the sub-nav.
 const NAV_LINKS = [
   { label: "ყიდვა-გაყიდვა", href: "/buy-sell" },
   { label: "გაჩუქება", href: "/adoption" },
   { label: "შეჯვარება", href: "/mating" },
   { label: "დაკარგული/ნაპოვნი", href: "/lost-found" },
-  { label: "სერვისები", href: "/services" },
+  { label: "ვეტ-კლინიკები", href: "/services/vet-clinics" },
+  { label: "სასტუმროები", href: "/services/pet-hotels" },
 ];
 
-// Placeholder legal + social targets — wire to real pages/handles later.
+// Core info + legal pages.
 const LEGAL_LINKS = [
-  { label: "წესები და პირობები", href: "#" },
-  { label: "კონფიდენციალურობა", href: "#" },
+  { label: "ჩვენს შესახებ", href: "/about" },
+  { label: "კონტაქტი", href: "/contact" },
+  { label: "წესები და პირობები", href: "/terms" },
+  { label: "კონფიდენციალურობა", href: "/privacy" },
 ];
 
 const SOCIALS = [
@@ -40,7 +43,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-stone-500 mt-3 leading-relaxed">
-              ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში.
+              ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში
             </p>
           </div>
 
