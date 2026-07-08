@@ -6,6 +6,8 @@ import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { getListings, countListings, getPage } from "@/lib/marketplace/queries";
 import { Pager } from "@/components/marketplace/Pager";
 import { formatAge } from "@/lib/marketplace/format";
+import { getServerDictionary } from "@/lib/i18n/server";
+import type { Dictionary } from "@/lib/i18n";
 import type { MatingListing } from "@/types/marketplace";
 
 export default async function MatingPage({
@@ -14,6 +16,7 @@ export default async function MatingPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
+  const { t } = await getServerDictionary();
   const [listings, total] = await Promise.all([
     getListings("mating", sp) as Promise<MatingListing[]>,
     countListings("mating", sp),
@@ -22,7 +25,7 @@ export default async function MatingPage({
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
-        <h1 className="sr-only">შეჯვარება</h1>
+        <h1 className="sr-only">{t.marketplace.titleMating}</h1>
         <Suspense fallback={null}>
           <MarketplaceTabs active="mating" />
           <MarketplaceSearch filters type="mating" />
@@ -31,13 +34,13 @@ export default async function MatingPage({
         {listings.length === 0 ? (
           <div className="py-20 text-center text-stone-400">
             <div className="text-5xl mb-4">🐾</div>
-            <p className="font-medium">განცხადება არ მოიძებნა</p>
+            <p className="font-medium">{t.marketplace.noListings}</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {listings.map((listing) => (
-                <ListingCard key={listing._id} listing={listing} />
+                <ListingCard key={listing._id} listing={listing} t={t} />
               ))}
             </div>
             <Pager basePath="/mating" params={sp} page={getPage(sp)} total={total} />
@@ -49,7 +52,7 @@ export default async function MatingPage({
   );
 }
 
-function ListingCard({ listing }: { listing: MatingListing }) {
+function ListingCard({ listing, t }: { listing: MatingListing; t: Dictionary }) {
   return (
     <Link href={`/listings/${listing._id}`} className="block">
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
@@ -66,7 +69,7 @@ function ListingCard({ listing }: { listing: MatingListing }) {
             <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
           )}
           <div className="absolute top-3 left-3 bg-purple-700 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-            შეჯვარება
+            {t.common.categories.mating}
           </div>
           {listing.price !== null && (
             <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">
@@ -78,7 +81,7 @@ function ListingCard({ listing }: { listing: MatingListing }) {
           <div>
             <p className="font-bold text-[#0F2830] text-base">{listing.breed}</p>
             <p className="text-stone-500 text-sm">
-              {listing.sex === "male" ? "მამრი" : "მდედრი"} • {formatAge(listing.age)} • {listing.weight}კგ
+              {listing.sex === "male" ? t.marketplace.sexMale : t.marketplace.sexFemale} • {formatAge(listing.age, t.marketplace.units)} • {listing.weight}{t.marketplace.units.kg}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -89,7 +92,7 @@ function ListingCard({ listing }: { listing: MatingListing }) {
             )}
             {listing.price === null && (
               <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
-                უფასო
+                {t.marketplace.free}
               </span>
             )}
           </div>

@@ -6,21 +6,9 @@ import UploadModel from "@/lib/models/Upload";
 import BusinessModel from "@/lib/models/Business";
 import ListingModel from "@/lib/models/Listing";
 import { BarChart } from "@/components/admin/BarChart";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-
-const LISTING_TYPE_LABEL: Record<string, string> = {
-  "buy-sell": "ყიდვა-გაყიდვა",
-  adoption: "გაჩუქება",
-  mating: "შეჯვარება",
-  "lost-found": "დაკარგული/ნაპოვნი",
-};
-const CATEGORY_LABEL: Record<string, string> = {
-  "vet-clinics": "ვეტ-კლინიკები",
-  "pet-hotels": "სასტუმროები",
-  "pet-shops": "მაღაზიები",
-  "pet-friendly": "Pet-Friendly",
-};
 
 function group(rows: { _id: string; count: number }[], labels: Record<string, string>) {
   return Object.keys(labels).map((key) => ({
@@ -30,7 +18,21 @@ function group(rows: { _id: string; count: number }[], labels: Record<string, st
 }
 
 export default async function AdminDashboard() {
+  const { t } = await getServerDictionary();
   await connectDB();
+
+  const LISTING_TYPE_LABEL: Record<string, string> = {
+    "buy-sell": t.admin.listingTypes.buySell,
+    adoption: t.admin.listingTypes.adoption,
+    mating: t.admin.listingTypes.mating,
+    "lost-found": t.admin.listingTypes.lostFound,
+  };
+  const CATEGORY_LABEL: Record<string, string> = {
+    "vet-clinics": t.admin.dashboardCategories.vetClinics,
+    "pet-hotels": t.admin.dashboardCategories.petHotels,
+    "pet-shops": t.admin.dashboardCategories.petShops,
+    "pet-friendly": t.admin.dashboardCategories.petFriendly,
+  };
 
   const [
     userCount,
@@ -62,16 +64,16 @@ export default async function AdminDashboard() {
   ]);
 
   const stats = [
-    { icon: ListChecks, label: "Listings", value: listingCount, href: "/admin/listings" },
-    { icon: Store, label: "Businesses", value: approvedBiz, href: "/admin/businesses" },
-    { icon: Clock, label: "Pending", value: pendingBiz, href: "/admin/businesses", highlight: pendingBiz > 0 },
-    { icon: Users, label: "Users", value: userCount, href: "/admin/users" },
-    { icon: ImageIcon, label: "Uploads", value: uploadCount, href: "/admin/uploads" },
+    { icon: ListChecks, label: t.admin.dashboard.stats.listings, value: listingCount, href: "/admin/listings" },
+    { icon: Store, label: t.admin.dashboard.stats.businesses, value: approvedBiz, href: "/admin/businesses" },
+    { icon: Clock, label: t.admin.dashboard.stats.pending, value: pendingBiz, href: "/admin/businesses", highlight: pendingBiz > 0 },
+    { icon: Users, label: t.admin.dashboard.stats.users, value: userCount, href: "/admin/users" },
+    { icon: ImageIcon, label: t.admin.dashboard.stats.uploads, value: uploadCount, href: "/admin/uploads" },
   ];
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t.admin.dashboard.title}</h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -94,16 +96,16 @@ export default async function AdminDashboard() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <BarChart title="Listings by type" data={group(listingsByType, LISTING_TYPE_LABEL)} />
-        <BarChart title="Businesses by category" data={group(bizByCategory, CATEGORY_LABEL)} />
+        <BarChart title={t.admin.dashboard.chartByType} totalLabel={t.admin.chart.total} data={group(listingsByType, LISTING_TYPE_LABEL)} />
+        <BarChart title={t.admin.dashboard.chartByCategory} totalLabel={t.admin.chart.total} data={group(bizByCategory, CATEGORY_LABEL)} />
       </div>
 
       {/* Recent activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">Recent listings</h2>
-            <Link href="/admin/listings" className="text-xs text-[#0E4A5C] hover:underline">ყველა →</Link>
+            <h2 className="text-sm font-semibold text-gray-700">{t.admin.dashboard.recentListings}</h2>
+            <Link href="/admin/listings" className="text-xs text-[#0E4A5C] hover:underline">{t.admin.dashboard.viewAll}</Link>
           </div>
           {recentListings.length === 0 ? (
             <p className="text-sm text-gray-400">—</p>
@@ -123,11 +125,11 @@ export default async function AdminDashboard() {
 
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">Pending businesses</h2>
-            <Link href="/admin/businesses" className="text-xs text-[#0E4A5C] hover:underline">მოდერაცია →</Link>
+            <h2 className="text-sm font-semibold text-gray-700">{t.admin.dashboard.pendingBusinesses}</h2>
+            <Link href="/admin/businesses" className="text-xs text-[#0E4A5C] hover:underline">{t.admin.dashboard.moderate}</Link>
           </div>
           {recentPending.length === 0 ? (
-            <p className="text-sm text-gray-400">No pending submissions.</p>
+            <p className="text-sm text-gray-400">{t.admin.dashboard.noPending}</p>
           ) : (
             <ul className="divide-y divide-gray-100">
               {recentPending.map((b) => (

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerLocale } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
 
 interface MongooseValidationError {
   name: string;
@@ -13,7 +15,13 @@ interface MongooseValidationError {
  * - duplicate key (E11000) → 409
  * - anything else → logged server-side, generic 500
  */
-export function handleMutationError(err: unknown, context: string) {
+export async function handleMutationError(
+  err: unknown,
+  context: string,
+  validationFallback?: string
+) {
+  const fallback =
+    validationFallback ?? getDictionary(await getServerLocale()).misc.validationFailed;
   if (err && typeof err === "object") {
     const e = err as MongooseValidationError & { code?: number };
     if (e.name === "ValidationError") {
@@ -21,7 +29,7 @@ export function handleMutationError(err: unknown, context: string) {
         Object.values(e.errors ?? {})
           .map((f) => f?.message)
           .filter(Boolean)
-          .join(", ") || "ველების ვალიდაცია ვერ მოხერხდა";
+          .join(", ") || fallback;
       return NextResponse.json({ error: message }, { status: 400 });
     }
     if (e.code === 11000) {

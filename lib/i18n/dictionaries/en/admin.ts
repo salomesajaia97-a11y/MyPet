@@ -1,0 +1,97 @@
+import type { admin as ka } from "../ka/admin";
+
+export const admin: typeof ka = {
+  dashboard: {
+    title: "Dashboard",
+    stats: {
+      listings: "Listings",
+      businesses: "Businesses",
+      pending: "Pending",
+      users: "Users",
+      uploads: "Uploads",
+    },
+    chartByType: "Listings by type",
+    chartByCategory: "Businesses by category",
+    recentListings: "Recent listings",
+    pendingBusinesses: "Pending businesses",
+    viewAll: "View all →",
+    moderate: "Moderate →",
+    noPending: "No pending submissions.",
+  },
+  listingTypes: {
+    buySell: "Buy & Sell",
+    adoption: "Adoption",
+    mating: "Mating",
+    lostFound: "Lost / Found",
+  },
+  dashboardCategories: {
+    vetClinics: "Vet Clinics",
+    petHotels: "Pet Hotels",
+    petShops: "Pet Shops",
+    petFriendly: "Pet-Friendly",
+  },
+  businesses: {
+    title: "Pending Businesses",
+    subtitle:
+      "User-submitted services awaiting review. Approve to publish, reject to delete.",
+    loading: "Loading…",
+    noPending: "No pending submissions.",
+    approve: "Approve",
+    reject: "Reject",
+    rejectConfirm: "Reject and delete this submission? This cannot be undone.",
+    categories: {
+      vetClinic: "Vet Clinic",
+      petHotel: "Pet Hotel",
+      petShop: "Pet Shop",
+      petFriendly: "Pet-Friendly",
+    },
+  },
+  listings: {
+    title: "Listings",
+    subtitle: "All listings. Edit, delete, mark VIP, mark resolved.",
+    allTypes: "All types",
+    searchPlaceholder: "Search by breed…",
+    search: "Search",
+    deleteConfirm: "Delete this listing? This cannot be undone.",
+    resolved: "Resolved",
+    loading: "Loading…",
+    empty: "No listings.",
+    cols: {
+      photo: "Photo",
+      type: "Type",
+      breed: "Breed",
+      price: "Price",
+      owner: "Owner",
+      actions: "Actions",
+    },
+    actions: {
+      edit: "Edit",
+      grantVip: "Grant VIP",
+      removeVip: "Remove VIP",
+      markResolved: "Mark resolved",
+      markUnresolved: "Mark unresolved",
+      delete: "Delete",
+    },
+  },
+  users: {
+    title: "Users",
+    loading: "Loading…",
+    deleteConfirm: "Delete this user? This cannot be undone.",
+    empty: "No users found.",
+    cols: {
+      name: "Name",
+      email: "Email",
+      role: "Role",
+      joined: "Joined",
+    },
+  },
+  uploads: {
+    title: "Uploads",
+    loading: "Loading…",
+    empty: "No uploads yet.",
+    deleteConfirm: "Delete this image from Cloudinary? This cannot be undone.",
+  },
+  chart: {
+    total: "Total",
+  },
+};

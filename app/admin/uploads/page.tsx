@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Trash2, ExternalLink } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Upload {
   _id: string;
@@ -13,6 +14,7 @@ interface Upload {
 }
 
 export default function AdminUploadsPage() {
+  const { t } = useT();
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +27,7 @@ export default function AdminUploadsPage() {
   }, []);
 
   async function deleteUpload(id: string) {
-    if (!confirm("Delete this image from Cloudinary? This cannot be undone.")) return;
+    if (!confirm(t.admin.uploads.deleteConfirm)) return;
     const res = await fetch(`/api/admin/uploads/${id}`, { method: "DELETE" });
     if (res.ok) {
       setUploads((prev) => prev.filter((u) => u._id !== id));
@@ -34,11 +36,11 @@ export default function AdminUploadsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Uploads</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.admin.uploads.title}</h1>
       {loading ? (
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-gray-500">{t.admin.uploads.loading}</p>
       ) : uploads.length === 0 ? (
-        <p className="text-gray-400">No uploads yet.</p>
+        <p className="text-gray-400">{t.admin.uploads.empty}</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {uploads.map((u) => (

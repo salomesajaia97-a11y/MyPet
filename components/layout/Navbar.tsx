@@ -6,20 +6,27 @@ import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet,
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 import PhoneLink from "@/components/ui/PhoneLink";
+import { useT } from "@/components/i18n/LanguageProvider";
+import { LanguageToggle } from "@/components/i18n/LanguageToggle";
 
-const SUB_NAV = [
-  { href: "/buy-sell", label: "ყიდვა-გაყიდვა" },
-  { href: "/adoption", label: "გაჩუქება" },
-  { href: "/mating", label: "შეჯვარება" },
-  { href: "/lost-found", label: "დაკარგული/ნაპოვნი" },
-  { href: "/services/vet-clinics", label: "ვეტ-კლინიკები" },
-  { href: "/services/pet-hotels", label: "სასტუმროები" },
-  { href: "/services/pet-shops", label: "მაღაზიები" },
-  { href: "/services/pet-friendly", label: "Pet-Friendly" },
-];
+function useSubNav() {
+  const { t } = useT();
+  const c = t.common.categories;
+  return [
+    { href: "/buy-sell", label: c.buySell },
+    { href: "/adoption", label: c.adoption },
+    { href: "/mating", label: c.mating },
+    { href: "/lost-found", label: c.lostFound },
+    { href: "/services/vet-clinics", label: c.vetClinics },
+    { href: "/services/pet-hotels", label: c.petHotels },
+    { href: "/services/pet-shops", label: c.petShops },
+    { href: "/services/pet-friendly", label: c.petFriendly },
+  ];
+}
 
 function MessagesLink() {
   const { status } = useSession();
+  const { t } = useT();
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -43,7 +50,7 @@ function MessagesLink() {
   return (
     <Link
       href="/profile/messages"
-      aria-label="შეტყობინებები"
+      aria-label={t.nav.messages}
       className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
     >
       <MessageCircle className="w-[18px] h-[18px]" />
@@ -57,6 +64,7 @@ function MessagesLink() {
 }
 
 function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSession>["data"]> }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -86,7 +94,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={open}
-          aria-label="მომხმარებლის მენიუ"
+          aria-label={t.nav.userMenu}
           className={cn(
             "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E4A5C]/40",
             open ? "border-stone-300 bg-stone-50" : "border-stone-200 hover:border-stone-300"
@@ -126,12 +134,12 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
                   className="flex items-center gap-3 px-4 py-3 text-sm text-emerald-700 hover:bg-emerald-50 transition-colors font-medium"
                 >
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                  Admin Panel
+                  {t.nav.adminPanel}
                 </Link>
               )}
               {[
-                { icon: List, label: "ჩემი განცხადებები", href: "/profile/listings" },
-                { icon: Wallet, label: "ბალანსის შევსება", href: "/profile/balance" },
+                { icon: List, label: t.nav.myListings, href: "/profile/listings" },
+                { icon: Wallet, label: t.nav.topUpBalance, href: "/profile/balance" },
               ].map((item) => (
                 <Link
                   key={item.label}
@@ -150,7 +158,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
                 className="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
               >
                 <UserRound className="w-4 h-4 text-stone-400 shrink-0" />
-                პროფილი
+                {t.nav.profile}
               </Link>
 
               <div className="h-px bg-stone-100 mx-4 my-1" />
@@ -160,7 +168,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
               >
                 <LogOut className="w-4 h-4 text-stone-400 shrink-0" />
-                გასვლა
+                {t.nav.signOut}
               </button>
             </div>
           </div>
@@ -172,6 +180,8 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
 export function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { t } = useT();
+  const subNav = useSubNav();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Collapse the mobile menu whenever navigation lands on a new route.
@@ -205,8 +215,11 @@ export function Navbar() {
             className="flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-3 sm:px-4 py-2 text-sm font-semibold"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">დამატება</span>
+            <span className="hidden sm:inline">{t.nav.addListing}</span>
           </Link>
+
+          {/* Language switch */}
+          <LanguageToggle />
 
           {/* Messages */}
           <MessagesLink />
@@ -214,7 +227,7 @@ export function Navbar() {
           {/* Favorites */}
           <Link
             href="/profile/favorites"
-            aria-label="ფავორიტები"
+            aria-label={t.nav.favorites}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
           >
             <Heart className="w-[18px] h-[18px]" />
@@ -231,7 +244,7 @@ export function Navbar() {
               className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-[#0E4A5C] transition-colors px-3 py-2"
             >
               <LogIn className="w-4 h-4" />
-              <span>შესვლა</span>
+              <span>{t.nav.signIn}</span>
             </Link>
           )}
         </div>
@@ -242,7 +255,7 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           {/* Desktop: full inline sub-nav */}
           <nav className="hidden lg:flex items-center">
-            {SUB_NAV.map((item) => (
+            {subNav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -263,11 +276,11 @@ export function Navbar() {
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
             aria-expanded={mobileOpen}
-            aria-label="მენიუ"
+            aria-label={t.nav.menu}
             className="lg:hidden flex items-center gap-2 py-2.5 text-[13px] font-semibold text-stone-600 hover:text-[#0E4A5C] transition-colors"
           >
             {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            მენიუ
+            {t.nav.menu}
           </button>
 
           <PhoneLink
@@ -283,7 +296,7 @@ export function Navbar() {
         {mobileOpen && (
           <div className="lg:hidden border-t border-stone-100 bg-white shadow-sm">
             <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col">
-              {SUB_NAV.map((item) => (
+              {subNav.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Star, Pencil, Trash2, Check } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Row {
   _id: string;
@@ -21,16 +22,17 @@ interface Row {
   createdAt: string;
 }
 
-const TYPES = [
-  { value: "", label: "ყველა ტიპი" },
-  { value: "buy-sell", label: "ყიდვა-გაყიდვა" },
-  { value: "adoption", label: "გაჩუქება" },
-  { value: "mating", label: "შეჯვარება" },
-  { value: "lost-found", label: "დაკარგული/ნაპოვნი" },
-];
-const TYPE_LABEL: Record<string, string> = Object.fromEntries(TYPES.map((t) => [t.value, t.label]));
-
 export default function AdminListingsPage() {
+  const { t } = useT();
+  const TYPES = [
+    { value: "", label: t.admin.listings.allTypes },
+    { value: "buy-sell", label: t.admin.listingTypes.buySell },
+    { value: "adoption", label: t.admin.listingTypes.adoption },
+    { value: "mating", label: t.admin.listingTypes.mating },
+    { value: "lost-found", label: t.admin.listingTypes.lostFound },
+  ];
+  const TYPE_LABEL: Record<string, string> = Object.fromEntries(TYPES.map((x) => [x.value, x.label]));
+
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState("");
@@ -80,7 +82,7 @@ export default function AdminListingsPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("წავშალო ეს განცხადება? შეუქცევადია.")) return;
+    if (!confirm(t.admin.listings.deleteConfirm)) return;
     setBusy(id);
     const res = await fetch(`/api/marketplace/listing/${id}`, { method: "DELETE" });
     if (res.ok) setRows((prev) => prev.filter((r) => r._id !== id));
@@ -89,9 +91,9 @@ export default function AdminListingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Listings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">{t.admin.listings.title}</h1>
       <p className="text-sm text-gray-500 mb-5">
-        ყველა განცხადება. რედაქტირება, წაშლა, VIP-ად მონიშვნა, მოგვარებულად მონიშვნა.
+        {t.admin.listings.subtitle}
       </p>
 
       <form
@@ -113,29 +115,29 @@ export default function AdminListingsPage() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="ძებნა ჯიშით…"
+          placeholder={t.admin.listings.searchPlaceholder}
           className="flex-1 min-w-[160px] border border-gray-200 rounded-lg px-3 py-2 text-sm"
         />
         <button className="bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-          ძებნა
+          {t.admin.listings.search}
         </button>
       </form>
 
       {loading ? (
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-gray-500">{t.admin.listings.loading}</p>
       ) : rows.length === 0 ? (
-        <p className="text-gray-400">No listings.</p>
+        <p className="text-gray-400">{t.admin.listings.empty}</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 text-left">
               <tr>
-                <th className="px-3 py-2 font-medium">Photo</th>
-                <th className="px-3 py-2 font-medium">Type</th>
-                <th className="px-3 py-2 font-medium">Breed</th>
-                <th className="px-3 py-2 font-medium">Price</th>
-                <th className="px-3 py-2 font-medium">Owner</th>
-                <th className="px-3 py-2 font-medium">Actions</th>
+                <th className="px-3 py-2 font-medium">{t.admin.listings.cols.photo}</th>
+                <th className="px-3 py-2 font-medium">{t.admin.listings.cols.type}</th>
+                <th className="px-3 py-2 font-medium">{t.admin.listings.cols.breed}</th>
+                <th className="px-3 py-2 font-medium">{t.admin.listings.cols.price}</th>
+                <th className="px-3 py-2 font-medium">{t.admin.listings.cols.owner}</th>
+                <th className="px-3 py-2 font-medium">{t.admin.listings.cols.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -161,7 +163,7 @@ export default function AdminListingsPage() {
                     )}
                     {r.type === "lost-found" && r.isResolved && (
                       <span className="ml-2 text-[10px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                        მოგვარებული
+                        {t.admin.listings.resolved}
                       </span>
                     )}
                   </td>
@@ -174,14 +176,14 @@ export default function AdminListingsPage() {
                       <Link
                         href={`/listings/${r._id}/edit`}
                         className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                        title="Edit"
+                        title={t.admin.listings.actions.edit}
                       >
                         <Pencil size={15} />
                       </Link>
                       <button
                         onClick={() => patch(r._id, { isVip: !r.isVip, vipUntil: null })}
                         disabled={busy === r._id}
-                        title={r.isVip ? "Remove VIP" : "Grant VIP"}
+                        title={r.isVip ? t.admin.listings.actions.removeVip : t.admin.listings.actions.grantVip}
                         className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${
                           r.isVip
                             ? "text-amber-600 bg-amber-50 hover:bg-amber-100"
@@ -194,7 +196,7 @@ export default function AdminListingsPage() {
                         <button
                           onClick={() => patch(r._id, { isResolved: !r.isResolved })}
                           disabled={busy === r._id}
-                          title={r.isResolved ? "Mark unresolved" : "Mark resolved"}
+                          title={r.isResolved ? t.admin.listings.actions.markUnresolved : t.admin.listings.actions.markResolved}
                           className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${
                             r.isResolved
                               ? "text-emerald-600 bg-emerald-50 hover:bg-emerald-100"
@@ -207,7 +209,7 @@ export default function AdminListingsPage() {
                       <button
                         onClick={() => remove(r._id)}
                         disabled={busy === r._id}
-                        title="Delete"
+                        title={t.admin.listings.actions.delete}
                         className="p-1.5 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
                       >
                         <Trash2 size={15} />

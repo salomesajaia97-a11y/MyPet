@@ -7,6 +7,8 @@ import MessageModel from "@/lib/models/Message";
 import ListingModel from "@/lib/models/Listing";
 import UserModel from "@/lib/models/User";
 import { rateLimit } from "@/lib/rateLimit";
+import { getServerLocale } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
 
 function cleanBody(input: unknown): string | null {
   if (typeof input !== "string") return null;
@@ -40,6 +42,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Message must be 1–2000 characters" }, { status: 400 });
   }
 
+  const t = getDictionary(await getServerLocale());
+
   await connectDB();
   const listing = await ListingModel.findById(listingId).select("userId breed type").lean<{
     _id: unknown;
@@ -66,7 +70,7 @@ export async function POST(req: NextRequest) {
         listingId,
         buyerId: me,
         ownerId,
-        listingTitle: listing.breed ?? "განცხადება",
+        listingTitle: listing.breed ?? t.misc.listing,
       },
       $set: { lastMessageAt: now, lastMessageBody: body, buyerReadAt: now },
     },
@@ -85,6 +89,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const me = session.user.id;
+
+  const t = getDictionary(await getServerLocale());
 
   await connectDB();
   const threads = await ThreadModel.find({ $or: [{ buyerId: me }, { ownerId: me }] })
@@ -111,6 +117,7 @@ export async function GET() {
     .select("name email image")
     .lean<{ _id: { toString(): string }; name?: string; email?: string; image?: string }[]>();
   const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+  const dict = getDictionary(await getServerLocale());
 
   const items = await Promise.all(
     threads.map(async (t) => {
@@ -129,7 +136,7 @@ export async function GET() {
         listingTitle: t.listingTitle,
         lastMessageBody: t.lastMessageBody,
         lastMessageAt: t.lastMessageAt,
-        otherName: other?.name || other?.email?.split("@")[0] || "მომხმარებელი",
+        otherName: other?.name || other?.email?.split("@")[0] || dict.misc.user,
         otherImage: other?.image ?? null,
         unread,
       };

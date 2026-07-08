@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
-
-const EXAMPLES = [
-  "იაფი ვაქცინირებული ლეკვი თბილისში",
-  "უფასო კატა გასაჩუქებელი",
-  "ლაბრადორი შესაჯვარებლად",
-];
+import { useT } from "@/components/i18n/LanguageProvider";
 
 /**
  * Natural-language search. Sends the query to /api/ai/search, which uses Claude
@@ -16,9 +11,16 @@ const EXAMPLES = [
  */
 export function SmartSearch() {
   const router = useRouter();
+  const { t } = useT();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const EXAMPLES = [
+    t.misc.searchExample1,
+    t.misc.searchExample2,
+    t.misc.searchExample3,
+  ];
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,16 +36,16 @@ export function SmartSearch() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 503) {
-        setError("AI ძებნა ჯერ არ არის გააქტიურებული.");
+        setError(t.misc.searchDisabled);
         return;
       }
       if (!res.ok || !data.redirect) {
-        setError(data.error ?? "ვერ მოხერხდა. სცადეთ სხვა ფორმულირება.");
+        setError(data.error ?? t.misc.searchRetryReformulate);
         return;
       }
       router.push(data.redirect);
     } catch {
-      setError("ვერ მოხერხდა. სცადეთ თავიდან.");
+      setError(t.misc.searchRetry);
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export function SmartSearch() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="აღწერე ბუნებრივ ენაზე — AI იპოვის"
+          placeholder={t.misc.searchPlaceholder}
           maxLength={300}
           className="flex-1 min-w-0 px-2 py-3 text-sm text-[#0F2830] placeholder:text-stone-400 focus:outline-none"
         />
@@ -72,7 +74,7 @@ export function SmartSearch() {
           className="bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-5 font-semibold text-sm flex items-center gap-2 transition-colors disabled:opacity-60 whitespace-nowrap"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-          {loading ? "ვეძებ…" : "AI ძებნა"}
+          {loading ? t.misc.searching : t.misc.aiSearch}
         </button>
       </form>
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PAGE_SIZE } from "@/lib/marketplace/queries";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 type Params = Record<string, string | string[] | undefined>;
 

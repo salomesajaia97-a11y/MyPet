@@ -7,20 +7,13 @@ import UserModel from "@/lib/models/User";
 import "@/lib/models/Listing";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import type { Listing } from "@/types/marketplace";
+import { getServerDictionary } from "@/lib/i18n/server";
+import type { Dictionary } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-const SPECIES_KA: Record<string, string> = {
-  dog: "ძაღლი",
-  cat: "კატა",
-  bird: "ფრინველი",
-  rabbit: "კურდღელი",
-  reptile: "რეპტილია",
-  other: "სხვა",
-};
-
-function priceLabel(l: Listing): string {
-  if (l.type === "adoption") return "ჩუქდება";
+function priceLabel(l: Listing, t: Dictionary): string {
+  if (l.type === "adoption") return t.profile.favorites.priceGift;
   if (l.type === "lost-found") return "";
   const price = "price" in l && typeof l.price === "number" ? l.price : null;
   if (price === null) return "";
@@ -29,6 +22,7 @@ function priceLabel(l: Listing): string {
 }
 
 export default async function FavoritesPage() {
+  const { t } = await getServerDictionary();
   const session = await auth();
   // /profile/* is gated by proxy, so a session is guaranteed here.
   await connectDB();
@@ -46,18 +40,18 @@ export default async function FavoritesPage() {
       <div className="max-w-5xl mx-auto px-4">
         <h1 className="text-2xl font-bold text-[#0F2830] mb-6 flex items-center gap-2">
           <Heart className="w-6 h-6 fill-rose-500 text-rose-500" />
-          ფავორიტები
+          {t.profile.favorites.title}
         </h1>
 
         {listings.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm p-12 text-center space-y-3">
             <div className="text-4xl">🤍</div>
-            <p className="text-stone-500 text-sm">ჯერ არაფერი დაგიმატებია ფავორიტებში.</p>
+            <p className="text-stone-500 text-sm">{t.profile.favorites.empty}</p>
             <Link
               href="/buy-sell"
               className="inline-block bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
             >
-              განცხადებების დათვალიერება
+              {t.profile.favorites.browse}
             </Link>
           </div>
         ) : (
@@ -82,13 +76,13 @@ export default async function FavoritesPage() {
                     )}
                   </div>
                   <div className="p-4 space-y-1">
-                    {priceLabel(l) && (
-                      <p className="font-black text-[#0F2830] text-base">{priceLabel(l)}</p>
+                    {priceLabel(l, t) && (
+                      <p className="font-black text-[#0F2830] text-base">{priceLabel(l, t)}</p>
                     )}
                     <p className="text-sm text-stone-600 font-medium">{l.breed}</p>
                     <p className="text-xs text-stone-400 flex items-center gap-1">
                       <MapPin className="w-3 h-3 shrink-0" />
-                      {(l.location ?? "").split(",")[0].trim()} · {SPECIES_KA[l.species] ?? l.species}
+                      {(l.location ?? "").split(",")[0].trim()} · {t.profile.favorites.species[l.species as keyof typeof t.profile.favorites.species] ?? l.species}
                     </p>
                   </div>
                 </Link>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Pencil, Trash2, Star, Sparkles } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 /**
  * Owner-only action toolbar for a listing. Rendered instead of the buyer
@@ -20,11 +21,12 @@ export function OwnerControls({
   backHref: string;
   isVip?: boolean;
 }) {
+  const { t } = useT();
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("დარწმუნებული ხართ, რომ გსურთ განცხადების წაშლა?")) return;
+    if (!confirm(t.listings.owner.deleteConfirm)) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/marketplace/listing/${id}`, {
@@ -35,7 +37,7 @@ export function OwnerControls({
       router.refresh();
     } catch {
       setDeleting(false);
-      alert("წაშლა ვერ მოხერხდა. სცადეთ თავიდან.");
+      alert(t.listings.owner.deleteError);
     }
   };
 
@@ -47,7 +49,7 @@ export function OwnerControls({
       {isVip ? (
         <div className="mb-5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm font-semibold text-amber-700">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          თქვენი განცხადება VIP-ია — გამოჩნდება მთავარ გვერდზე
+          {t.listings.owner.vipActive}
         </div>
       ) : (
         <div className="mb-5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 px-4 py-3.5">
@@ -57,26 +59,26 @@ export function OwnerControls({
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-[#0F2830]">
-                გაზარდე ხილვადობა — VIP-ად დაწინაურება
+                {t.listings.owner.promoteTitle}
               </p>
               <p className="mt-0.5 text-xs text-stone-500">
-                VIP განცხადება მთავარ გვერდზე პირველ რიგში ჩანს. მცირე საფასურად.
+                {t.listings.owner.promoteDesc}
               </p>
             </div>
             <button
               type="button"
               disabled
-              title="მალე"
+              title={t.listings.owner.soon}
               className="shrink-0 self-center cursor-not-allowed rounded-lg bg-amber-500/90 px-3 py-2 text-xs font-bold text-white opacity-80"
             >
-              დაწინაურება
+              {t.listings.owner.promote}
             </button>
           </div>
         </div>
       )}
 
       <p className="text-sm font-semibold text-[#0F2830] mb-3">
-        განცხადების მართვა
+        {t.listings.owner.manage}
       </p>
       <div className="flex gap-3">
         <Link
@@ -84,7 +86,7 @@ export function OwnerControls({
           className="flex-1 flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 text-[#0F2830] font-semibold py-3 rounded-xl transition-colors"
         >
           <Pencil className="w-4 h-4" />
-          რედაქტირება
+          {t.common.actions.edit}
         </Link>
         <button
           type="button"
@@ -93,7 +95,7 @@ export function OwnerControls({
           className="flex-1 flex items-center justify-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
         >
           <Trash2 className="w-4 h-4" />
-          {deleting ? "იშლება…" : "წაშლა"}
+          {deleting ? t.listings.owner.deleting : t.common.actions.delete}
         </button>
       </div>
     </div>

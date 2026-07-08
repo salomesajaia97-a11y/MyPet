@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { MessageCircle, Send } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 /**
  * Inline "send message to seller" box on a listing detail page. Rendered only
  * when the listing has an owner (userId). Logged-out users get a login prompt.
  */
 export function ContactSellerBox({ listingId }: { listingId: string }) {
+  const { t } = useT();
   const { status } = useSession();
   const router = useRouter();
   const [body, setBody] = useState("");
@@ -21,9 +23,9 @@ export function ContactSellerBox({ listingId }: { listingId: string }) {
     return (
       <div className="border-t pt-5">
         <p className="text-sm text-stone-500">
-          გამყიდველთან დასაკავშირებლად{" "}
+          {t.listings.contactSeller.loginPrompt}{" "}
           <Link href="/login" className="text-[#0E4A5C] font-semibold hover:underline">
-            შედი სისტემაში
+            {t.listings.contactSeller.login}
           </Link>
         </p>
       </div>
@@ -45,7 +47,7 @@ export function ContactSellerBox({ listingId }: { listingId: string }) {
       if (!res.ok) throw new Error(data.error ?? "failed");
       router.push(`/profile/messages/${data.threadId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "გაგზავნა ვერ მოხერხდა");
+      setError(err instanceof Error ? err.message : t.listings.contactSeller.sendError);
       setSending(false);
     }
   };
@@ -54,13 +56,13 @@ export function ContactSellerBox({ listingId }: { listingId: string }) {
     <form onSubmit={send} className="border-t pt-5 space-y-3">
       <p className="text-sm font-semibold text-[#0F2830] flex items-center gap-2">
         <MessageCircle className="w-4 h-4 text-[#0E4A5C]" />
-        მიწერე გამყიდველს
+        {t.listings.contactSeller.title}
       </p>
       <textarea
         rows={3}
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="დაწერე შეტყობინება…"
+        placeholder={t.listings.contactSeller.placeholder}
         maxLength={2000}
         className="w-full rounded-xl border border-stone-200 p-3 text-sm text-[#0F2830] resize-none focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30"
       />
@@ -71,7 +73,7 @@ export function ContactSellerBox({ listingId }: { listingId: string }) {
         className="flex items-center justify-center gap-2 w-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
       >
         <Send className="w-4 h-4" />
-        {sending ? "იგზავნება…" : "გაგზავნა"}
+        {sending ? t.listings.contactSeller.sending : t.listings.contactSeller.send}
       </button>
     </form>
   );

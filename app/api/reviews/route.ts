@@ -7,6 +7,8 @@ import { recomputeBusinessRating } from "@/lib/recomputeRating";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rateLimit";
 import { handleMutationError } from "@/lib/api/errors";
+import { getServerLocale } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
 
 const MAX_TEXT = 2000;
 const MAX_PHOTOS = 3;
@@ -48,6 +50,8 @@ export async function POST(req: NextRequest) {
 
   const limited = rateLimit(`reviews:${session.user.id}`, 5, 10 * 60_000);
   if (limited) return limited;
+
+  const t = getDictionary(await getServerLocale());
 
   try {
     let body: { businessId?: string; rating?: unknown; text?: unknown; photos?: unknown };
@@ -93,7 +97,7 @@ export async function POST(req: NextRequest) {
     }).select("_id");
     if (already) {
       return NextResponse.json(
-        { error: "თქვენ უკვე დატოვეთ შეფასება ამ ბიზნესზე" },
+        { error: t.misc.alreadyReviewed },
         { status: 409 }
       );
     }
@@ -103,7 +107,7 @@ export async function POST(req: NextRequest) {
       businessId,
       source: "native",
       userId: session.user.id,
-      reviewerName: session.user.name ?? session.user.email ?? "მომხმარებელი",
+      reviewerName: session.user.name ?? session.user.email ?? t.misc.user,
       reviewerAvatar: session.user.image ?? undefined,
       rating,
       text,
@@ -114,6 +118,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (err) {
-    return handleMutationError(err, "reviews POST");
+    return handleMutationError(err, "reviews POST", t.misc.validationFailed);
   }
 }

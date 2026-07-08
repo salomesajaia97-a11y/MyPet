@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { X, ImagePlus, Loader2 } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface ImageUploaderProps {
   value: string[];
@@ -21,6 +22,7 @@ export function ImageUploader({
   maxImages = 5,
   single = false,
 }: ImageUploaderProps) {
+  const { t } = useT();
   const limit = single ? 1 : maxImages;
   const inputRef = useRef<HTMLInputElement>(null);
   const [slots, setSlots] = useState<SlotState[]>(
@@ -145,7 +147,7 @@ export function ImageUploader({
             className="w-24 h-24 rounded-xl border-2 border-dashed border-stone-300 flex flex-col items-center justify-center gap-1 text-stone-400 hover:border-[#0E4A5C] hover:text-[#0E4A5C] transition-colors"
           >
             <ImagePlus className="w-6 h-6" />
-            <span className="text-[11px] font-medium">ფოტო</span>
+            <span className="text-[11px] font-medium">{t.misc.uploadPhoto}</span>
           </button>
         )}
       </div>
@@ -160,7 +162,7 @@ export function ImageUploader({
       />
 
       <p className="text-xs text-stone-400">
-        მაქს. {limit} ფოტო • JPEG, PNG, WebP • 5 MB-მდე
+        {t.misc.uploadHintPrefix} {limit} {t.misc.uploadHintSuffix}
       </p>
     </div>
   );

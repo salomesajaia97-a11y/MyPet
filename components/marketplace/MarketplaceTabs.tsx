@@ -2,17 +2,18 @@
 import Link from "next/link";
 import { ShoppingCart, Gift, Heart, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-
-const tabs = [
-  { href: "/buy-sell", label: "ყიდვა/გაყიდვა", icon: ShoppingCart },
-  { href: "/adoption", label: "გაჩუქება", icon: Gift },
-  { href: "/mating", label: "შეჯვარება", icon: Heart },
-  { href: "/lost-found", label: "დაკარგული/ნაპოვნი", icon: MapPin },
-];
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Props { active: string; }
 
 export function MarketplaceTabs({ active }: Props) {
+  const { t } = useT();
+  const tabs = [
+    { href: "/buy-sell", label: t.marketplace.tabBuySell, icon: ShoppingCart },
+    { href: "/adoption", label: t.common.categories.adoption, icon: Gift },
+    { href: "/mating", label: t.common.categories.mating, icon: Heart },
+    { href: "/lost-found", label: t.common.categories.lostFound, icon: MapPin },
+  ];
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {tabs.map((tab) => {

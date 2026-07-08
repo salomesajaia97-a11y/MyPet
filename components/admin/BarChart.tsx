@@ -3,9 +3,11 @@
 export function BarChart({
   title,
   data,
+  totalLabel,
 }: {
   title: string;
   data: { label: string; value: number }[];
+  totalLabel: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   const total = data.reduce((s, d) => s + d.value, 0);
@@ -14,7 +16,7 @@ export function BarChart({
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
-        <span className="text-xs text-gray-400">სულ {total.toLocaleString()}</span>
+        <span className="text-xs text-gray-400">{totalLabel} {total.toLocaleString()}</span>
       </div>
       <ul className="space-y-2.5">
         {data.map((d) => (

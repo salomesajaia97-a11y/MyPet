@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Trash2, MapPin, Phone } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Business {
   _id: string;
@@ -15,14 +16,14 @@ interface Business {
   createdAt: string;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  "vet-clinics": "ვეტ-კლინიკა",
-  "pet-hotels": "სასტუმრო",
-  "pet-shops": "მაღაზია",
-  "pet-friendly": "Pet-Friendly",
-};
-
 export default function AdminBusinessesPage() {
+  const { t } = useT();
+  const CATEGORY_LABELS: Record<string, string> = {
+    "vet-clinics": t.admin.businesses.categories.vetClinic,
+    "pet-hotels": t.admin.businesses.categories.petHotel,
+    "pet-shops": t.admin.businesses.categories.petShop,
+    "pet-friendly": t.admin.businesses.categories.petFriendly,
+  };
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -47,7 +48,7 @@ export default function AdminBusinessesPage() {
   }
 
   async function reject(id: string) {
-    if (!confirm("Reject and delete this submission? This cannot be undone.")) return;
+    if (!confirm(t.admin.businesses.rejectConfirm)) return;
     setBusyId(id);
     const res = await fetch(`/api/admin/businesses/${id}`, { method: "DELETE" });
     if (res.ok) setBusinesses((prev) => prev.filter((b) => b._id !== id));
@@ -56,15 +57,15 @@ export default function AdminBusinessesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Pending Businesses</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">{t.admin.businesses.title}</h1>
       <p className="text-sm text-gray-500 mb-6">
-        User-submitted services awaiting review. Approve to publish, reject to delete.
+        {t.admin.businesses.subtitle}
       </p>
 
       {loading ? (
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-gray-500">{t.admin.businesses.loading}</p>
       ) : businesses.length === 0 ? (
-        <p className="text-gray-400">No pending submissions.</p>
+        <p className="text-gray-400">{t.admin.businesses.noPending}</p>
       ) : (
         <div className="space-y-3">
           {businesses.map((b) => (
@@ -115,7 +116,7 @@ export default function AdminBusinessesPage() {
                   className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   <Check size={14} />
-                  Approve
+                  {t.admin.businesses.approve}
                 </button>
                 <button
                   onClick={() => reject(b._id)}
@@ -123,7 +124,7 @@ export default function AdminBusinessesPage() {
                   className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-red-600 hover:bg-red-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   <Trash2 size={14} />
-                  Reject
+                  {t.admin.businesses.reject}
                 </button>
               </div>
             </div>

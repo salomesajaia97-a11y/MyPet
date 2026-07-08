@@ -25,6 +25,7 @@ import {
 import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { SmartSearch } from "@/components/ai/SmartSearch";
+import { useT } from "@/components/i18n/LanguageProvider";
 import { CITIES, SPECIES as SPECIES_OPTIONS } from "@/lib/marketplace/filters";
 import { isVipActive } from "@/lib/marketplace/vip";
 import type { Listing } from "@/types/marketplace";
@@ -46,11 +47,12 @@ const DEAL_HREF: Record<string, string> = {
   "შეჯვარება": "/mating",
 };
 
-const QUICK_CHIPS = [
-  { icon: TrendingUp, label: "ყველა განცხადება", href: "/buy-sell" },
-  { icon: Gift, label: "გაჩუქება", href: "/adoption" },
-  { icon: AlertCircle, label: "დაკარგული", href: "/lost-found" },
-  { icon: Stethoscope, label: "ვეტ-კლინიკები", href: "/services/vet-clinics" },
+type QuickChipKey = "all" | "adoption" | "lost" | "vetClinics";
+const QUICK_CHIPS: { icon: LucideIcon; labelKey: QuickChipKey; href: string }[] = [
+  { icon: TrendingUp, labelKey: "all", href: "/buy-sell" },
+  { icon: Gift, labelKey: "adoption", href: "/adoption" },
+  { icon: AlertCircle, labelKey: "lost", href: "/lost-found" },
+  { icon: Stethoscope, labelKey: "vetClinics", href: "/services/vet-clinics" },
 ];
 
 // `deal` drives the badge logic: "adoption" listings show a soft green badge
@@ -61,7 +63,7 @@ type CardItem = {
   breed: string;
   price: string;
   location: string;
-  age: string;
+  ageMonths: number;
   bg: string;
   img: string;
   deal: string;
@@ -79,9 +81,6 @@ const CARD_BG = [
   "from-teal-50 to-teal-100",
 ];
 
-const ageLabel = (months: number) =>
-  months < 12 ? `${months} თვე` : `${Math.floor(months / 12)} წელი`;
-
 // Adoption listings show a "ჩუქდება" badge instead of a price, so their price
 // string is unused; sale/mating format by currency.
 function priceLabel(l: Listing): string {
@@ -98,7 +97,7 @@ function toCard(l: Listing, i: number): CardItem {
     price: priceLabel(l),
     // `location` is stored as "<city>, <district>" — show the city only.
     location: (l.location ?? "").split(",")[0].trim() || l.location,
-    age: ageLabel(l.age),
+    ageMonths: l.age,
     bg: CARD_BG[i % CARD_BG.length],
     img: l.images?.[0] ?? "",
     deal: l.type === "adoption" ? "adoption" : "sale",
@@ -108,15 +107,24 @@ function toCard(l: Listing, i: number): CardItem {
 // `key` maps to the live-count keys returned by /api/marketplace/stats
 // (listing `type` or business `category`). Icons are lucide outline glyphs,
 // unified under the brand green so the grid reads as one system.
-const CATEGORIES: { Icon: LucideIcon; label: string; key: string; href: string }[] = [
-  { Icon: ShoppingBag, label: "ყიდვა-გაყიდვა", key: "buy-sell", href: "/buy-sell" },
-  { Icon: Gift, label: "გაჩუქება", key: "adoption", href: "/adoption" },
-  { Icon: HeartHandshake, label: "შეჯვარება", key: "mating", href: "/mating" },
-  { Icon: Search, label: "დაკარგული/ნაპოვნი", key: "lost-found", href: "/lost-found" },
-  { Icon: Stethoscope, label: "ვეტ-კლინიკები", key: "vet-clinics", href: "/services/vet-clinics" },
-  { Icon: Hotel, label: "სასტუმროები", key: "pet-hotels", href: "/services/pet-hotels" },
-  { Icon: Store, label: "პეთ-მაღაზიები", key: "pet-shops", href: "/services/pet-shops" },
-  { Icon: PawPrint, label: "Pet-Friendly", key: "pet-friendly", href: "/services/pet-friendly" },
+type CategoryKey =
+  | "buySell"
+  | "adoption"
+  | "mating"
+  | "lostFound"
+  | "vetClinics"
+  | "petHotels"
+  | "petShops"
+  | "petFriendly";
+const CATEGORIES: { Icon: LucideIcon; labelKey: CategoryKey; key: string; href: string }[] = [
+  { Icon: ShoppingBag, labelKey: "buySell", key: "buy-sell", href: "/buy-sell" },
+  { Icon: Gift, labelKey: "adoption", key: "adoption", href: "/adoption" },
+  { Icon: HeartHandshake, labelKey: "mating", key: "mating", href: "/mating" },
+  { Icon: Search, labelKey: "lostFound", key: "lost-found", href: "/lost-found" },
+  { Icon: Stethoscope, labelKey: "vetClinics", key: "vet-clinics", href: "/services/vet-clinics" },
+  { Icon: Hotel, labelKey: "petHotels", key: "pet-hotels", href: "/services/pet-hotels" },
+  { Icon: Store, labelKey: "petShops", key: "pet-shops", href: "/services/pet-shops" },
+  { Icon: PawPrint, labelKey: "petFriendly", key: "pet-friendly", href: "/services/pet-friendly" },
 ];
 
 // Formats a live category total for display. `null` (still loading) → "…";
@@ -163,6 +171,7 @@ function QuickSelect({
 }
 
 export default function HomePage() {
+  const { t } = useT();
   const router = useRouter();
   const [species, setSpecies] = useState(SPECIES[0]);
   const [location, setLocation] = useState(LOCATIONS[0]);
@@ -258,10 +267,10 @@ export default function HomePage() {
           <Reveal direction="up">
             <div className="text-center mb-6">
               <h1 className="text-2xl sm:text-4xl font-black text-[#0F2830] leading-tight">
-                იპოვე შენი ოთხფეხა მეგობარი
+                {t.home.hero.title}
               </h1>
               <p className="text-stone-500 text-sm sm:text-base mt-2">
-                ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში
+                {t.home.hero.subtitle}
               </p>
             </div>
           </Reveal>
@@ -270,9 +279,9 @@ export default function HomePage() {
           <Reveal direction="up" delay={80}>
             <div className="flex flex-col md:flex-row items-stretch bg-white rounded-2xl border-2 border-[#0E4A5C] shadow-[0_18px_45px_-18px_rgba(14,74,92,0.55)] overflow-hidden transition-shadow hover:shadow-[0_24px_60px_-18px_rgba(14,74,92,0.65)] md:pr-2">
               <div className="flex items-stretch divide-y md:divide-y-0 flex-1 flex-col md:flex-row">
-                <QuickSelect label="სახეობა" value={species} options={SPECIES} onChange={setSpecies} />
-                <QuickSelect label="მდებარეობა" value={location} options={LOCATIONS} onChange={setLocation} />
-                <QuickSelect label="განცხადება" value={deal} options={DEAL_TYPES} onChange={setDeal} />
+                <QuickSelect label={t.home.search.speciesLabel} value={species} options={SPECIES} onChange={setSpecies} />
+                <QuickSelect label={t.home.search.locationLabel} value={location} options={LOCATIONS} onChange={setLocation} />
+                <QuickSelect label={t.home.search.dealLabel} value={deal} options={DEAL_TYPES} onChange={setDeal} />
               </div>
               <button
                 type="button"
@@ -280,7 +289,7 @@ export default function HomePage() {
                 className="group bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-7 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap md:my-1.5 md:rounded-xl"
               >
                 <Search className="w-4 h-4 transition-transform group-hover:scale-110" />
-                ძება
+                {t.home.search.button}
               </button>
             </div>
           </Reveal>
@@ -297,12 +306,12 @@ export default function HomePage() {
             <div className="flex items-center justify-center gap-2.5 mt-5 flex-wrap">
               {QUICK_CHIPS.map((chip) => (
                 <Link
-                  key={chip.label}
+                  key={chip.labelKey}
                   href={chip.href}
                   className="flex items-center gap-2 bg-white/90 backdrop-blur rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-600 hover:text-[#0E4A5C] hover:-translate-y-0.5 hover:shadow-md transition-all border border-stone-200 shadow-sm"
                 >
                   <chip.icon className="w-4 h-4 text-[#0E4A5C]" />
-                  {chip.label}
+                  {t.home.quickChips[chip.labelKey]}
                 </Link>
               ))}
             </div>
@@ -324,14 +333,14 @@ export default function HomePage() {
             <div className="flex-1 min-w-0">
               <p className="flex items-center gap-2 font-black text-[#0F2830] text-sm sm:text-base">
                 <span className="text-rose-500 tracking-wide">SOS</span>
-                დაკარგული ან ნაპოვნი ცხოველი?
+                {t.home.sos.title}
               </p>
               <p className="text-xs sm:text-sm text-stone-500 mt-0.5 truncate">
-                დაუყოვნებლივ გამოაქვეყნე — რაც უფრო სწრაფად, მით მეტი შანსი
+                {t.home.sos.subtitle}
               </p>
             </div>
             <span className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-rose-500 shrink-0 group-hover:gap-2.5 transition-all">
-              სასწრაფო განცხადება
+              {t.home.sos.action}
               <ArrowRight className="w-4 h-4" />
             </span>
           </Link>
@@ -344,10 +353,10 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Rocket className="w-5 h-5 text-orange-500" />
-              <h2 className="font-black text-xl text-[#0F2830]">VIP განცხადებები</h2>
+              <h2 className="font-black text-xl text-[#0F2830]">{t.home.vipHeading}</h2>
             </div>
             <Link href="/buy-sell" className="text-sm text-stone-500 hover:text-[#0E4A5C] font-medium transition-colors">
-              ყველას ნახვა →
+              {t.home.seeAll}
             </Link>
           </div>
         </Reveal>
@@ -372,12 +381,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <Reveal direction="left">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-black text-xl text-[#0F2830]">კატეგორიები</h2>
+              <h2 className="font-black text-xl text-[#0F2830]">{t.home.categoriesHeading}</h2>
             </div>
           </Reveal>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {CATEGORIES.map((cat, i) => (
-              <Reveal key={cat.label} direction="scale" delay={i * 60}>
+              <Reveal key={cat.key} direction="scale" delay={i * 60}>
                 <Link
                   href={cat.href}
                   className="group flex flex-col items-center gap-2.5 bg-white rounded-2xl p-4 border border-stone-100 hover:border-[#0E4A5C]/30 hover:-translate-y-1 hover:shadow-md transition-all h-full"
@@ -386,7 +395,7 @@ export default function HomePage() {
                     <cat.Icon className="w-5 h-5" strokeWidth={1.75} aria-hidden="true" />
                   </div>
                   <div className="text-center">
-                    <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">{cat.label}</p>
+                    <p className="text-[11px] font-semibold text-[#0F2830] leading-snug">{t.home.categories[cat.labelKey]}</p>
                     <p className="text-[10px] text-stone-400 mt-0.5">{formatCount(counts ? counts[cat.key] ?? 0 : null)}</p>
                   </div>
                 </Link>
@@ -402,10 +411,10 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <PawPrint className="w-5 h-5 text-[#0E4A5C]" />
-              <h2 className="font-black text-xl text-[#0F2830]">ახალი განცხადებები</h2>
+              <h2 className="font-black text-xl text-[#0F2830]">{t.home.latestHeading}</h2>
             </div>
             <Link href="/buy-sell?sort=newest" className="text-sm text-stone-500 hover:text-[#0E4A5C] font-medium transition-colors">
-              ყველას ნახვა →
+              {t.home.seeAll}
             </Link>
           </div>
         </Reveal>
@@ -435,17 +444,17 @@ export default function HomePage() {
               <PawPrint className="pointer-events-none absolute -bottom-4 -right-2 h-28 w-28 text-white/5" />
               <div className="relative max-w-2xl mx-auto">
                 <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
-                  გყავს გასაყიდი ან გასაჩუქებელი ცხოველი?
+                  {t.home.cta.title}
                 </h2>
                 <p className="text-white/60 text-sm sm:text-base mt-3">
-                  დაამატე განცხადება მარტივად და უფასოდ
+                  {t.home.cta.subtitle}
                 </p>
                 <Link
                   href="/listings/new"
                   className="group mt-7 inline-flex items-center gap-2 bg-white text-[#093040] px-7 py-3.5 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 >
                   <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
-                  განცხადების დამატება
+                  {t.home.cta.button}
                 </Link>
               </div>
             </div>
@@ -476,16 +485,17 @@ function SkeletonGrid() {
 
 /** Empty state when no listings exist yet — invites the first post. */
 function EmptyListings() {
+  const { t } = useT();
   return (
     <div className="flex flex-col items-center justify-center text-center py-12 gap-3">
       <div className="text-4xl">🐾</div>
-      <p className="text-sm text-stone-500">ჯერ არ არის განცხადებები</p>
+      <p className="text-sm text-stone-500">{t.home.empty.text}</p>
       <Link
         href="/listings/new"
         className="inline-flex items-center gap-2 bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
       >
         <Plus className="w-4 h-4" />
-        დაამატე პირველი
+        {t.home.empty.action}
       </Link>
     </div>
   );
@@ -499,7 +509,12 @@ function ListingCard({
   item: CardItem;
   vip?: boolean;
 }) {
+  const { t } = useT();
   const isAdoption = item.deal === "adoption";
+  const ageText =
+    item.ageMonths < 12
+      ? `${item.ageMonths} ${t.home.card.ageMonths}`
+      : `${Math.floor(item.ageMonths / 12)} ${t.home.card.ageYears}`;
   return (
     <Link href={`/listings/${item.id}`} className="group block">
       <div
@@ -542,7 +557,7 @@ function ListingCard({
         {isAdoption ? (
           <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-sm font-bold px-3 py-1 rounded-full">
             <Gift className="w-3.5 h-3.5" />
-            ჩუქდება
+            {t.home.card.adoptionBadge}
           </span>
         ) : (
           <p className="font-black text-[#0F2830] text-lg leading-tight">{item.price}</p>
@@ -555,7 +570,7 @@ function ListingCard({
           </span>
           <span className="inline-flex items-center gap-1 shrink-0">
             <Cake className="w-3.5 h-3.5 text-[#0E4A5C]/60" strokeWidth={1.75} />
-            {item.age}
+            {ageText}
           </span>
         </div>
       </div>

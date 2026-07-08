@@ -1,0 +1,29 @@
+export const common = {
+  brand: "MyPet",
+  brandSuffix: ".ge",
+  tagline: "ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში",
+  skipToContent: "მთავარ კონტენტზე გადასვლა",
+  metaTitle: "MyPet — საქართველოს პრემიუმ ცხოველთა პლატფორმა",
+  metaDescription: "იყიდე, გაყიდე, გააჩუქე და მოძებნე სერვისები შენი ცხოველებისთვის.",
+  // Shared marketplace / service category labels (reused by navbar + footer).
+  categories: {
+    buySell: "ყიდვა-გაყიდვა",
+    adoption: "გაჩუქება",
+    mating: "შეჯვარება",
+    lostFound: "დაკარგული/ნაპოვნი",
+    vetClinics: "ვეტ-კლინიკები",
+    petHotels: "სასტუმროები",
+    petShops: "მაღაზიები",
+    petFriendly: "Pet-Friendly",
+  },
+  actions: {
+    add: "დამატება",
+    save: "შენახვა",
+    cancel: "გაუქმება",
+    delete: "წაშლა",
+    edit: "რედაქტირება",
+    search: "ძებნა",
+    back: "უკან",
+    loading: "იტვირთება...",
+  },
+};

@@ -7,15 +7,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Plus } from "lucide-react";
 import type { Listing } from "@/types/marketplace";
-
-const TYPE_LABELS: Record<Listing["type"], string> = {
-  "buy-sell": "გაყიდვა",
-  adoption: "გაჩუქება",
-  mating: "შეჯვარება",
-  "lost-found": "დაკარგული/ნაპოვნი",
-};
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function MyListingsPage() {
+  const { t } = useT();
   const router = useRouter();
   const { status } = useSession();
   const [listings, setListings] = useState<Listing[] | null>(null);
@@ -36,21 +31,21 @@ export default function MyListingsPage() {
     <div className="min-h-screen bg-[#EBF6FA] py-8">
       <div className="max-w-5xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-[#0F2830]">ჩემი განცხადებები</h1>
+          <h1 className="text-2xl font-bold text-[#0F2830]">{t.profile.listings.title}</h1>
           <Link
             href="/listings/new"
             className="flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-4 py-2 text-sm font-semibold"
           >
             <Plus className="w-4 h-4" />
-            დამატება
+            {t.common.actions.add}
           </Link>
         </div>
 
         {listings === null ? (
-          <div className="py-20 text-center text-stone-400 text-sm">იტვირთება...</div>
+          <div className="py-20 text-center text-stone-400 text-sm">{t.common.actions.loading}</div>
         ) : listings.length === 0 ? (
           <div className="py-20 text-center text-stone-400 text-sm">
-            ჯერ არ გაქვთ განცხადებები.
+            {t.profile.listings.empty}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -65,6 +60,7 @@ export default function MyListingsPage() {
 }
 
 function ListingCard({ listing }: { listing: Listing }) {
+  const { t } = useT();
   const price =
     (listing.type === "buy-sell" || listing.type === "mating") &&
     listing.price !== null &&
@@ -88,7 +84,7 @@ function ListingCard({ listing }: { listing: Listing }) {
             <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
           )}
           <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-semibold text-[#0F2830]">
-            {TYPE_LABELS[listing.type]}
+            {t.profile.listings.types[listing.type]}
           </div>
           {price && (
             <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">

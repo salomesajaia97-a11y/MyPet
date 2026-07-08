@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Send, MessageCircle } from "lucide-react";
+import { getServerDictionary } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "კონტაქტი — MyPet.ge",
-  description: "დაგვიკავშირდით — MyPet.ge-ის გუნდი მზადაა დაგეხმაროთ.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return {
+    title: t.pages.contact.metaTitle,
+    description: t.pages.contact.metaDescription,
+  };
+}
 
 const CHANNELS = [
   {
@@ -28,15 +32,16 @@ const CHANNELS = [
   },
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { t } = await getServerDictionary();
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl sm:text-4xl font-black text-[#0F2830] mb-2">
-          კონტაქტი
+          {t.pages.contact.title}
         </h1>
         <p className="text-stone-500 text-sm mb-8">
-          გაქვთ შეკითხვა ან წინადადება? დაგვიკავშირდით ნებისმიერ არხზე.
+          {t.pages.contact.subtitle}
         </p>
 
         <div className="grid gap-4 sm:grid-cols-3">

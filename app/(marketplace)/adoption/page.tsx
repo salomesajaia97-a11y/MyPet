@@ -5,7 +5,9 @@ import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { getListings, countListings, getPage } from "@/lib/marketplace/queries";
 import { Pager } from "@/components/marketplace/Pager";
-import { speciesKa, formatAge } from "@/lib/marketplace/format";
+import { formatAge } from "@/lib/marketplace/format";
+import { getServerDictionary } from "@/lib/i18n/server";
+import type { Dictionary } from "@/lib/i18n";
 import type { AdoptionListing } from "@/types/marketplace";
 
 export default async function AdoptionPage({
@@ -14,6 +16,7 @@ export default async function AdoptionPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
+  const { t } = await getServerDictionary();
   const [listings, total] = await Promise.all([
     getListings("adoption", sp) as Promise<AdoptionListing[]>,
     countListings("adoption", sp),
@@ -22,7 +25,7 @@ export default async function AdoptionPage({
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
-        <h1 className="sr-only">გასაშვილებელი ცხოველები</h1>
+        <h1 className="sr-only">{t.marketplace.titleAdoption}</h1>
         <Suspense fallback={null}>
           <MarketplaceTabs active="adoption" />
           <MarketplaceSearch filters type="adoption" />
@@ -31,13 +34,13 @@ export default async function AdoptionPage({
         {listings.length === 0 ? (
           <div className="py-20 text-center text-stone-400">
             <div className="text-5xl mb-4">🐾</div>
-            <p className="font-medium">განცხადება არ მოიძებნა</p>
+            <p className="font-medium">{t.marketplace.noListings}</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {listings.map((listing) => (
-                <ListingCard key={listing._id} listing={listing} />
+                <ListingCard key={listing._id} listing={listing} t={t} />
               ))}
             </div>
             <Pager basePath="/adoption" params={sp} page={getPage(sp)} total={total} />
@@ -49,7 +52,7 @@ export default async function AdoptionPage({
   );
 }
 
-function ListingCard({ listing }: { listing: AdoptionListing }) {
+function ListingCard({ listing, t }: { listing: AdoptionListing; t: Dictionary }) {
   return (
     <Link href={`/listings/${listing._id}`} className="block">
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
@@ -66,23 +69,23 @@ function ListingCard({ listing }: { listing: AdoptionListing }) {
             <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
           )}
           <div className="absolute top-3 left-3 bg-[#0E4A5C] text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-            გაჩუქება
+            {t.common.categories.adoption}
           </div>
         </div>
         <div className="p-4 space-y-2.5">
           <div>
             <p className="font-bold text-[#0F2830] text-base">{listing.breed}</p>
-            <p className="text-stone-500 text-sm">{speciesKa(listing.species)} • {formatAge(listing.age)}</p>
+            <p className="text-stone-500 text-sm">{t.marketplace.species[listing.species]} • {formatAge(listing.age, t.marketplace.units)}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {listing.spayedNeutered && (
               <span className="inline-flex items-center gap-1 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-                ✓ სტერილიზებული
+                ✓ {t.marketplace.spayedNeutered}
               </span>
             )}
             {listing.goodWithKids && (
               <span className="inline-flex items-center gap-1 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-                👶 ბავშვებთან
+                👶 {t.marketplace.goodWithKids}
               </span>
             )}
           </div>

@@ -1,24 +1,6 @@
 import Link from "next/link";
 import { PawPrint, Send, MessageCircle, Mail } from "lucide-react";
-
-// Sitemap-style quick links reuse the marketplace + services routes so the
-// footer stays in step with the sub-nav.
-const NAV_LINKS = [
-  { label: "ყიდვა-გაყიდვა", href: "/buy-sell" },
-  { label: "გაჩუქება", href: "/adoption" },
-  { label: "შეჯვარება", href: "/mating" },
-  { label: "დაკარგული/ნაპოვნი", href: "/lost-found" },
-  { label: "ვეტ-კლინიკები", href: "/services/vet-clinics" },
-  { label: "სასტუმროები", href: "/services/pet-hotels" },
-];
-
-// Core info + legal pages.
-const LEGAL_LINKS = [
-  { label: "ჩვენს შესახებ", href: "/about" },
-  { label: "კონტაქტი", href: "/contact" },
-  { label: "წესები და პირობები", href: "/terms" },
-  { label: "კონფიდენციალურობა", href: "/privacy" },
-];
+import { getServerDictionary } from "@/lib/i18n/server";
 
 const SOCIALS = [
   { label: "Telegram", href: "#", Icon: Send },
@@ -26,7 +8,28 @@ const SOCIALS = [
   { label: "Email", href: "#", Icon: Mail },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const { t } = await getServerDictionary();
+
+  // Sitemap-style quick links reuse the marketplace + services routes so the
+  // footer stays in step with the sub-nav.
+  const NAV_LINKS = [
+    { label: t.common.categories.buySell, href: "/buy-sell" },
+    { label: t.common.categories.adoption, href: "/adoption" },
+    { label: t.common.categories.mating, href: "/mating" },
+    { label: t.common.categories.lostFound, href: "/lost-found" },
+    { label: t.common.categories.vetClinics, href: "/services/vet-clinics" },
+    { label: t.common.categories.petHotels, href: "/services/pet-hotels" },
+  ];
+
+  // Core info + legal pages.
+  const LEGAL_LINKS = [
+    { label: t.footer.about, href: "/about" },
+    { label: t.footer.contact, href: "/contact" },
+    { label: t.footer.terms, href: "/terms" },
+    { label: t.footer.privacy, href: "/privacy" },
+  ];
+
   return (
     <footer className="border-t border-stone-200 bg-[#F7FAFB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -43,14 +46,14 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-stone-500 mt-3 leading-relaxed">
-              ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში
+              {t.common.tagline}
             </p>
           </div>
 
           {/* Quick links */}
           <nav className="flex flex-col gap-2.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-1">
-              განცხადებები
+              {t.footer.listingsHeading}
             </p>
             {NAV_LINKS.map((l) => (
               <Link
@@ -66,7 +69,7 @@ export function Footer() {
           {/* Legal + social */}
           <div className="flex flex-col gap-2.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-1">
-              ინფორმაცია
+              {t.footer.infoHeading}
             </p>
             {LEGAL_LINKS.map((l) => (
               <Link
@@ -94,7 +97,7 @@ export function Footer() {
 
         <div className="mt-8 pt-6 border-t border-stone-200">
           <p className="text-xs text-stone-400 text-center">
-            © 2026 MyPet.ge — ყველა უფლება დაცულია
+            {t.footer.copyright}
           </p>
         </div>
       </div>

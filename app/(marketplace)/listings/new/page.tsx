@@ -2,36 +2,44 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ImageUploader } from "@/components/ui/ImageUploader";
+import { useT } from "@/components/i18n/LanguageProvider";
 import { cn } from "@/lib/utils/cn";
 import { CITIES } from "@/lib/marketplace/filters";
 import type { MarketplaceType, PetSpecies } from "@/types/marketplace";
 
-const TYPES: { value: MarketplaceType; label: string }[] = [
-  { value: "buy-sell", label: "გაყიდვა" },
-  { value: "adoption", label: "გაჩუქება" },
-  { value: "mating", label: "შეჯვარება" },
-  { value: "lost-found", label: "დაკარგული/ნაპოვნი" },
+const TYPE_VALUES: MarketplaceType[] = [
+  "buy-sell",
+  "adoption",
+  "mating",
+  "lost-found",
 ];
 
 // Accept `?category=<type>` (e.g. from the SOS banner → "lost-found") to
 // pre-select the listing type. Falls back to "buy-sell" for missing/unknown
 // values so a stray query string can never break the form.
 function initialType(category: string | null): MarketplaceType {
-  return TYPES.some((t) => t.value === category)
+  return TYPE_VALUES.includes(category as MarketplaceType)
     ? (category as MarketplaceType)
     : "buy-sell";
 }
 
-const SPECIES: { value: PetSpecies; label: string }[] = [
-  { value: "dog", label: "ძაღლი" },
-  { value: "cat", label: "კატა" },
-  { value: "bird", label: "ფრინველი" },
-  { value: "rabbit", label: "კურდღელი" },
-  { value: "reptile", label: "რეპტილია" },
-  { value: "other", label: "სხვა" },
+const SPECIES_VALUES: PetSpecies[] = [
+  "dog",
+  "cat",
+  "bird",
+  "rabbit",
+  "reptile",
+  "other",
 ];
 
 function NewListingForm() {
+  const { t } = useT();
+  const typeLabels: Record<MarketplaceType, string> = {
+    "buy-sell": t.listings.types.buySell,
+    adoption: t.listings.types.adoption,
+    mating: t.listings.types.mating,
+    "lost-found": t.listings.types.lostFound,
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const [type, setType] = useState<MarketplaceType>(() =>
@@ -44,7 +52,7 @@ function NewListingForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (images.length === 0) {
-      setError("გთხოვთ დაამატოთ სულ მცირე 1 ფოტო");
+      setError(t.listings.form.photoRequired);
       return;
     }
 
@@ -92,11 +100,11 @@ function NewListingForm() {
       });
       if (!res.ok) {
         const json = await res.json();
-        throw new Error(json.error ?? "შეცდომა");
+        throw new Error(json.error ?? t.listings.form.genericError);
       }
       router.push(`/${type}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "შეცდომა");
+      setError(err instanceof Error ? err.message : t.listings.form.genericError);
     } finally {
       setSubmitting(false);
     }
@@ -105,26 +113,26 @@ function NewListingForm() {
   return (
     <div className="min-h-screen bg-[#EBF6FA] py-8">
       <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-[#0F2830] mb-6">განცხადების დამატება</h1>
+        <h1 className="text-2xl font-bold text-[#0F2830] mb-6">{t.listings.newListing.title}</h1>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 space-y-6 shadow-sm">
           {/* Type selector */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">კატეგორია</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.category}</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {TYPES.map((t) => (
+              {TYPE_VALUES.map((value) => (
                 <button
-                  key={t.value}
+                  key={value}
                   type="button"
-                  onClick={() => setType(t.value)}
+                  onClick={() => setType(value)}
                   className={cn(
                     "py-2 px-3 rounded-xl text-sm font-medium border transition-all",
-                    type === t.value
+                    type === value
                       ? "bg-[#0E4A5C] text-white border-[#0E4A5C]"
                       : "border-stone-200 text-stone-600 hover:border-stone-300"
                   )}
                 >
-                  {t.label}
+                  {typeLabels[value]}
                 </button>
               ))}
             </div>
@@ -133,51 +141,51 @@ function NewListingForm() {
           {/* Photos */}
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">
-              ფოტოები <span className="text-red-500">*</span>
+              {t.listings.form.photos} <span className="text-red-500">*</span>
             </label>
             <ImageUploader value={images} onChange={setImages} maxImages={5} />
           </div>
 
           {/* Species */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">სახეობა</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.species}</label>
             <select name="species" required className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-              {SPECIES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+              {SPECIES_VALUES.map((value) => (
+                <option key={value} value={value}>{t.listings.species[value]}</option>
               ))}
             </select>
           </div>
 
           {/* Breed */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ჯიში</label>
-            <input name="breed" required placeholder="მაგ: ლაბრადორი" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.breed}</label>
+            <input name="breed" required placeholder={t.listings.form.breedPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
           </div>
 
           {/* Age */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ასაკი (თვეებში)</label>
-            <input name="age" type="number" min="0" required placeholder="მაგ: 6" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.age}</label>
+            <input name="age" type="number" min="0" required placeholder={t.listings.form.agePlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
           </div>
 
           {/* Type-specific fields */}
           {type === "buy-sell" && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ფასი (₾)</label>
-                <input name="price" type="number" min="0" required placeholder="მაგ: 500" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.price}</label>
+                <input name="price" type="number" min="0" required placeholder={t.listings.form.pricePlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ვალუტა</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.currency}</label>
                 <select name="currency" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
                   <option value="GEL">GEL ₾</option>
                   <option value="USD">USD $</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">პედიგრი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
                 <select name="pedigree" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-                  <option value="none">არ აქვს</option>
+                  <option value="none">{t.listings.form.pedigreeNone}</option>
                   <option value="FCI">FCI</option>
                   <option value="FCG">FCG</option>
                 </select>
@@ -185,11 +193,11 @@ function NewListingForm() {
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="vaccinated" className="rounded" />
-                  ვაქცინირებული
+                  {t.listings.form.vaccinated}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="hasPassport" className="rounded" />
-                  პასპორტი
+                  {t.listings.form.passport}
                 </label>
               </div>
             </>
@@ -199,26 +207,26 @@ function NewListingForm() {
             <>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  ხასიათი (მძიმით გამოყოფილი)
+                  {t.listings.form.temperament}
                 </label>
                 <input
                   name="temperament"
-                  placeholder="მაგ: მშვიდი, მოთამაშე, ერთგული"
+                  placeholder={t.listings.form.temperamentPlaceholder}
                   className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20"
                 />
               </div>
               <div className="flex flex-wrap gap-6">
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="spayedNeutered" className="rounded" />
-                  დაკასტრირებული / სტერილიზებული
+                  {t.listings.form.spayedNeutered}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="goodWithKids" className="rounded" />
-                  ბავშვებთან თავსებადი
+                  {t.listings.form.goodWithKids}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="goodWithPets" className="rounded" />
-                  სხვა ცხოველებთან თავსებადი
+                  {t.listings.form.goodWithPets}
                 </label>
               </div>
             </>
@@ -227,27 +235,27 @@ function NewListingForm() {
           {type === "mating" && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">სქესი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.sex}</label>
                 <select name="sex" required className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-                  <option value="male">მამრი</option>
-                  <option value="female">მდედრი</option>
+                  <option value="male">{t.listings.form.male}</option>
+                  <option value="female">{t.listings.form.female}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">წონა (კგ)</label>
-                <input name="weight" type="number" min="0" step="0.1" required placeholder="მაგ: 12.5" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.weight}</label>
+                <input name="weight" type="number" min="0" step="0.1" required placeholder={t.listings.form.weightPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">პედიგრი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
                 <select name="pedigree" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-                  <option value="none">არ აქვს</option>
+                  <option value="none">{t.listings.form.pedigreeNone}</option>
                   <option value="FCI">FCI</option>
                   <option value="FCG">FCG</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ფასი (₾, სურვილისამებრ)</label>
-                <input name="price" type="number" min="0" placeholder="ცარიელი = უფასო" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.priceOptional}</label>
+                <input name="price" type="number" min="0" placeholder={t.listings.form.priceFreePlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
               </div>
             </>
           )}
@@ -255,30 +263,30 @@ function NewListingForm() {
           {type === "lost-found" && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">სტატუსი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.status}</label>
                 <select name="status" required className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-                  <option value="lost">დაკარგული</option>
-                  <option value="found">ნაპოვნი</option>
+                  <option value="lost">{t.listings.form.lost}</option>
+                  <option value="found">{t.listings.form.found}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">უბანი</label>
-                <input name="neighborhood" required placeholder="მაგ: ვაკე" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.neighborhood}</label>
+                <input name="neighborhood" required placeholder={t.listings.form.neighborhoodPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">უკანასკნელი ნახვის თარიღი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.lastSeenDate}</label>
                 <input name="lastSeenDate" type="date" required className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ჯილდო (₾, სურვილისამებრ)</label>
-                <input name="reward" type="number" min="0" placeholder="ცარიელი = ჯილდო არ არის" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.reward}</label>
+                <input name="reward" type="number" min="0" placeholder={t.listings.form.rewardPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
               </div>
             </>
           )}
 
           {/* Common fields */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ქალაქი</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.city}</label>
             <select name="city" required className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
               {CITIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -286,20 +294,20 @@ function NewListingForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">უბანი / მისამართი (სურვილისამებრ)</label>
-            <input name="district" placeholder="მაგ: ვაკე" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.district}</label>
+            <input name="district" placeholder={t.listings.form.districtPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">აღწერა</label>
-            <textarea name="description" required rows={4} placeholder="დეტალური აღწერა..." className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20 resize-none" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.description}</label>
+            <textarea name="description" required rows={4} placeholder={t.listings.form.descriptionPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20 resize-none" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">საკონტაქტო სახელი</label>
-            <input name="contactName" required placeholder="სახელი" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.contactName}</label>
+            <input name="contactName" required placeholder={t.listings.form.contactNamePlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ტელეფონი</label>
-            <input name="contactPhone" required placeholder="+995 5XX XX XX XX" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.phone}</label>
+            <input name="contactPhone" required placeholder={t.listings.form.phonePlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
           </div>
 
           {error && (
@@ -311,7 +319,7 @@ function NewListingForm() {
             disabled={submitting}
             className="w-full py-3 bg-[#0E4A5C] text-white font-semibold rounded-xl hover:bg-[#0B3D4E] transition-colors disabled:opacity-50"
           >
-            {submitting ? "იგზავნება..." : "განცხადების დამატება"}
+            {submitting ? t.listings.newListing.submitting : t.listings.newListing.submit}
           </button>
         </form>
       </div>

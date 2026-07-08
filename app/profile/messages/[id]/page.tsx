@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Msg {
   _id: string;
@@ -18,6 +19,7 @@ interface ThreadInfo {
 }
 
 export default function ThreadPage() {
+  const { t } = useT();
   const params = useParams<{ id: string }>();
   const id = params.id;
 
@@ -100,13 +102,13 @@ export default function ThreadPage() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-[#EBF6FA] flex items-center justify-center text-stone-400 text-sm">იტვირთება…</div>;
+    return <div className="min-h-screen bg-[#EBF6FA] flex items-center justify-center text-stone-400 text-sm">{t.profile.messages.loading}</div>;
   }
   if (notFound || !thread) {
     return (
       <div className="min-h-screen bg-[#EBF6FA] flex flex-col items-center justify-center gap-3">
-        <p className="text-stone-600">საუბარი ვერ მოიძებნა</p>
-        <Link href="/profile/messages" className="text-sm text-[#0E4A5C] font-semibold">უკან</Link>
+        <p className="text-stone-600">{t.profile.messages.notFound}</p>
+        <Link href="/profile/messages" className="text-sm text-[#0E4A5C] font-semibold">{t.common.actions.back}</Link>
       </div>
     );
   }
@@ -122,7 +124,7 @@ export default function ThreadPage() {
           <div className="min-w-0">
             <p className="font-semibold text-[#0F2830] truncate">{thread.listingTitle}</p>
             <Link href={`/listings/${thread.listingId}`} className="text-xs text-[#0E4A5C] hover:underline">
-              განცხადების ნახვა
+              {t.profile.messages.viewListing}
             </Link>
           </div>
         </div>
@@ -130,7 +132,7 @@ export default function ThreadPage() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto py-4 space-y-2">
           {messages.length === 0 ? (
-            <p className="text-stone-400 text-sm text-center py-8">ჯერ არ არის შეტყობინებები</p>
+            <p className="text-stone-400 text-sm text-center py-8">{t.profile.messages.noMessages}</p>
           ) : (
             messages.map((m) => (
               <div key={m._id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
@@ -154,14 +156,14 @@ export default function ThreadPage() {
           <input
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="შეტყობინება…"
+            placeholder={t.profile.messages.inputPlaceholder}
             maxLength={2000}
             className="flex-1 rounded-full border border-stone-200 px-4 py-2.5 text-sm text-[#0F2830] focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30"
           />
           <button
             type="submit"
             disabled={sending || body.trim().length < 1}
-            aria-label="გაგზავნა"
+            aria-label={t.profile.messages.send}
             className="shrink-0 w-11 h-11 rounded-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white flex items-center justify-center transition-colors disabled:opacity-60"
           >
             <Send className="w-4 h-4" />

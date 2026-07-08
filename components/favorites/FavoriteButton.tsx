@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Heart } from "lucide-react";
 import { useFavorites } from "./FavoritesProvider";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 /**
  * Heart toggle for a listing. Renders the same regardless of auth; clicking
@@ -20,6 +21,7 @@ export function FavoriteButton({
   const favorites = useFavorites();
   const { status } = useSession();
   const router = useRouter();
+  const { t } = useT();
 
   const active = favorites?.isFavorite(listingId) ?? false;
 
@@ -37,7 +39,7 @@ export function FavoriteButton({
     <button
       type="button"
       onClick={handleClick}
-      aria-label={active ? "ფავორიტებიდან ამოღება" : "ფავორიტებში დამატება"}
+      aria-label={active ? t.misc.favoriteRemove : t.misc.favoriteAdd}
       aria-pressed={active}
       className={className}
     >

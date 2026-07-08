@@ -1,0 +1,51 @@
+export const home = {
+  hero: {
+    title: "იპოვე შენი ოთხფეხა მეგობარი",
+    subtitle: "ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში",
+  },
+  search: {
+    speciesLabel: "სახეობა",
+    locationLabel: "მდებარეობა",
+    dealLabel: "განცხადება",
+    button: "ძება",
+  },
+  quickChips: {
+    all: "ყველა განცხადება",
+    adoption: "გაჩუქება",
+    lost: "დაკარგული",
+    vetClinics: "ვეტ-კლინიკები",
+  },
+  sos: {
+    title: "დაკარგული ან ნაპოვნი ცხოველი?",
+    subtitle: "დაუყოვნებლივ გამოაქვეყნე — რაც უფრო სწრაფად, მით მეტი შანსი",
+    action: "სასწრაფო განცხადება",
+  },
+  vipHeading: "VIP განცხადებები",
+  seeAll: "ყველას ნახვა →",
+  categoriesHeading: "კატეგორიები",
+  categories: {
+    buySell: "ყიდვა-გაყიდვა",
+    adoption: "გაჩუქება",
+    mating: "შეჯვარება",
+    lostFound: "დაკარგული/ნაპოვნი",
+    vetClinics: "ვეტ-კლინიკები",
+    petHotels: "სასტუმროები",
+    petShops: "პეთ-მაღაზიები",
+    petFriendly: "Pet-Friendly",
+  },
+  latestHeading: "ახალი განცხადებები",
+  cta: {
+    title: "გყავს გასაყიდი ან გასაჩუქებელი ცხოველი?",
+    subtitle: "დაამატე განცხადება მარტივად და უფასოდ",
+    button: "განცხადების დამატება",
+  },
+  empty: {
+    text: "ჯერ არ არის განცხადებები",
+    action: "დაამატე პირველი",
+  },
+  card: {
+    adoptionBadge: "ჩუქდება",
+    ageMonths: "თვე",
+    ageYears: "წელი",
+  },
+};

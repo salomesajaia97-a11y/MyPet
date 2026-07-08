@@ -4,8 +4,10 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PawPrint } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function LoginPage() {
+  const { t } = useT();
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("არასწორი ელ-ფოსტა ან პაროლი");
+      setError(t.auth.login.invalidCredentials);
     } else {
       router.push("/");
       router.refresh();
@@ -43,14 +45,14 @@ export default function LoginPage() {
               <PawPrint className="w-6 h-6 text-white" />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-black text-[#0F2830]">მოგესალმებით</h1>
-              <p className="text-stone-500 text-sm mt-1">შედით თქვენს ანგარიშზე</p>
+              <h1 className="text-2xl font-black text-[#0F2830]">{t.auth.login.title}</h1>
+              <p className="text-stone-500 text-sm mt-1">{t.auth.login.subtitle}</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-[#0F2830]">ელ-ფოსტა</label>
+              <label htmlFor="email" className="text-sm font-medium text-[#0F2830]">{t.auth.emailLabel}</label>
               <input
                 id="email"
                 name="email"
@@ -62,7 +64,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-[#0F2830]">პაროლი</label>
+              <label htmlFor="password" className="text-sm font-medium text-[#0F2830]">{t.auth.passwordLabel}</label>
               <input
                 id="password"
                 name="password"
@@ -84,7 +86,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-[#0E4A5C] text-white py-3.5 rounded-xl font-semibold text-base hover:bg-[#0B3D4E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "მიმდინარეობს..." : "შესვლა"}
+              {loading ? t.auth.loading : t.auth.login.submit}
             </button>
           </form>
 
@@ -93,7 +95,7 @@ export default function LoginPage() {
               <span className="w-full border-t border-stone-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-stone-400">ან</span>
+              <span className="bg-white px-2 text-stone-400">{t.auth.or}</span>
             </div>
           </div>
 
@@ -108,13 +110,13 @@ export default function LoginPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Google-ით შესვლა
+            {t.auth.login.google}
           </button>
 
           <p className="text-center text-sm text-stone-500">
-            ანგარიში არ გაქვთ?{" "}
+            {t.auth.login.noAccount}{" "}
             <Link href="/register" className="text-[#0E4A5C] font-semibold hover:underline">
-              რეგისტრაცია
+              {t.auth.login.registerLink}
             </Link>
           </p>
         </div>

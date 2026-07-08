@@ -11,6 +11,7 @@ import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
 import { ContactSellerBox } from "./ContactSellerBox";
 import { isVipActive } from "@/lib/marketplace/vip";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 // Query the DB directly — no self-fetch to our own API (which would need an
 // absolute URL and break outside localhost). JSON round-trip serializes
@@ -25,13 +26,6 @@ async function getListing(id: string): Promise<Listing | null> {
     return null;
   }
 }
-
-const typeLabels: Record<string, string> = {
-  "buy-sell": "გაყიდვა",
-  adoption: "გაჩუქება",
-  mating: "შეჯვარება",
-  "lost-found": "დაკარგული/ნაპოვნი",
-};
 
 const backHref: Record<string, string> = {
   "buy-sell": "/buy-sell",
@@ -49,6 +43,14 @@ export default async function ListingDetailPage({
   const listing = await getListing(id);
   if (!listing) notFound();
 
+  const { t } = await getServerDictionary();
+  const typeLabels: Record<string, string> = {
+    "buy-sell": t.listings.types.buySell,
+    adoption: t.listings.types.adoption,
+    mating: t.listings.types.mating,
+    "lost-found": t.listings.types.lostFound,
+  };
+
   // The owner sees management controls; everyone else sees the contact block.
   const session = await auth();
   const isOwner =
@@ -57,8 +59,8 @@ export default async function ListingDetailPage({
 
   const ageLabel =
     listing.age < 12
-      ? `${listing.age} თვე`
-      : `${Math.floor(listing.age / 12)} წელი`;
+      ? `${listing.age} ${t.listings.detail.monthUnit}`
+      : `${Math.floor(listing.age / 12)} ${t.listings.detail.yearUnit}`;
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
@@ -69,7 +71,7 @@ export default async function ListingDetailPage({
           className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-[#0E4A5C] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          უკან დაბრუნება
+          {t.listings.detail.back}
         </Link>
 
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
@@ -133,7 +135,7 @@ export default async function ListingDetailPage({
               <div>
                 <h1 className="text-2xl font-bold text-[#0F2830]">
                   {listing.breed}
-                  {listing.age < 12 ? " ლეკვი" : ""}
+                  {listing.age < 12 ? ` ${t.listings.detail.puppy}` : ""}
                 </h1>
               </div>
               <div className="flex flex-col items-end gap-1 text-sm text-stone-500">
@@ -153,12 +155,12 @@ export default async function ListingDetailPage({
               <div className="flex flex-wrap gap-2">
                 {listing.vaccinated && (
                   <span className="inline-flex items-center gap-1 text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    ✓ ვაქცინირებული
+                    ✓ {t.listings.form.vaccinated}
                   </span>
                 )}
                 {listing.hasPassport && (
                   <span className="inline-flex items-center gap-1 text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    📋 პასპორტი
+                    📋 {t.listings.form.passport}
                   </span>
                 )}
                 {listing.pedigree !== "none" && (
@@ -173,17 +175,17 @@ export default async function ListingDetailPage({
               <div className="flex flex-wrap gap-2">
                 {listing.spayedNeutered && (
                   <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    კასტრირებული
+                    {t.listings.detail.neutered}
                   </span>
                 )}
                 {listing.goodWithKids && (
                   <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    ბავშვებთან კარგად
+                    {t.listings.detail.goodWithKids}
                   </span>
                 )}
                 {listing.goodWithPets && (
                   <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    ცხოველებთან კარგად
+                    {t.listings.detail.goodWithPets}
                   </span>
                 )}
                 {listing.temperament.map((t) => (
@@ -197,10 +199,12 @@ export default async function ListingDetailPage({
             {listing.type === "mating" && (
               <div className="flex flex-wrap gap-2">
                 <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                  {listing.sex === "male" ? "♂ მამრი" : "♀ მდედრი"}
+                  {listing.sex === "male"
+                    ? `♂ ${t.listings.form.male}`
+                    : `♀ ${t.listings.form.female}`}
                 </span>
                 <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                  {listing.weight} კგ
+                  {listing.weight} {t.listings.detail.kgUnit}
                 </span>
                 {listing.pedigree !== "none" && (
                   <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
@@ -219,19 +223,19 @@ export default async function ListingDetailPage({
                       : "bg-green-100 text-green-700"
                   }`}
                 >
-                  {listing.status === "lost" ? "დაკარგული" : "ნაპოვნი"}
+                  {listing.status === "lost" ? t.listings.form.lost : t.listings.form.found}
                 </span>
                 <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
                   📍 {listing.neighborhood}
                 </span>
                 {listing.reward !== null && listing.reward > 0 && (
                   <span className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-                    ჯილდო: {listing.reward} ₾
+                    {t.listings.detail.reward}: {listing.reward} ₾
                   </span>
                 )}
                 {listing.isResolved && (
                   <span className="text-xs bg-stone-200 text-stone-500 px-3 py-1 rounded-full">
-                    მოგვარებული
+                    {t.listings.detail.resolved}
                   </span>
                 )}
               </div>
@@ -240,7 +244,7 @@ export default async function ListingDetailPage({
             {/* Description */}
             {listing.description && (
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-[#0F2830]">აღწერა</p>
+                <p className="text-sm font-semibold text-[#0F2830]">{t.listings.detail.description}</p>
                 <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">
                   {listing.description}
                 </p>
@@ -257,7 +261,7 @@ export default async function ListingDetailPage({
               />
             ) : (
               <div className="border-t pt-5 space-y-3">
-                <p className="text-sm font-semibold text-[#0F2830]">კონტაქტი</p>
+                <p className="text-sm font-semibold text-[#0F2830]">{t.listings.detail.contact}</p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#EBF6FA] rounded-full flex items-center justify-center">
                     <User className="w-5 h-5 text-[#0E4A5C]" />
@@ -272,7 +276,7 @@ export default async function ListingDetailPage({
                   className="flex items-center justify-center gap-2 w-full bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors"
                 >
                   <Phone className="w-4 h-4" />
-                  დარეკვა
+                  {t.listings.detail.call}
                 </PhoneLink>
                 {listing.userId && <ContactSellerBox listingId={id} />}
               </div>

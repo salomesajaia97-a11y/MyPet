@@ -5,7 +5,8 @@ import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { getListings, countListings, getPage } from "@/lib/marketplace/queries";
 import { Pager } from "@/components/marketplace/Pager";
-import { speciesKa } from "@/lib/marketplace/format";
+import { getServerDictionary } from "@/lib/i18n/server";
+import type { Dictionary, Locale } from "@/lib/i18n";
 import type { LostFoundListing } from "@/types/marketplace";
 
 export default async function LostFoundPage({
@@ -14,6 +15,7 @@ export default async function LostFoundPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
+  const { t, locale } = await getServerDictionary();
   const [listings, total] = await Promise.all([
     getListings("lost-found", sp) as Promise<LostFoundListing[]>,
     countListings("lost-found", sp),
@@ -22,7 +24,7 @@ export default async function LostFoundPage({
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
-        <h1 className="sr-only">დაკარგული და ნაპოვნი ცხოველები</h1>
+        <h1 className="sr-only">{t.marketplace.titleLostFound}</h1>
         <Suspense fallback={null}>
           <MarketplaceTabs active="lost-found" />
           <MarketplaceSearch filters type="lost-found" />
@@ -37,9 +39,9 @@ export default async function LostFoundPage({
             ✨
           </span>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-[#0F2830] text-sm sm:text-base">AI ფოტო-ძებნა</p>
+            <p className="font-bold text-[#0F2830] text-sm sm:text-base">{t.marketplace.aiPhotoSearch}</p>
             <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-              ატვირთე ფოტო — AI იპოვის მსგავს დაკარგულ/ნაპოვნ ცხოველს
+              {t.marketplace.aiPhotoSearchDesc}
             </p>
           </div>
           <span className="text-[#0E4A5C] text-sm font-semibold shrink-0 group-hover:translate-x-0.5 transition-transform">→</span>
@@ -48,13 +50,13 @@ export default async function LostFoundPage({
         {listings.length === 0 ? (
           <div className="py-20 text-center text-stone-400">
             <div className="text-5xl mb-4">🐾</div>
-            <p className="font-medium">განცხადება არ მოიძებნა</p>
+            <p className="font-medium">{t.marketplace.noListings}</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {listings.map((listing) => (
-                <ListingCard key={listing._id} listing={listing} />
+                <ListingCard key={listing._id} listing={listing} t={t} locale={locale} />
               ))}
             </div>
             <Pager basePath="/lost-found" params={sp} page={getPage(sp)} total={total} />
@@ -66,8 +68,9 @@ export default async function LostFoundPage({
   );
 }
 
-function ListingCard({ listing }: { listing: LostFoundListing }) {
+function ListingCard({ listing, t, locale }: { listing: LostFoundListing; t: Dictionary; locale: Locale }) {
   const isLost = listing.status === "lost";
+  const species = t.marketplace.species[listing.species as keyof typeof t.marketplace.species] ?? listing.species;
   return (
     <Link href={`/listings/${listing._id}`} className="block">
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
@@ -88,7 +91,7 @@ function ListingCard({ listing }: { listing: LostFoundListing }) {
               isLost ? "bg-red-500" : "bg-green-600"
             }`}
           >
-            {isLost ? "დაიკარგა" : "ნაპოვნია"}
+            {isLost ? t.marketplace.statusLost : t.marketplace.statusFound}
           </div>
           {listing.reward !== null && listing.reward > 0 && (
             <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">
@@ -99,10 +102,10 @@ function ListingCard({ listing }: { listing: LostFoundListing }) {
         <div className="p-4 space-y-2.5">
           <div>
             <p className="font-bold text-[#0F2830] text-base">{listing.breed}</p>
-            <p className="text-stone-500 text-sm">{speciesKa(listing.species)} • {listing.neighborhood}</p>
+            <p className="text-stone-500 text-sm">{species} • {listing.neighborhood}</p>
           </div>
           <p className="text-xs text-stone-400">
-            {isLost ? "დაიკარგა:" : "ნაპოვნია:"} {new Date(listing.lastSeenDate).toLocaleDateString("ka-GE")}
+            {isLost ? t.marketplace.statusLost : t.marketplace.statusFound}: {new Date(listing.lastSeenDate).toLocaleDateString(locale === "en" ? "en-US" : "ka-GE")}
           </p>
           <p className="text-sm text-stone-500 flex items-center gap-1">
             <span>📍</span> {listing.location}

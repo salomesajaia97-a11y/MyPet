@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserRound } from "lucide-react";
 import { ImageUploader } from "@/components/ui/ImageUploader";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Account {
   name: string;
@@ -14,6 +15,7 @@ interface Account {
 }
 
 export default function ProfilePage() {
+  const { t } = useT();
   const router = useRouter();
   const { data: session, status, update } = useSession();
 
@@ -54,7 +56,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error();
       await update();
     } catch {
-      setError("ფოტოს განახლება ვერ მოხერხდა. სცადეთ თავიდან.");
+      setError(t.profile.avatarError);
     }
   }
 
@@ -72,7 +74,7 @@ export default function ProfilePage() {
       await update();
       setSaved(true);
     } catch {
-      setError("შენახვა ვერ მოხერხდა. სცადეთ თავიდან.");
+      setError(t.profile.saveError);
     } finally {
       setSaving(false);
     }
@@ -84,13 +86,13 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#EBF6FA] py-8">
       <div className="max-w-xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-[#0F2830] mb-6">პროფილი</h1>
+        <h1 className="text-2xl font-bold text-[#0F2830] mb-6">{t.profile.title}</h1>
 
         <div className="bg-white rounded-2xl p-6 space-y-6 shadow-sm">
           {/* Avatar */}
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">
-              პროფილის ფოტო
+              {t.profile.photoLabel}
             </label>
             <div className="w-28">
               <ImageUploader value={avatar} onChange={handleAvatarChange} single />
@@ -99,7 +101,7 @@ export default function ProfilePage() {
 
           {/* Name */}
           <div>
-            <label htmlFor="profile-name" className="block text-sm font-semibold text-stone-700 mb-2">სახელი</label>
+            <label htmlFor="profile-name" className="block text-sm font-semibold text-stone-700 mb-2">{t.profile.nameLabel}</label>
             <input
               id="profile-name"
               value={name}
@@ -107,14 +109,14 @@ export default function ProfilePage() {
                 setName(e.target.value);
                 setSaved(false);
               }}
-              placeholder="სახელი"
+              placeholder={t.profile.nameLabel}
               className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20"
             />
           </div>
 
           {/* Email (read-only) */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ელ. ფოსტა</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.profile.emailLabel}</label>
             <div className="flex items-center gap-2 w-full border border-stone-100 bg-stone-50 rounded-xl px-3 py-2.5 text-sm text-stone-500">
               <UserRound className="w-4 h-4 text-stone-400 shrink-0" />
               {email}
@@ -127,9 +129,9 @@ export default function ProfilePage() {
               disabled={!dirty || saving}
               className="py-2.5 px-5 bg-[#0E4A5C] text-white font-semibold rounded-xl hover:bg-[#0B3D4E] transition-colors disabled:opacity-50"
             >
-              {saving ? "ინახება..." : "შენახვა"}
+              {saving ? t.profile.saving : t.common.actions.save}
             </button>
-            {saved && <span className="text-sm text-emerald-600">შენახულია ✓</span>}
+            {saved && <span className="text-sm text-emerald-600">{t.profile.saved}</span>}
           </div>
 
           {error && (
