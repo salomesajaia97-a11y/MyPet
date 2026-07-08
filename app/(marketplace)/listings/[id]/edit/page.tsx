@@ -4,23 +4,17 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ImageUploader } from "@/components/ui/ImageUploader";
+import { useT } from "@/components/i18n/LanguageProvider";
 import { CITIES } from "@/lib/marketplace/filters";
 import type { Listing, PetSpecies } from "@/types/marketplace";
 
-const TYPE_LABELS: Record<string, string> = {
-  "buy-sell": "გაყიდვა",
-  adoption: "გაჩუქება",
-  mating: "შეჯვარება",
-  "lost-found": "დაკარგული/ნაპოვნი",
-};
-
-const SPECIES: { value: PetSpecies; label: string }[] = [
-  { value: "dog", label: "ძაღლი" },
-  { value: "cat", label: "კატა" },
-  { value: "bird", label: "ფრინველი" },
-  { value: "rabbit", label: "კურდღელი" },
-  { value: "reptile", label: "რეპტილია" },
-  { value: "other", label: "სხვა" },
+const SPECIES_VALUES: PetSpecies[] = [
+  "dog",
+  "cat",
+  "bird",
+  "rabbit",
+  "reptile",
+  "other",
 ];
 
 const inputCls =
@@ -37,6 +31,13 @@ function splitLocation(location: string): { city: string; district: string } {
 }
 
 export default function EditListingPage() {
+  const { t } = useT();
+  const typeLabels: Record<string, string> = {
+    "buy-sell": t.listings.types.buySell,
+    adoption: t.listings.types.adoption,
+    mating: t.listings.types.mating,
+    "lost-found": t.listings.types.lostFound,
+  };
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params.id;
@@ -75,7 +76,7 @@ export default function EditListingPage() {
     e.preventDefault();
     if (!listing) return;
     if (images.length === 0) {
-      setError("გთხოვთ დაამატოთ სულ მცირე 1 ფოტო");
+      setError(t.listings.form.photoRequired);
       return;
     }
 
@@ -127,12 +128,12 @@ export default function EditListingPage() {
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error ?? "შეცდომა");
+        throw new Error(json.error ?? t.listings.form.genericError);
       }
       router.push(`/listings/${id}`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "შეცდომა");
+      setError(err instanceof Error ? err.message : t.listings.form.genericError);
     } finally {
       setSubmitting(false);
     }
@@ -141,7 +142,7 @@ export default function EditListingPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#EBF6FA] flex items-center justify-center">
-        <p className="text-stone-500 text-sm">იტვირთება…</p>
+        <p className="text-stone-500 text-sm">{t.common.actions.loading}</p>
       </div>
     );
   }
@@ -149,9 +150,9 @@ export default function EditListingPage() {
   if (notFoundErr || !listing) {
     return (
       <div className="min-h-screen bg-[#EBF6FA] flex flex-col items-center justify-center gap-4">
-        <p className="text-stone-600">განცხადება ვერ მოიძებნა</p>
+        <p className="text-stone-600">{t.listings.editListing.notFound}</p>
         <Link href="/buy-sell" className="text-sm text-[#0E4A5C] font-semibold">
-          უკან დაბრუნება
+          {t.listings.detail.back}
         </Link>
       </div>
     );
@@ -185,7 +186,7 @@ export default function EditListingPage() {
               კატეგორია
             </label>
             <span className="inline-block bg-[#EBF6FA] text-[#0E4A5C] text-sm font-medium px-3 py-1.5 rounded-xl">
-              {TYPE_LABELS[type]}
+              {typeLabels[type]}
             </span>
           </div>
 
@@ -201,8 +202,8 @@ export default function EditListingPage() {
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">სახეობა</label>
             <select name="species" required defaultValue={listing.species} className={inputCls}>
-              {SPECIES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+              {SPECIES_VALUES.map((s) => (
+                <option key={s} value={s}>{t.listings.species[s]}</option>
               ))}
             </select>
           </div>
