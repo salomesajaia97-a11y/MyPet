@@ -14,7 +14,6 @@ export const marketplace: typeof ka = {
   // listing-card chrome
   puppy: "Puppy",
   vaccinated: "Vaccinated",
-  pedigree: "Pedigree",
   spayedNeutered: "Spayed/Neutered",
   goodWithKids: "Good with kids",
   free: "Free",
@@ -64,9 +63,6 @@ export const marketplace: typeof ka = {
   priceTo: "Price to ₾",
   minPriceLabel: "Minimum price",
   maxPriceLabel: "Maximum price",
-  pedigreeFilterLabel: "Pedigree",
-  pedigreeAll: "Pedigree: all",
-  pedigreeNone: "No pedigree",
   sexFilterLabel: "Sex",
   sexAll: "Sex: all",
   statusFilterLabel: "Status",

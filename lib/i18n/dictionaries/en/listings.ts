@@ -37,8 +37,6 @@ export const listings: typeof ka = {
     price: "Price (₾)",
     pricePlaceholder: "e.g. 500",
     currency: "Currency",
-    pedigree: "Pedigree",
-    pedigreeNone: "None",
     vaccinated: "Vaccinated",
     passport: "Passport",
     temperament: "Temperament (comma separated)",

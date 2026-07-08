@@ -85,11 +85,6 @@ function ListingCard({ listing, t }: { listing: MatingListing; t: Dictionary }) 
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {listing.pedigree !== "none" && (
-              <span className="inline-flex items-center gap-1 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-                📋 {listing.pedigree}
-              </span>
-            )}
             {listing.price === null && (
               <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
                 {t.marketplace.free}

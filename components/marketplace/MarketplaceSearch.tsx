@@ -14,8 +14,8 @@ import type { MarketplaceType } from "@/types/marketplace";
  *
  * `filters` toggles the filter row (the services pages keep a plain text bar).
  * `type` decides which type-specific filters show: price range for
- * buy-sell/mating, pedigree for buy-sell/mating, sex for mating, lost/found
- * status for lost-found. All are inline and always visible — no hidden panel.
+ * buy-sell/mating, sex for mating, lost/found status for lost-found. All are
+ * inline and always visible — no hidden panel.
  */
 export function MarketplaceSearch({
   filters = false,
@@ -51,16 +51,14 @@ export function MarketplaceSearch({
 
   const species = searchParams.get("species") ?? "";
   const city = searchParams.get("city") ?? "";
-  const pedigree = searchParams.get("pedigree") ?? "";
   const status = searchParams.get("status") ?? "";
   const sex = searchParams.get("sex") ?? "";
 
   const hasActiveFilter = Boolean(
-    q || species || city || minPrice || maxPrice || pedigree || status || sex
+    q || species || city || minPrice || maxPrice || status || sex
   );
 
   const showPrice = type === "buy-sell" || type === "mating";
-  const showPedigree = type === "buy-sell" || type === "mating";
   const showStatus = type === "lost-found";
   const showSex = type === "mating";
 
@@ -186,21 +184,6 @@ export function MarketplaceSearch({
                 aria-label={t.marketplace.maxPriceLabel}
               />
             </div>
-          )}
-
-          {/* Pedigree (buy-sell / mating) */}
-          {showPedigree && (
-            <select
-              value={pedigree}
-              onChange={(e) => apply({ pedigree: e.target.value })}
-              className={`${controlClass} cursor-pointer`}
-              aria-label={t.marketplace.pedigreeFilterLabel}
-            >
-              <option value="">{t.marketplace.pedigreeAll}</option>
-              <option value="FCI">FCI</option>
-              <option value="FCG">FCG</option>
-              <option value="none">{t.marketplace.pedigreeNone}</option>
-            </select>
           )}
 
           {/* Sex (mating) */}

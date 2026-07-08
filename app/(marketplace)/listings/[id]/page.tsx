@@ -136,11 +136,6 @@ export default async function ListingDetailPage({
                     📋 {t.listings.form.passport}
                   </span>
                 )}
-                {listing.pedigree !== "none" && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    🏆 {listing.pedigree}
-                  </span>
-                )}
               </div>
             )}
 
@@ -179,11 +174,6 @@ export default async function ListingDetailPage({
                 <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
                   {listing.weight} {t.listings.detail.kgUnit}
                 </span>
-                {listing.pedigree !== "none" && (
-                  <span className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-full">
-                    🏆 {listing.pedigree}
-                  </span>
-                )}
               </div>
             )}
 

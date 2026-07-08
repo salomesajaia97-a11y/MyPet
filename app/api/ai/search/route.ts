@@ -44,7 +44,6 @@ export async function POST(req: NextRequest) {
   if (filters.q) params.set("q", filters.q);
   if (filters.minPrice) params.set("minPrice", filters.minPrice);
   if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
-  if (filters.pedigree) params.set("pedigree", filters.pedigree);
   if (filters.sex) params.set("sex", filters.sex);
   if (filters.status) params.set("status", filters.status);
 

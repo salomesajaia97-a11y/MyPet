@@ -234,14 +234,6 @@ export default function EditListingPage() {
                   <option value="USD">USD $</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
-                <select name="pedigree" defaultValue={listing.pedigree ?? "none"} className={inputCls}>
-                  <option value="none">{t.listings.form.pedigreeNone}</option>
-                  <option value="FCI">FCI</option>
-                  <option value="FCG">FCG</option>
-                </select>
-              </div>
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="vaccinated" defaultChecked={listing.vaccinated} className="rounded" />
@@ -297,14 +289,6 @@ export default function EditListingPage() {
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.weight}</label>
                 <input name="weight" type="number" min="0" step="0.1" required defaultValue={listing.weight ?? ""} className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
-                <select name="pedigree" defaultValue={listing.pedigree ?? "none"} className={inputCls}>
-                  <option value="none">{t.listings.form.pedigreeNone}</option>
-                  <option value="FCI">FCI</option>
-                  <option value="FCG">FCG</option>
-                </select>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.priceOptional}</label>

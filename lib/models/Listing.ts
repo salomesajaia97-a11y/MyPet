@@ -17,7 +17,6 @@ const ListingSchema = new Schema(
     currency: { type: String, enum: ["GEL", "USD"] },
     vaccinated: Boolean,
     hasPassport: Boolean,
-    pedigree: { type: String, enum: ["FCI", "FCG", "none"] },
     // adoption
     temperament: [String],
     spayedNeutered: Boolean,

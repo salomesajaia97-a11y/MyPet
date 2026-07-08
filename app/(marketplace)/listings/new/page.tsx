@@ -182,14 +182,6 @@ function NewListingForm() {
                   <option value="USD">USD $</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
-                <select name="pedigree" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-                  <option value="none">{t.listings.form.pedigreeNone}</option>
-                  <option value="FCI">FCI</option>
-                  <option value="FCG">FCG</option>
-                </select>
-              </div>
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="vaccinated" className="rounded" />
@@ -244,14 +236,6 @@ function NewListingForm() {
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.weight}</label>
                 <input name="weight" type="number" min="0" step="0.1" required placeholder={t.listings.form.weightPlaceholder} className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
-                <select name="pedigree" className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/20">
-                  <option value="none">{t.listings.form.pedigreeNone}</option>
-                  <option value="FCI">FCI</option>
-                  <option value="FCG">FCG</option>
-                </select>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.priceOptional}</label>

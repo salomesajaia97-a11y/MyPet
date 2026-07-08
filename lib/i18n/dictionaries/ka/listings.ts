@@ -36,8 +36,6 @@ export const listings = {
     price: "ფასი (₾)",
     pricePlaceholder: "მაგ: 500",
     currency: "ვალუტა",
-    pedigree: "პედიგრი",
-    pedigreeNone: "არ აქვს",
     vaccinated: "ვაქცინირებული",
     passport: "პასპორტი",
     temperament: "ხასიათი (მძიმით გამოყოფილი)",

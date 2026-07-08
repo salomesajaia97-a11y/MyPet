@@ -12,7 +12,6 @@ export const marketplace = {
   // listing-card chrome
   puppy: "ლეკვი",
   vaccinated: "ვაქცინირებული",
-  pedigree: "პედიგრი",
   spayedNeutered: "სტერილიზებული",
   goodWithKids: "ბავშვებთან",
   free: "უფასო",
@@ -62,9 +61,6 @@ export const marketplace = {
   priceTo: "ფასი მდე ₾",
   minPriceLabel: "მინიმალური ფასი",
   maxPriceLabel: "მაქსიმალური ფასი",
-  pedigreeFilterLabel: "პედიგრი",
-  pedigreeAll: "პედიგრი: ყველა",
-  pedigreeNone: "პედიგრის გარეშე",
   sexFilterLabel: "სქესი",
   sexAll: "სქესი: ყველა",
   statusFilterLabel: "სტატუსი",

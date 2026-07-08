@@ -19,7 +19,6 @@ export interface SearchFilters {
   type: "" | "buy-sell" | "adoption" | "mating" | "lost-found";
   species: "" | "dog" | "cat" | "bird" | "rabbit" | "reptile" | "other";
   city: string; // one of CITIES, or ""
-  pedigree: "" | "FCI" | "FCG" | "none";
   sex: "" | "male" | "female";
   status: "" | "lost" | "found";
   minPrice: string; // digits or ""
@@ -38,14 +37,13 @@ const SCHEMA = {
     type: { type: "string", enum: ["", "buy-sell", "adoption", "mating", "lost-found"] },
     species: { type: "string", enum: ["", ...SPECIES_SLUGS] },
     city: { type: "string", enum: ["", ...CITIES] },
-    pedigree: { type: "string", enum: ["", "FCI", "FCG", "none"] },
     sex: { type: "string", enum: ["", "male", "female"] },
     status: { type: "string", enum: ["", "lost", "found"] },
     minPrice: { type: "string" },
     maxPrice: { type: "string" },
     q: { type: "string" },
   },
-  required: ["type", "species", "city", "pedigree", "sex", "status", "minPrice", "maxPrice", "q"],
+  required: ["type", "species", "city", "sex", "status", "minPrice", "maxPrice", "q"],
 } as const;
 
 const SYSTEM = `You convert a natural-language pet-marketplace search (usually Georgian, sometimes English) into structured filters for MyPet.ge.
@@ -62,7 +60,7 @@ Rules:
 - city: only a value from the allowed list, matching the user's city; else "".
 - minPrice/maxPrice: digits only (GEL). "under 500"→maxPrice "500"; "over 200"→minPrice "200". Else "".
 - q: a breed keyword if named (e.g. "ლაბრადორი", "labrador"); else "".
-- pedigree/sex/status only when clearly implied; else "".
+- sex/status only when clearly implied; else "".
 Return every field; use "" for anything not specified.`;
 
 export async function parseSearchQuery(query: string): Promise<SearchFilters | null> {

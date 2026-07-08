@@ -28,7 +28,6 @@ export interface BuySellListing extends BaseListing {
   currency: "GEL" | "USD";
   vaccinated: boolean;
   hasPassport: boolean;
-  pedigree: "FCI" | "FCG" | "none";
 }
 
 export interface AdoptionListing extends BaseListing {
@@ -43,7 +42,6 @@ export interface MatingListing extends BaseListing {
   type: "mating";
   sex: "male" | "female";
   weight: number;       // kg
-  pedigree: "FCI" | "FCG" | "none";
   price: number | null; // null = free
 }
 

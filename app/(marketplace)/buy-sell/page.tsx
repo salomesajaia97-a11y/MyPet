@@ -87,11 +87,6 @@ function ListingCard({ listing, t }: { listing: BuySellListing; t: Dictionary })
               ✓ {t.marketplace.vaccinated}
             </span>
           )}
-          {listing.pedigree !== "none" && (
-            <span className="inline-flex items-center gap-1 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-              📋 {t.marketplace.pedigree}
-            </span>
-          )}
         </div>
         <p className="text-sm text-stone-500 flex items-center gap-1">
           <span>📍</span> {listing.location}

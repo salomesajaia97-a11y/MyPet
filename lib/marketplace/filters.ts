@@ -61,7 +61,6 @@ const FILTER_KEYS = [
   "species",
   "city",
   "q",
-  "pedigree",
   "status",
   "sex",
   "minPrice",
@@ -104,8 +103,6 @@ export function buildListingFilter(
   const species = get("species");
   if (species) filter.species = speciesToSlug(species) || species;
 
-  const pedigree = get("pedigree");
-  if (pedigree) filter.pedigree = pedigree;
   const status = get("status");
   if (status) filter.status = status;
   const sex = get("sex");
