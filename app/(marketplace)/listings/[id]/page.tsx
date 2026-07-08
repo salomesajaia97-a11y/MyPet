@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, User, Calendar, ArrowLeft, Star } from "lucide-react";
@@ -10,6 +9,7 @@ import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
 import { ContactSellerBox } from "./ContactSellerBox";
+import Gallery from "./Gallery";
 import { isVipActive } from "@/lib/marketplace/vip";
 import { getServerDictionary } from "@/lib/i18n/server";
 
@@ -76,21 +76,8 @@ export default async function ListingDetailPage({
 
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
           {/* Image gallery */}
-          <div className="relative aspect-[16/9] bg-stone-100">
-            {listing.images[0] ? (
-              <Image
-                src={listing.images[0]}
-                alt={listing.breed}
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-6xl">
-                🐾
-              </div>
-            )}
-            <div className="absolute top-3 left-3 flex items-center gap-2">
+          <Gallery images={listing.images} alt={listing.breed}>
+            <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none">
               <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-[#0F2830]">
                 {typeLabels[listing.type]}
               </span>
@@ -102,32 +89,18 @@ export default async function ListingDetailPage({
               )}
             </div>
             {listing.type === "buy-sell" && (
-              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
+              <div className="absolute bottom-3 right-3 pointer-events-none bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
                 {listing.currency === "USD"
                   ? `$${listing.price.toLocaleString()}`
                   : `${listing.price.toLocaleString()} ₾`}
               </div>
             )}
             {listing.type === "mating" && listing.price !== null && (
-              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
+              <div className="absolute bottom-3 right-3 pointer-events-none bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
                 {listing.price.toLocaleString()} ₾
               </div>
             )}
-          </div>
-
-          {/* Extra images */}
-          {listing.images.length > 1 && (
-            <div className="flex gap-2 p-4 overflow-x-auto">
-              {listing.images.slice(1).map((src, i) => (
-                <div
-                  key={i}
-                  className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100"
-                >
-                  <Image src={src} alt={`photo ${i + 2}`} fill className="object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
+          </Gallery>
 
           <div className="p-6 space-y-5">
             {/* Title row */}
