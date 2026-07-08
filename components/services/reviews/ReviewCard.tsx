@@ -5,6 +5,7 @@ import { ThumbsUp, Pencil, Trash2, CornerDownRight } from "lucide-react";
 import { Stars } from "./Stars";
 import ReviewForm from "./ReviewForm";
 import type { Review, ReviewDraft } from "./types";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 function initials(name: string) {
   return name
@@ -45,6 +46,7 @@ export default function ReviewCard({
   onReply,
   onDeleteReply,
 }: Props) {
+  const { t } = useT();
   const [editing, setEditing] = useState(false);
   const [replying, setReplying] = useState(false);
   const [replyText, setReplyText] = useState(review.ownerReply?.text ?? "");
@@ -61,7 +63,7 @@ export default function ReviewCard({
       <div className="border-t pt-4 first:border-t-0 first:pt-0">
         <ReviewForm
           initial={{ rating: review.rating, text: review.text ?? "", photos: review.photos ?? [] }}
-          submitLabel="განახლება"
+          submitLabel={t.services.reviews.update}
           onSubmit={async (draft) => {
             await onEdit(review._id, draft);
             setEditing(false);
@@ -88,7 +90,7 @@ export default function ReviewCard({
             <p className="text-sm font-medium text-[#0F2830] leading-tight">{review.reviewerName}</p>
             <p className="text-xs text-stone-400">
               {formatDate(review.createdAt)}
-              {review.editedAt && <span className="ml-1">(რედაქტირებული)</span>}
+              {review.editedAt && <span className="ml-1">({t.services.reviews.edited})</span>}
             </p>
           </div>
         </div>
@@ -129,7 +131,7 @@ export default function ReviewCard({
           } disabled:cursor-default disabled:hover:text-stone-400`}
         >
           <ThumbsUp className={`w-3.5 h-3.5 ${voted ? "fill-[#0E4A5C]" : ""}`} />
-          სასარგებლო{helpfulCount > 0 ? ` (${helpfulCount})` : ""}
+          {t.services.reviews.helpful}{helpfulCount > 0 ? ` (${helpfulCount})` : ""}
         </button>
 
         {isAuthor && (
@@ -139,13 +141,13 @@ export default function ReviewCard({
               onClick={() => setEditing(true)}
               className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-[#0E4A5C] transition-colors"
             >
-              <Pencil className="w-3.5 h-3.5" /> რედაქტირება
+              <Pencil className="w-3.5 h-3.5" /> {t.common.actions.edit}
             </button>
             <button
               type="button"
               disabled={busy}
               onClick={async () => {
-                if (!confirm("წავშალო შეფასება?")) return;
+                if (!confirm(t.services.reviews.deleteConfirm)) return;
                 setBusy(true);
                 try {
                   await onDelete(review._id);
@@ -155,7 +157,7 @@ export default function ReviewCard({
               }}
               className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-red-600 transition-colors"
             >
-              <Trash2 className="w-3.5 h-3.5" /> წაშლა
+              <Trash2 className="w-3.5 h-3.5" /> {t.common.actions.delete}
             </button>
           </>
         )}
@@ -165,7 +167,7 @@ export default function ReviewCard({
       {review.ownerReply?.text && !replying && (
         <div className="mt-3 ml-6 border-l-2 border-[#0E4A5C]/20 pl-3">
           <p className="text-xs font-semibold text-[#0E4A5C] flex items-center gap-1">
-            <CornerDownRight className="w-3 h-3" /> ბიზნესის პასუხი
+            <CornerDownRight className="w-3 h-3" /> {t.services.reviews.businessReply}
           </p>
           <p className="text-sm text-stone-600 mt-1 whitespace-pre-line">{review.ownerReply.text}</p>
           {isOwner && (
@@ -178,7 +180,7 @@ export default function ReviewCard({
                 }}
                 className="text-xs text-stone-400 hover:text-[#0E4A5C]"
               >
-                რედაქტირება
+                {t.common.actions.edit}
               </button>
               <button
                 type="button"
@@ -193,7 +195,7 @@ export default function ReviewCard({
                 }}
                 className="text-xs text-stone-400 hover:text-red-600"
               >
-                წაშლა
+                {t.common.actions.delete}
               </button>
             </div>
           )}
@@ -209,7 +211,7 @@ export default function ReviewCard({
                 rows={2}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder="უპასუხე ამ შეფასებას…"
+                placeholder={t.services.reviews.replyPlaceholder}
                 className="w-full rounded-lg border border-stone-200 p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30"
               />
               <div className="flex gap-2">
@@ -227,14 +229,14 @@ export default function ReviewCard({
                   }}
                   className="bg-[#0E4A5C] text-white text-xs font-semibold px-4 py-2 rounded-lg disabled:opacity-60"
                 >
-                  პასუხის გაგზავნა
+                  {t.services.reviews.sendReply}
                 </button>
                 <button
                   type="button"
                   onClick={() => setReplying(false)}
                   className="text-xs text-stone-500 px-2"
                 >
-                  გაუქმება
+                  {t.common.actions.cancel}
                 </button>
               </div>
             </div>
@@ -244,7 +246,7 @@ export default function ReviewCard({
               onClick={() => setReplying(true)}
               className="text-xs text-[#0E4A5C] font-medium hover:underline inline-flex items-center gap-1"
             >
-              <CornerDownRight className="w-3 h-3" /> პასუხის გაცემა
+              <CornerDownRight className="w-3 h-3" /> {t.services.reviews.reply}
             </button>
           )}
         </div>

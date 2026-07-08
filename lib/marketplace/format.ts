@@ -1,6 +1,6 @@
 /**
  * Age in months → localized label. Under a year reads in months, otherwise in
- * years plus any leftover months (e.g. 26 → "2 წელი 2 თვე"). Unit words are
+ * years plus any leftover months (e.g. 26 → "2 yr 2 mo"). Unit words are
  * passed in from the active dictionary (`t.marketplace.units`) so the module
  * stays locale-agnostic.
  */

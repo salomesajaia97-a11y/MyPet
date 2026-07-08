@@ -1,8 +1,10 @@
 // components/services/RealBusinessCard.tsx
+"use client";
 import Link from "next/link";
 import { Star, MapPin, Phone, Globe, Clock } from "lucide-react";
 import type { BusinessData } from "@/lib/data/businesses";
 import PhoneLink from "@/components/ui/PhoneLink";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Props {
   business: BusinessData;
@@ -13,6 +15,7 @@ interface Props {
 }
 
 export function RealBusinessCard({ business, href }: Props) {
+  const { t } = useT();
   return (
     <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
       {href && (
@@ -55,19 +58,19 @@ export function RealBusinessCard({ business, href }: Props) {
             </div>
             {business.pricePerNight && (
               <span className="shrink-0 text-sm font-bold text-[#0E4A5C] bg-[#0E4A5C]/10 px-2.5 py-1 rounded-full">
-                {business.pricePerNight}₾/ღამე
+                {business.pricePerNight}{t.services.perNight}
               </span>
             )}
           </div>
 
           {/* Rating — hidden when there's no score yet (OSM rows), so cards
-              never show a misleading "0 (0 შეფასება)". */}
+              never show a misleading "0 (0 reviews)". */}
           {business.rating > 0 && (
             <div className="flex items-center gap-1.5 text-sm">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span className="font-semibold">{business.rating}</span>
               {business.reviewCount > 0 && (
-                <span className="text-stone-400 text-xs">({business.reviewCount} შეფასება)</span>
+                <span className="text-stone-400 text-xs">({business.reviewCount} {t.services.reviewWord})</span>
               )}
             </div>
           )}
@@ -106,7 +109,7 @@ export function RealBusinessCard({ business, href }: Props) {
             {business.website && (
               <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 hover:text-[#0E4A5C]">
                 <Globe className="w-3 h-3" />
-                ვებ-გვერდი
+                {t.services.website}
               </a>
             )}
           </div>

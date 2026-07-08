@@ -7,6 +7,7 @@ import RatingSummary from "./reviews/RatingSummary";
 import ReviewForm from "./reviews/ReviewForm";
 import ReviewCard from "./reviews/ReviewCard";
 import type { Review, ReviewDraft } from "./reviews/types";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Props {
   businessId: string;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function ServiceReviews({ businessId, ownerId }: Props) {
+  const { t } = useT();
   const { data: session, status } = useSession();
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
   const isOwner = !!currentUserId && !!ownerId && currentUserId === ownerId;
@@ -101,17 +103,17 @@ export default function ServiceReviews({ businessId, ownerId }: Props) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
-      <h2 className="text-lg font-bold text-[#0F2830]">შეფასებები</h2>
+      <h2 className="text-lg font-bold text-[#0F2830]">{t.services.reviews.heading}</h2>
 
       {!loading && reviews.length > 0 && <RatingSummary reviews={reviews} />}
 
       {/* Review list */}
       <div className="space-y-3">
         {loading ? (
-          <p className="text-sm text-stone-400 text-center py-4">იტვირთება…</p>
+          <p className="text-sm text-stone-400 text-center py-4">{t.services.reviews.loading}</p>
         ) : reviews.length === 0 ? (
           <p className="text-sm text-stone-400 text-center py-4">
-            ჯერ არავის დაუწერია შეფასება. იყავი პირველი!
+            {t.services.reviews.empty}
           </p>
         ) : (
           reviews.map((r) => (
@@ -134,18 +136,18 @@ export default function ServiceReviews({ businessId, ownerId }: Props) {
       <div className="border-t pt-5">
         {isOwner ? (
           <p className="text-sm text-stone-500 text-center">
-            საკუთარი ბიზნესის შეფასება არ შეიძლება.
+            {t.services.reviews.ownerCannotReview}
           </p>
         ) : status === "authenticated" ? (
           <>
-            <p className="text-sm font-semibold text-[#0F2830] mb-4">დაწერე შეფასება</p>
-            <ReviewForm submitLabel="შეფასების გაგზავნა" onSubmit={createReview} />
+            <p className="text-sm font-semibold text-[#0F2830] mb-4">{t.services.reviews.writeReview}</p>
+            <ReviewForm submitLabel={t.services.reviews.submitReview} onSubmit={createReview} />
           </>
         ) : (
           <p className="text-sm text-stone-500 text-center">
-            შეფასების დასაწერად{" "}
+            {t.services.reviews.loginPrefix}{" "}
             <Link href="/login" className="text-[#0E4A5C] font-semibold hover:underline">
-              შედი სისტემაში
+              {t.services.reviews.loginLink}
             </Link>
           </p>
         )}

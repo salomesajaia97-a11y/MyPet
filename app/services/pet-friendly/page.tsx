@@ -3,29 +3,31 @@ import { ServicesSearch } from "@/components/services/ServicesSearch";
 import { ServicesFab } from "@/components/services/ServicesFab";
 import { MapPanel } from "@/components/services/MapPanel";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function PetFriendlyPage() {
+  const { t } = await getServerDictionary();
   const businesses = await fetchDBBusinesses("pet-friendly");
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         <div>
-          <h1 className="text-3xl font-black text-[#0F2830] mb-1">Pet-Friendly ადგილები</h1>
-          <p className="text-stone-500 text-sm">კაფეები, სასტუმროები და პარკები, სადაც ცხოველი მისასალმებელია</p>
+          <h1 className="text-3xl font-black text-[#0F2830] mb-1">{t.services.categories.petFriendly.title}</h1>
+          <p className="text-stone-500 text-sm">{t.services.categories.petFriendly.subtitle}</p>
         </div>
         <ServicesTabs active="pet-friendly" />
 
         <div className="flex items-center gap-4 text-xs text-stone-500">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-            Indoor Allowed — შიგნით შემოყვანა შეიძლება
+            {t.services.petFriendlyLegend.indoor}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-            Outdoor Only — მხოლოდ გარე სივრცე
+            {t.services.petFriendlyLegend.outdoor}
           </span>
         </div>
 

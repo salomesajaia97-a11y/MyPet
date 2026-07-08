@@ -22,7 +22,7 @@ const base =
 
 /** Prev / next pager for the marketplace browse routes. Renders nothing when
  *  everything fits on one page. */
-export function Pager({
+export async function Pager({
   basePath,
   params,
   page,
@@ -36,9 +36,11 @@ export function Pager({
   const totalPages = Math.ceil(total / PAGE_SIZE);
   if (totalPages <= 1) return null;
 
+  const { t } = await getServerDictionary();
+
   return (
     <nav
-      aria-label="გვერდები"
+      aria-label={t.marketplace.pagerLabel}
       className="flex items-center justify-center gap-3 pt-4"
     >
       {page > 1 ? (
@@ -47,16 +49,16 @@ export function Pager({
           rel="prev"
           className={`${base} bg-white border-stone-200 text-[#0E4A5C] hover:border-[#0E4A5C]`}
         >
-          ← წინა
+          ← {t.marketplace.prev}
         </Link>
       ) : (
         <span className={`${base} border-stone-200 text-stone-300`} aria-disabled="true">
-          ← წინა
+          ← {t.marketplace.prev}
         </span>
       )}
 
       <span className="text-sm text-stone-500">
-        გვერდი {page} / {totalPages}
+        {t.marketplace.page} {page} / {totalPages}
       </span>
 
       {page < totalPages ? (
@@ -65,11 +67,11 @@ export function Pager({
           rel="next"
           className={`${base} bg-white border-stone-200 text-[#0E4A5C] hover:border-[#0E4A5C]`}
         >
-          შემდეგი →
+          {t.marketplace.next} →
         </Link>
       ) : (
         <span className={`${base} border-stone-200 text-stone-300`} aria-disabled="true">
-          შემდეგი →
+          {t.marketplace.next} →
         </span>
       )}
     </nav>

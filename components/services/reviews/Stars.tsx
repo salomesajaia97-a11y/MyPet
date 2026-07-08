@@ -2,6 +2,7 @@
 
 import { Star } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 // Read-only star row.
 export function Stars({ value, className = "w-4 h-4" }: { value: number; className?: string }) {
@@ -27,6 +28,7 @@ export function StarPicker({
   value: number;
   onChange: (n: number) => void;
 }) {
+  const { t } = useT();
   const [hovered, setHovered] = useState(0);
   return (
     <div className="flex gap-1">
@@ -34,7 +36,7 @@ export function StarPicker({
         <button
           key={n}
           type="button"
-          aria-label={`${n} ვარსკვლავი`}
+          aria-label={`${n} ${t.services.reviews.starLabel}`}
           onMouseEnter={() => setHovered(n)}
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(n)}

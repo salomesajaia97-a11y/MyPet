@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Sparkles, Upload, ArrowLeft, Loader2 } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Match {
   id: string;
@@ -15,11 +16,6 @@ interface Match {
   image: string;
 }
 
-const CONF_LABEL: Record<string, string> = {
-  high: "მაღალი ალბათობა",
-  medium: "საშუალო ალბათობა",
-  low: "დაბალი ალბათობა",
-};
 const CONF_CLASS: Record<string, string> = {
   high: "bg-emerald-100 text-emerald-700",
   medium: "bg-amber-100 text-amber-700",
@@ -27,6 +23,7 @@ const CONF_CLASS: Record<string, string> = {
 };
 
 export default function LostPetMatchPage() {
+  const { t } = useT();
   const { status } = useSession();
   const [preview, setPreview] = useState<string | null>(null);
   const [payload, setPayload] = useState<{ image: string; mediaType: string } | null>(null);
@@ -37,7 +34,7 @@ export default function LostPetMatchPage() {
   const onFile = (file: File | undefined) => {
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setError("მხოლოდ JPEG, PNG ან WebP.");
+      setError(t.marketplace.errOnlyImage);
       return;
     }
     setError("");
@@ -64,20 +61,20 @@ export default function LostPetMatchPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
-        setError("ვიზუალური ძებნისთვის შედი სისტემაში.");
+        setError(t.marketplace.errNeedLogin);
         return;
       }
       if (res.status === 503) {
-        setError("AI მაჩერი ჯერ არ არის გააქტიურებული.");
+        setError(t.marketplace.errServiceUnavailable);
         return;
       }
       if (!res.ok) {
-        setError(data.error ?? "ვერ მოხერხდა.");
+        setError(data.error ?? t.marketplace.errGeneric);
         return;
       }
       setMatches(data.matches ?? []);
     } catch {
-      setError("ვერ მოხერხდა. სცადეთ თავიდან.");
+      setError(t.marketplace.errRetry);
     } finally {
       setLoading(false);
     }
@@ -91,16 +88,16 @@ export default function LostPetMatchPage() {
           className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-[#0E4A5C] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          დაკარგული/ნაპოვნი
+          {t.common.categories.lostFound}
         </Link>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-[#0E4A5C]" />
-            <h1 className="text-xl font-bold text-[#0F2830]">AI ფოტო-ძებნა</h1>
+            <h1 className="text-xl font-bold text-[#0F2830]">{t.marketplace.aiPhotoSearch}</h1>
           </div>
           <p className="text-sm text-stone-500">
-            ატვირთე ცხოველის ფოტო — AI შეადარებს დაკარგული/ნაპოვნი განცხადებების ფოტოებს და გაჩვენებს შესაძლო დამთხვევებს.
+            {t.marketplace.matchIntro}
           </p>
 
           <label className="block">
@@ -111,7 +108,7 @@ export default function LostPetMatchPage() {
               ) : (
                 <div className="flex flex-col items-center gap-2 text-stone-400">
                   <Upload className="w-8 h-8" />
-                  <span className="text-sm">დააჭირე ფოტოს ასატვირთად</span>
+                  <span className="text-sm">{t.marketplace.uploadPrompt}</span>
                 </div>
               )}
             </div>
@@ -127,9 +124,9 @@ export default function LostPetMatchPage() {
 
           {status !== "authenticated" ? (
             <p className="text-sm text-stone-500 text-center">
-              ვიზუალური ძებნისთვის{" "}
+              {t.marketplace.needLoginPrefix}{" "}
               <Link href="/login" className="text-[#0E4A5C] font-semibold hover:underline">
-                შედი სისტემაში
+                {t.marketplace.loginLink}
               </Link>
             </p>
           ) : (
@@ -140,7 +137,7 @@ export default function LostPetMatchPage() {
               className="w-full flex items-center justify-center gap-2 bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              {loading ? "ვადარებ…" : "დამთხვევების ძებნა"}
+              {loading ? t.marketplace.comparing : t.marketplace.findMatches}
             </button>
           )}
         </div>
@@ -149,7 +146,7 @@ export default function LostPetMatchPage() {
           <div className="space-y-3">
             {matches.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-sm p-8 text-center text-sm text-stone-500">
-                დამთხვევა ვერ მოიძებნა.
+                {t.marketplace.noMatches}
               </div>
             ) : (
               matches.map((m) => (
@@ -169,14 +166,14 @@ export default function LostPetMatchPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${CONF_CLASS[m.confidence]}`}>
-                        {CONF_LABEL[m.confidence]}
+                        {t.marketplace.conf[m.confidence]}
                       </span>
                       <span className="text-xs text-stone-400">
-                        {m.status === "lost" ? "დაკარგული" : "ნაპოვნი"}
+                        {m.status === "lost" ? t.marketplace.statusLostOption : t.marketplace.statusFoundOption}
                         {m.location ? ` · ${m.location}` : ""}
                       </span>
                     </div>
-                    <p className="font-semibold text-[#0F2830] mt-1">{m.breed || "ცხოველი"}</p>
+                    <p className="font-semibold text-[#0F2830] mt-1">{m.breed || t.marketplace.animalFallback}</p>
                     <p className="text-sm text-stone-500 line-clamp-2">{m.reason}</p>
                   </div>
                 </Link>

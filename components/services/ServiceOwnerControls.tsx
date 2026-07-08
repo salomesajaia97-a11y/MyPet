@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 /**
  * Owner-only action toolbar for a business/service detail page. Rendered when
@@ -19,10 +20,11 @@ export default function ServiceOwnerControls({
   id: string;
 }) {
   const router = useRouter();
+  const { t } = useT();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("დარწმუნებული ხართ, რომ გსურთ წაშლა?")) return;
+    if (!confirm(t.services.owner.deleteConfirm)) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/services/${category}/${id}`, {
@@ -33,7 +35,7 @@ export default function ServiceOwnerControls({
       router.refresh();
     } catch {
       setDeleting(false);
-      alert("წაშლა ვერ მოხერხდა. სცადეთ თავიდან.");
+      alert(t.services.owner.deleteFailed);
     }
   };
 
@@ -44,7 +46,7 @@ export default function ServiceOwnerControls({
         className="flex-1 flex items-center justify-center gap-2 bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors"
       >
         <Pencil className="w-4 h-4" />
-        რედაქტირება
+        {t.common.actions.edit}
       </Link>
       <button
         type="button"
@@ -53,7 +55,7 @@ export default function ServiceOwnerControls({
         className="flex-1 flex items-center justify-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
       >
         <Trash2 className="w-4 h-4" />
-        {deleting ? "იშლება..." : "წაშლა"}
+        {deleting ? t.services.owner.deleting : t.common.actions.delete}
       </button>
     </div>
   );

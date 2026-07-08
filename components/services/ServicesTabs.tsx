@@ -2,17 +2,18 @@
 import Link from "next/link";
 import { Stethoscope, Building2, ShoppingBag, Coffee } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-
-const tabs = [
-  { key: "vet-clinics", href: "/services/vet-clinics", label: "ვეტკლინიკები", icon: Stethoscope },
-  { key: "pet-hotels", href: "/services/pet-hotels", label: "სასტუმროები", icon: Building2 },
-  { key: "pet-shops", href: "/services/pet-shops", label: "მაღაზიები", icon: ShoppingBag },
-  { key: "pet-friendly", href: "/services/pet-friendly", label: "ფეთ-ფრენდლი", icon: Coffee },
-];
+import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Props { active: string; }
 
 export function ServicesTabs({ active }: Props) {
+  const { t } = useT();
+  const tabs = [
+    { key: "vet-clinics", href: "/services/vet-clinics", label: t.services.tabs.vetClinics, icon: Stethoscope },
+    { key: "pet-hotels", href: "/services/pet-hotels", label: t.services.tabs.petHotels, icon: Building2 },
+    { key: "pet-shops", href: "/services/pet-shops", label: t.services.tabs.petShops, icon: ShoppingBag },
+    { key: "pet-friendly", href: "/services/pet-friendly", label: t.services.tabs.petFriendly, icon: Coffee },
+  ];
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {tabs.map((tab) => (

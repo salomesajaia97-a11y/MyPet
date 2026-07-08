@@ -2,11 +2,13 @@
 
 import { Stars } from "./Stars";
 import type { Review } from "./types";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 // Header block: average, star row, total count, and a 5→1 distribution bar.
 // Everything is derived from the real native review list, so it updates for
 // free after any create/edit/delete. Renders "no ratings yet" at zero.
 export default function RatingSummary({ reviews }: { reviews: Review[] }) {
+  const { t } = useT();
   const count = reviews.length;
 
   if (count === 0) {
@@ -28,7 +30,7 @@ export default function RatingSummary({ reviews }: { reviews: Review[] }) {
       <div className="flex flex-col items-center justify-center shrink-0 sm:px-4">
         <span className="text-4xl font-bold text-[#0F2830]">{avg.toFixed(1)}</span>
         <Stars value={Math.round(avg)} className="w-4 h-4" />
-        <span className="text-xs text-stone-400 mt-1">{count} შეფასება</span>
+        <span className="text-xs text-stone-400 mt-1">{count} {t.services.reviewWord}</span>
       </div>
 
       {/* Distribution */}

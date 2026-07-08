@@ -8,6 +8,7 @@ import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
 import { auth } from "@/auth";
 import ServiceOwnerControls from "@/components/services/ServiceOwnerControls";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 interface Service {
   _id: string;
@@ -33,14 +34,23 @@ interface Service {
   status?: "pending" | "approved";
 }
 
-const CATEGORY_META: Record<
+// Href per category; the back-link label comes from the dictionary
+// (t.services.detail.back[...]) so it follows the active locale.
+const CATEGORY_HREF: Record<string, string> = {
+  "vet-clinics": "/services/vet-clinics",
+  "pet-hotels": "/services/pet-hotels",
+  "pet-shops": "/services/pet-shops",
+  "pet-friendly": "/services/pet-friendly",
+};
+
+const CATEGORY_BACK_KEY: Record<
   string,
-  { label: string; href: string }
+  keyof Awaited<ReturnType<typeof getServerDictionary>>["t"]["services"]["detail"]["back"]
 > = {
-  "vet-clinics": { label: "ვეტ კლინიკები", href: "/services/vet-clinics" },
-  "pet-hotels": { label: "ცხოველთა სასტუმროები", href: "/services/pet-hotels" },
-  "pet-shops": { label: "პეტ შოპები", href: "/services/pet-shops" },
-  "pet-friendly": { label: "Pet-Friendly ადგილები", href: "/services/pet-friendly" },
+  "vet-clinics": "vetClinics",
+  "pet-hotels": "petHotels",
+  "pet-shops": "petShops",
+  "pet-friendly": "petFriendly",
 };
 
 // Query the DB directly instead of self-fetching our own API (no absolute-URL
@@ -63,8 +73,10 @@ export default async function ServiceDetailPage({
   params,
 }: PageProps<"/services/[category]/[id]">) {
   const { category, id } = await params;
-  const meta = CATEGORY_META[category];
-  if (!meta) notFound();
+  const { t } = await getServerDictionary();
+  const backHref = CATEGORY_HREF[category];
+  if (!backHref) notFound();
+  const backLabel = t.services.detail.back[CATEGORY_BACK_KEY[category]];
 
   const service = await getService(category, id);
   if (!service) notFound();
@@ -92,11 +104,11 @@ export default async function ServiceDetailPage({
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Back */}
         <Link
-          href={meta.href}
+          href={backHref}
           className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-[#0E4A5C] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          {meta.label}
+          {backLabel}
         </Link>
 
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
@@ -126,7 +138,7 @@ export default async function ServiceDetailPage({
               <div className="space-y-3 border border-[#0E4A5C]/15 bg-[#EBF6FA] rounded-xl p-4">
                 {service.status === "pending" && (
                   <p className="text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    მოდერაციაშია — ხილვადი მხოლოდ თქვენთვის
+                    {t.services.detail.pendingNotice}
                   </p>
                 )}
                 <ServiceOwnerControls category={service.category} id={service._id} />
@@ -139,7 +151,7 @@ export default async function ServiceDetailPage({
                 <h1 className="text-2xl font-bold text-[#0F2830]">{service.name}</h1>
                 {service.pricePerNight && (
                   <span className="shrink-0 text-sm font-bold text-[#0E4A5C] bg-[#0E4A5C]/10 px-3 py-1 rounded-full">
-                    {service.pricePerNight}₾/ღამე
+                    {service.pricePerNight}{t.services.perNight}
                   </span>
                 )}
               </div>
@@ -148,7 +160,7 @@ export default async function ServiceDetailPage({
                   <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                   <span className="font-semibold">{service.aggregateRating}</span>
                   <span className="text-stone-400 text-xs">
-                    ({nativeCount} შეფასება)
+                    ({nativeCount} {t.services.reviewWord})
                   </span>
                 </div>
               )}
@@ -171,7 +183,7 @@ export default async function ServiceDetailPage({
             {/* Description */}
             {service.description && (
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-[#0F2830]">აღწერა</p>
+                <p className="text-sm font-semibold text-[#0F2830]">{t.services.detail.description}</p>
                 <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">
                   {service.description}
                 </p>
@@ -183,7 +195,7 @@ export default async function ServiceDetailPage({
               <div className="space-y-2 border-t pt-5">
                 <p className="text-sm font-semibold text-[#0F2830] flex items-center gap-2">
                   <Clock className="w-4 h-4 text-stone-400" />
-                  სამუშაო საათები
+                  {t.services.detail.openingHours}
                 </p>
                 <ul className="space-y-0.5">
                   {service.openingHours.map((line, i) => (
@@ -211,7 +223,7 @@ export default async function ServiceDetailPage({
                   className="text-sm text-[#0E4A5C] flex items-center gap-2 hover:underline"
                 >
                   <MapPin className="w-4 h-4 shrink-0" />
-                  რუკაზე ნახვა
+                  {t.services.detail.viewOnMap}
                 </a>
               )}
               {service.website && (
@@ -222,7 +234,7 @@ export default async function ServiceDetailPage({
                   className="text-sm text-stone-500 flex items-center gap-2 hover:text-[#0E4A5C] transition-colors"
                 >
                   <Globe className="w-4 h-4 shrink-0" />
-                  ვებ-გვერდი
+                  {t.services.website}
                 </a>
               )}
               {service.phone && (

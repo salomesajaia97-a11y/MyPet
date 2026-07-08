@@ -134,7 +134,9 @@ function formatCount(count: number | null | undefined): string {
   return count.toLocaleString("en-US");
 }
 
-/** Minimal inline select styled to match the search bar — no extra chrome. */
+/** Minimal inline select styled to match the search bar — no extra chrome.
+ *  `options` carry a Georgian `value` (fed to the URL/DB, never translated) and
+ *  a display `label` (localized); state stores the value, we render the label. */
 function QuickSelect({
   label,
   value,
@@ -143,16 +145,19 @@ function QuickSelect({
 }: {
   label: string;
   value: string;
-  options: string[];
+  options: { value: string; label: string }[];
   onChange: (v: string) => void;
 }) {
+  const selected = options.find((o) => o.value === value);
   return (
     <label className="relative flex-1 min-w-0 px-5 py-2.5 border-r border-stone-200 cursor-pointer hover:bg-stone-50 transition-colors block">
       <span className="block text-[10px] text-stone-400 font-semibold uppercase tracking-wider leading-none mb-1">
         {label}
       </span>
       <span className="flex items-center justify-between gap-2">
-        <span className="text-sm font-semibold text-[#0F2830] leading-none truncate">{value}</span>
+        <span className="text-sm font-semibold text-[#0F2830] leading-none truncate">
+          {selected?.label ?? value}
+        </span>
         <ChevronDown className="w-4 h-4 text-stone-400 shrink-0" />
       </span>
       <select
@@ -161,8 +166,8 @@ function QuickSelect({
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       >
         {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
+          <option key={o.value} value={o.value}>
+            {o.label}
           </option>
         ))}
       </select>
@@ -251,6 +256,23 @@ export default function HomePage() {
     router.push(query ? `${base}?${query}` : base);
   };
 
+  // Option lists: Georgian `value` (drives URL/DB + DEAL_HREF, must not change),
+  // localized `label` for display. City names are proper nouns → shown as-is.
+  const speciesOptions = [
+    { value: SPECIES[0], label: t.home.search.allSpecies },
+    ...SPECIES_OPTIONS.map((s) => ({ value: s.ka, label: t.home.search.speciesBySlug[s.slug] })),
+  ];
+  const locationOptions = [
+    { value: LOCATIONS[0], label: t.home.search.allCities },
+    ...CITIES.map((c) => ({ value: c, label: c })),
+  ];
+  const dealOptions = [
+    { value: DEAL_TYPES[0], label: t.home.search.allDeals },
+    { value: "ყიდვა-გაყიდვა", label: t.home.categories.buySell },
+    { value: "გაჩუქება", label: t.home.categories.adoption },
+    { value: "შეჯვარება", label: t.home.categories.mating },
+  ];
+
   return (
     <div className="min-h-screen bg-white overflow-x-clip">
       {/* ─── Search Hero ─── */}
@@ -279,9 +301,9 @@ export default function HomePage() {
           <Reveal direction="up" delay={80}>
             <div className="flex flex-col md:flex-row items-stretch bg-white rounded-2xl border-2 border-[#0E4A5C] shadow-[0_18px_45px_-18px_rgba(14,74,92,0.55)] overflow-hidden transition-shadow hover:shadow-[0_24px_60px_-18px_rgba(14,74,92,0.65)] md:pr-2">
               <div className="flex items-stretch divide-y md:divide-y-0 flex-1 flex-col md:flex-row">
-                <QuickSelect label={t.home.search.speciesLabel} value={species} options={SPECIES} onChange={setSpecies} />
-                <QuickSelect label={t.home.search.locationLabel} value={location} options={LOCATIONS} onChange={setLocation} />
-                <QuickSelect label={t.home.search.dealLabel} value={deal} options={DEAL_TYPES} onChange={setDeal} />
+                <QuickSelect label={t.home.search.speciesLabel} value={species} options={speciesOptions} onChange={setSpecies} />
+                <QuickSelect label={t.home.search.locationLabel} value={location} options={locationOptions} onChange={setLocation} />
+                <QuickSelect label={t.home.search.dealLabel} value={deal} options={dealOptions} onChange={setDeal} />
               </div>
               <button
                 type="button"

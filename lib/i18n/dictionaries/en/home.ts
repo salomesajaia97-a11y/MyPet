@@ -10,6 +10,17 @@ export const home: typeof ka = {
     locationLabel: "Location",
     dealLabel: "Listing",
     button: "Search",
+    allSpecies: "All species",
+    allCities: "All cities",
+    allDeals: "All",
+    speciesBySlug: {
+      dog: "Dog",
+      cat: "Cat",
+      bird: "Bird",
+      rabbit: "Rabbit",
+      reptile: "Reptile",
+      other: "Other",
+    },
   },
   quickChips: {
     all: "All listings",

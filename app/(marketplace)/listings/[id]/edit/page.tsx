@@ -169,11 +169,11 @@ export default function EditListingPage() {
           className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-[#0E4A5C] transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
-          უკან დაბრუნება
+          {t.listings.detail.back}
         </Link>
 
         <h1 className="text-2xl font-bold text-[#0F2830] mb-6">
-          განცხადების რედაქტირება
+          {t.listings.editListing.title}
         </h1>
 
         <form
@@ -183,7 +183,7 @@ export default function EditListingPage() {
           {/* Category is fixed on edit */}
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">
-              კატეგორია
+              {t.listings.form.category}
             </label>
             <span className="inline-block bg-[#EBF6FA] text-[#0E4A5C] text-sm font-medium px-3 py-1.5 rounded-xl">
               {typeLabels[type]}
@@ -193,14 +193,14 @@ export default function EditListingPage() {
           {/* Photos */}
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">
-              ფოტოები <span className="text-red-500">*</span>
+              {t.listings.form.photos} <span className="text-red-500">*</span>
             </label>
             <ImageUploader value={images} onChange={setImages} maxImages={5} />
           </div>
 
           {/* Species */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">სახეობა</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.species}</label>
             <select name="species" required defaultValue={listing.species} className={inputCls}>
               {SPECIES_VALUES.map((s) => (
                 <option key={s} value={s}>{t.listings.species[s]}</option>
@@ -210,13 +210,13 @@ export default function EditListingPage() {
 
           {/* Breed */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ჯიში</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.breed}</label>
             <input name="breed" required defaultValue={listing.breed} className={inputCls} />
           </div>
 
           {/* Age */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ასაკი (თვეებში)</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.age}</label>
             <input name="age" type="number" min="0" required defaultValue={listing.age} className={inputCls} />
           </div>
 
@@ -224,20 +224,20 @@ export default function EditListingPage() {
           {listing.type === "buy-sell" && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ფასი (₾)</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.price}</label>
                 <input name="price" type="number" min="0" required defaultValue={listing.price ?? ""} className={inputCls} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ვალუტა</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.currency}</label>
                 <select name="currency" defaultValue={listing.currency ?? "GEL"} className={inputCls}>
                   <option value="GEL">GEL ₾</option>
                   <option value="USD">USD $</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">პედიგრი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
                 <select name="pedigree" defaultValue={listing.pedigree ?? "none"} className={inputCls}>
-                  <option value="none">არ აქვს</option>
+                  <option value="none">{t.listings.form.pedigreeNone}</option>
                   <option value="FCI">FCI</option>
                   <option value="FCG">FCG</option>
                 </select>
@@ -245,11 +245,11 @@ export default function EditListingPage() {
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="vaccinated" defaultChecked={listing.vaccinated} className="rounded" />
-                  ვაქცინირებული
+                  {t.listings.form.vaccinated}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="hasPassport" defaultChecked={listing.hasPassport} className="rounded" />
-                  პასპორტი
+                  {t.listings.form.passport}
                 </label>
               </div>
             </>
@@ -259,27 +259,27 @@ export default function EditListingPage() {
             <>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  ხასიათი (მძიმით გამოყოფილი)
+                  {t.listings.form.temperament}
                 </label>
                 <input
                   name="temperament"
                   defaultValue={(listing.temperament ?? []).join(", ")}
-                  placeholder="მაგ: მშვიდი, მოთამაშე, ერთგული"
+                  placeholder={t.listings.form.temperamentPlaceholder}
                   className={inputCls}
                 />
               </div>
               <div className="flex flex-wrap gap-6">
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="spayedNeutered" defaultChecked={listing.spayedNeutered} className="rounded" />
-                  დაკასტრირებული / სტერილიზებული
+                  {t.listings.form.spayedNeutered}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="goodWithKids" defaultChecked={listing.goodWithKids} className="rounded" />
-                  ბავშვებთან თავსებადი
+                  {t.listings.form.goodWithKids}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
                   <input type="checkbox" name="goodWithPets" defaultChecked={listing.goodWithPets} className="rounded" />
-                  სხვა ცხოველებთან თავსებადი
+                  {t.listings.form.goodWithPets}
                 </label>
               </div>
             </>
@@ -288,27 +288,27 @@ export default function EditListingPage() {
           {listing.type === "mating" && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">სქესი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.sex}</label>
                 <select name="sex" required defaultValue={listing.sex} className={inputCls}>
-                  <option value="male">მამრი</option>
-                  <option value="female">მდედრი</option>
+                  <option value="male">{t.listings.form.male}</option>
+                  <option value="female">{t.listings.form.female}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">წონა (კგ)</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.weight}</label>
                 <input name="weight" type="number" min="0" step="0.1" required defaultValue={listing.weight ?? ""} className={inputCls} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">პედიგრი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.pedigree}</label>
                 <select name="pedigree" defaultValue={listing.pedigree ?? "none"} className={inputCls}>
-                  <option value="none">არ აქვს</option>
+                  <option value="none">{t.listings.form.pedigreeNone}</option>
                   <option value="FCI">FCI</option>
                   <option value="FCG">FCG</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ფასი (₾, სურვილისამებრ)</label>
-                <input name="price" type="number" min="0" defaultValue={listing.price ?? ""} placeholder="ცარიელი = უფასო" className={inputCls} />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.priceOptional}</label>
+                <input name="price" type="number" min="0" defaultValue={listing.price ?? ""} placeholder={t.listings.form.priceFreePlaceholder} className={inputCls} />
               </div>
             </>
           )}
@@ -316,30 +316,30 @@ export default function EditListingPage() {
           {listing.type === "lost-found" && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">სტატუსი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.status}</label>
                 <select name="status" required defaultValue={listing.status} className={inputCls}>
-                  <option value="lost">დაკარგული</option>
-                  <option value="found">ნაპოვნი</option>
+                  <option value="lost">{t.listings.form.lost}</option>
+                  <option value="found">{t.listings.form.found}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">უბანი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.neighborhood}</label>
                 <input name="neighborhood" required defaultValue={listing.neighborhood ?? ""} className={inputCls} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">უკანასკნელი ნახვის თარიღი</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.lastSeenDate}</label>
                 <input name="lastSeenDate" type="date" required defaultValue={listing.lastSeenDate ?? ""} className={inputCls} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">ჯილდო (₾, სურვილისამებრ)</label>
-                <input name="reward" type="number" min="0" defaultValue={listing.reward ?? ""} placeholder="ცარიელი = ჯილდო არ არის" className={inputCls} />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.reward}</label>
+                <input name="reward" type="number" min="0" defaultValue={listing.reward ?? ""} placeholder={t.listings.form.rewardPlaceholder} className={inputCls} />
               </div>
             </>
           )}
 
           {/* Common fields */}
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ქალაქი</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.city}</label>
             <select name="city" required defaultValue={city} className={inputCls}>
               {/* Keep the stored city selectable even if it's outside the short list. */}
               {!CITIES.includes(city as (typeof CITIES)[number]) && city && (
@@ -351,19 +351,19 @@ export default function EditListingPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">უბანი / მისამართი (სურვილისამებრ)</label>
-            <input name="district" defaultValue={district} placeholder="მაგ: ვაკე" className={inputCls} />
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.district}</label>
+            <input name="district" defaultValue={district} placeholder={t.listings.form.districtPlaceholder} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">აღწერა</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.description}</label>
             <textarea name="description" required rows={4} defaultValue={listing.description} className={`${inputCls} resize-none`} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">საკონტაქტო სახელი</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.contactName}</label>
             <input name="contactName" required defaultValue={listing.contactName} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">ტელეფონი</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t.listings.form.phone}</label>
             <input name="contactPhone" required defaultValue={listing.contactPhone} className={inputCls} />
           </div>
 
@@ -376,7 +376,7 @@ export default function EditListingPage() {
             disabled={submitting}
             className="w-full py-3 bg-[#0E4A5C] text-white font-semibold rounded-xl hover:bg-[#0B3D4E] transition-colors disabled:opacity-50"
           >
-            {submitting ? "ინახება..." : "ცვლილებების შენახვა"}
+            {submitting ? t.listings.editListing.submitting : t.listings.editListing.submit}
           </button>
         </form>
       </div>

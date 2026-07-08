@@ -8,6 +8,17 @@ export const home = {
     locationLabel: "მდებარეობა",
     dealLabel: "განცხადება",
     button: "ძება",
+    allSpecies: "ყველა სახეობა",
+    allCities: "ყველა ქალაქი",
+    allDeals: "ყველა",
+    speciesBySlug: {
+      dog: "ძაღლი",
+      cat: "კატა",
+      bird: "ფრინველი",
+      rabbit: "კურდღელი",
+      reptile: "რეპტილია",
+      other: "სხვა",
+    },
   },
   quickChips: {
     all: "ყველა განცხადება",

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, X, Loader2 } from "lucide-react";
 import { StarPicker } from "./Stars";
 import type { ReviewDraft } from "./types";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 const MAX_PHOTOS = 3;
 
@@ -17,6 +18,7 @@ interface Props {
 // Create/edit form: star picker (required), optional comment, up to 3 photos.
 // Submit is enabled once a rating is chosen — a star-only review is valid.
 export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
+  const { t } = useT();
   const [rating, setRating] = useState(initial?.rating ?? 0);
   const [text, setText] = useState(initial?.text ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photos ?? []);
@@ -44,7 +46,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
         setPhotos((prev) => (prev.length < MAX_PHOTOS ? [...prev, url] : prev));
       }
     } catch {
-      setError("სურათის ატვირთვა ვერ მოხერხდა.");
+      setError(t.services.reviews.form.uploadFailed);
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -54,7 +56,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
-      setError("აირჩიეთ შეფასება");
+      setError(t.services.reviews.form.chooseRating);
       return;
     }
     setError("");
@@ -67,7 +69,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
         setPhotos([]);
       }
     } catch {
-      setError("შეფასების გაგზავნა ვერ მოხერხდა. სცადეთ თავიდან.");
+      setError(t.services.reviews.form.submitFailed);
     } finally {
       setSubmitting(false);
     }
@@ -79,7 +81,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
 
       <textarea
         rows={4}
-        placeholder="გაგვიზიარე შენი გამოცდილება… (არასავალდებულო)"
+        placeholder={t.services.reviews.form.commentPlaceholder}
         value={text}
         onChange={(e) => setText(e.target.value)}
         className="w-full rounded-xl border border-stone-200 p-3 text-sm text-[#0F2830] resize-none focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30"
@@ -96,7 +98,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
                 type="button"
                 onClick={() => setPhotos((prev) => prev.filter((p) => p !== url))}
                 className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5"
-                aria-label="წაშლა"
+                aria-label={t.common.actions.delete}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -114,7 +116,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
             className="inline-flex items-center gap-2 text-sm text-[#0E4A5C] font-medium hover:underline disabled:opacity-60"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
-            სურათის დამატება
+            {t.services.reviews.form.addPhoto}
           </button>
         )}
         <input
@@ -135,7 +137,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
           disabled={submitting || uploading}
           className="flex-1 bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
         >
-          {submitting ? "იგზავნება…" : submitLabel}
+          {submitting ? t.services.reviews.form.submitting : submitLabel}
         </button>
         {onCancel && (
           <button
@@ -143,7 +145,7 @@ export default function ReviewForm({ initial, submitLabel, onSubmit, onCancel }:
             onClick={onCancel}
             className="px-4 py-3 rounded-xl text-sm font-medium text-stone-500 hover:bg-stone-100 transition-colors"
           >
-            გაუქმება
+            {t.common.actions.cancel}
           </button>
         )}
       </div>

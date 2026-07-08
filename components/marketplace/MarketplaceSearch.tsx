@@ -3,6 +3,7 @@ import { Search, X } from "lucide-react";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SPECIES, CITIES } from "@/lib/marketplace/filters";
+import { useT } from "@/components/i18n/LanguageProvider";
 import type { MarketplaceType } from "@/types/marketplace";
 
 /**
@@ -23,6 +24,7 @@ export function MarketplaceSearch({
   filters?: boolean;
   type?: MarketplaceType;
 }) {
+  const { t } = useT();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -107,7 +109,7 @@ export function MarketplaceSearch({
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
           <input
             type="text"
-            placeholder="ძებნა ჯიშით..."
+            placeholder={t.marketplace.searchByBreedPlaceholder}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="w-full pl-11 pr-4 py-3 bg-white border border-stone-200 rounded-xl text-sm placeholder:text-stone-400 focus:outline-none focus:border-[#0E4A5C]/50 focus:ring-2 focus:ring-[#0E4A5C]/10"
@@ -118,7 +120,7 @@ export function MarketplaceSearch({
           className="inline-flex items-center gap-2 px-4 py-3 bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white rounded-xl text-sm font-semibold transition-colors whitespace-nowrap"
         >
           <Search className="w-4 h-4" />
-          ძება
+          {t.marketplace.searchButton}
         </button>
       </form>
 
@@ -130,12 +132,12 @@ export function MarketplaceSearch({
             value={species}
             onChange={(e) => apply({ species: e.target.value })}
             className={`${controlClass} cursor-pointer`}
-            aria-label="სახეობა"
+            aria-label={t.marketplace.speciesFilterLabel}
           >
-            <option value="">ყველა ტიპი</option>
+            <option value="">{t.marketplace.allTypes}</option>
             {SPECIES.map((s) => (
               <option key={s.slug} value={s.ka}>
-                {s.ka}
+                {t.marketplace.species[s.slug]}
               </option>
             ))}
           </select>
@@ -145,9 +147,9 @@ export function MarketplaceSearch({
             value={city}
             onChange={(e) => apply({ city: e.target.value })}
             className={`${controlClass} cursor-pointer`}
-            aria-label="ქალაქი"
+            aria-label={t.marketplace.cityFilterLabel}
           >
-            <option value="">ყველა ქალაქი</option>
+            <option value="">{t.marketplace.allCities}</option>
             {CITIES.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -162,26 +164,26 @@ export function MarketplaceSearch({
                 type="number"
                 min="0"
                 inputMode="numeric"
-                placeholder="ფასი დან ₾"
+                placeholder={t.marketplace.priceFrom}
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 onBlur={applyPrice}
                 onKeyDown={priceKeyDown}
                 className={`${controlClass} w-28`}
-                aria-label="მინიმალური ფასი"
+                aria-label={t.marketplace.minPriceLabel}
               />
               <span className="text-stone-300">–</span>
               <input
                 type="number"
                 min="0"
                 inputMode="numeric"
-                placeholder="ფასი მდე ₾"
+                placeholder={t.marketplace.priceTo}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 onBlur={applyPrice}
                 onKeyDown={priceKeyDown}
                 className={`${controlClass} w-28`}
-                aria-label="მაქსიმალური ფასი"
+                aria-label={t.marketplace.maxPriceLabel}
               />
             </div>
           )}
@@ -192,12 +194,12 @@ export function MarketplaceSearch({
               value={pedigree}
               onChange={(e) => apply({ pedigree: e.target.value })}
               className={`${controlClass} cursor-pointer`}
-              aria-label="პედიგრი"
+              aria-label={t.marketplace.pedigreeFilterLabel}
             >
-              <option value="">პედიგრი: ყველა</option>
+              <option value="">{t.marketplace.pedigreeAll}</option>
               <option value="FCI">FCI</option>
               <option value="FCG">FCG</option>
-              <option value="none">პედიგრის გარეშე</option>
+              <option value="none">{t.marketplace.pedigreeNone}</option>
             </select>
           )}
 
@@ -207,11 +209,11 @@ export function MarketplaceSearch({
               value={sex}
               onChange={(e) => apply({ sex: e.target.value })}
               className={`${controlClass} cursor-pointer`}
-              aria-label="სქესი"
+              aria-label={t.marketplace.sexFilterLabel}
             >
-              <option value="">სქესი: ყველა</option>
-              <option value="male">მამრი</option>
-              <option value="female">მდედრი</option>
+              <option value="">{t.marketplace.sexAll}</option>
+              <option value="male">{t.marketplace.sexMale}</option>
+              <option value="female">{t.marketplace.sexFemale}</option>
             </select>
           )}
 
@@ -221,11 +223,11 @@ export function MarketplaceSearch({
               value={status}
               onChange={(e) => apply({ status: e.target.value })}
               className={`${controlClass} cursor-pointer`}
-              aria-label="სტატუსი"
+              aria-label={t.marketplace.statusFilterLabel}
             >
-              <option value="">სტატუსი: ყველა</option>
-              <option value="lost">დაკარგული</option>
-              <option value="found">ნაპოვნი</option>
+              <option value="">{t.marketplace.statusAll}</option>
+              <option value="lost">{t.marketplace.statusLostOption}</option>
+              <option value="found">{t.marketplace.statusFoundOption}</option>
             </select>
           )}
 
@@ -236,7 +238,7 @@ export function MarketplaceSearch({
               className="inline-flex items-center gap-1 px-3 py-2 text-sm text-stone-500 hover:text-rose-600 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
-              გასუფთავება
+              {t.marketplace.clearFilters}
             </button>
           )}
         </div>
