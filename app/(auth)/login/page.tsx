@@ -1,14 +1,12 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PawPrint } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function LoginPage() {
   const { t } = useT();
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,14 +22,23 @@ export default function LoginPage() {
       redirect: false,
     });
 
-    setLoading(false);
-
     if (result?.error) {
+      setLoading(false);
       setError(t.auth.login.invalidCredentials);
-    } else {
-      router.push("/");
-      router.refresh();
+      return;
     }
+
+    // Full-document navigation (not router.push) on success. A client-side
+    // transition keeps Next's Router Cache, which may hold a prefetch of a
+    // proxy-protected route (e.g. /listings/new) captured *while logged out* —
+    // i.e. a cached redirect to /login. Replaying that stale entry bounces a
+    // freshly-authenticated user back to login until they hard-refresh. A full
+    // load discards that cache and carries the new session cookie. Honour the
+    // proxy's `callbackUrl`, but only same-origin relative paths (no open
+    // redirect).
+    const raw = new URLSearchParams(window.location.search).get("callbackUrl");
+    const target = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+    window.location.assign(target);
   }
 
   return (
