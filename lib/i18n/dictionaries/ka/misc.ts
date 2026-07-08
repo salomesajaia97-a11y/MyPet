@@ -29,6 +29,7 @@ export const misc = {
   // API error / fallback messages returned to the client (route handlers)
   validationFailed: "ველების ვალიდაცია ვერ მოხერხდა",
   alreadyReviewed: "თქვენ უკვე დატოვეთ შეფასება ამ ბიზნესზე",
+  cannotReviewOwn: "საკუთარი ბიზნესის შეფასება არ შეიძლება",
   user: "მომხმარებელი",
   listing: "განცხადება",
 };

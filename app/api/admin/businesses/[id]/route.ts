@@ -3,6 +3,7 @@ import { isValidObjectId } from "mongoose";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
+import NotificationModel from "@/lib/models/Notification";
 
 async function requireAdmin() {
   const session = await auth();
@@ -35,15 +36,28 @@ export async function PATCH(
   }
 
   await connectDB();
-  const updated = await BusinessModel.findByIdAndUpdate(
-    id,
-    { status: "approved" },
-    { new: true }
-  ).lean();
-  if (!updated) {
+  const business = await BusinessModel.findById(id);
+  if (!business) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json({ business: updated });
+
+  // Only a genuine pending→approved transition should fire a notification.
+  // Re-approving an already-approved business, or approving a scraped one
+  // with no owner, must not create a notification.
+  const wasPending = business.status === "pending";
+  business.status = "approved";
+  await business.save();
+
+  if (wasPending && business.userId) {
+    await NotificationModel.create({
+      userId: business.userId,
+      type: "business_approved",
+      businessName: business.name,
+      link: `/services/${business.category}/${business._id}`,
+    });
+  }
+
+  return NextResponse.json({ business: business.toObject() });
 }
 
 // Reject a submission (delete it).

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRound, List, Heart, MessageCircle, Wallet, Briefcase } from "lucide-react";
+import { UserRound, List, Heart, MessageCircle, Wallet, Briefcase, Bell } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/components/i18n/LanguageProvider";
 
@@ -10,6 +10,7 @@ const TABS = [
   { href: "/profile", key: "profile", icon: UserRound, exact: true },
   { href: "/profile/listings", key: "listings", icon: List, exact: false },
   { href: "/profile/businesses", key: "businesses", icon: Briefcase, exact: false },
+  { href: "/profile/notifications", key: "notifications", icon: Bell, exact: false },
   { href: "/profile/favorites", key: "favorites", icon: Heart, exact: false },
   { href: "/profile/messages", key: "messages", icon: MessageCircle, exact: false },
   { href: "/profile/balance", key: "balance", icon: Wallet, exact: false },

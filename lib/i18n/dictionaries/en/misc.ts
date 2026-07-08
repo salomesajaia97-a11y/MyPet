@@ -31,6 +31,7 @@ export const misc: typeof ka = {
   // API error / fallback messages returned to the client (route handlers)
   validationFailed: "Field validation failed",
   alreadyReviewed: "You have already reviewed this business",
+  cannotReviewOwn: "You can't review your own business",
   user: "User",
   listing: "Listing",
 };

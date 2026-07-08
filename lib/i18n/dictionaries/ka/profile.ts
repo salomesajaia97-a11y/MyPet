@@ -12,12 +12,22 @@ export const profile = {
     profile: "პროფილი",
     listings: "განცხადებები",
     favorites: "ფავორიტები",
-    messages: "შეტყობინებები",
+    messages: "მიმოწერა",
+    notifications: "შეტყობინებები",
     balance: "ბალანსი",
     businesses: "ჩემი სერვისები",
   },
-  messages: {
+  notifications: {
     title: "შეტყობინებები",
+    loading: "იტვირთება…",
+    empty: "ჯერ არ გაქვთ შეტყობინებები.",
+    businessApproved: {
+      title: "ბიზნესი დამტკიცდა",
+      body: "თქვენი სერვისი „{name}“ დამტკიცდა და გამოქვეყნდა.",
+    },
+  },
+  messages: {
+    title: "მიმოწერა",
     loading: "იტვირთება…",
     empty: "ჯერ არ გაქვს შეტყობინებები.",
     now: "ახლახ",

@@ -130,9 +130,13 @@ export default function ServiceReviews({ businessId, ownerId }: Props) {
         )}
       </div>
 
-      {/* Write a review */}
+      {/* Write a review — hidden for the business owner (no self-rating). */}
       <div className="border-t pt-5">
-        {status === "authenticated" ? (
+        {isOwner ? (
+          <p className="text-sm text-stone-500 text-center">
+            საკუთარი ბიზნესის შეფასება არ შეიძლება.
+          </p>
+        ) : status === "authenticated" ? (
           <>
             <p className="text-sm font-semibold text-[#0F2830] mb-4">დაწერე შეფასება</p>
             <ReviewForm submitLabel="შეფასების გაგზავნა" onSubmit={createReview} />

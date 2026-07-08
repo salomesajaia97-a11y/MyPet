@@ -83,9 +83,15 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     // The business must exist before we attach a review / recompute its rating.
-    const business = await BusinessModel.findById(businessId).select("_id");
+    const business = await BusinessModel.findById(businessId).select("_id userId");
     if (!business) {
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
+    }
+
+    // An owner may not review their own business — self-rating would let a
+    // submitter inflate their own aggregate score.
+    if (business.userId?.toString() === session.user.id) {
+      return NextResponse.json({ error: t.misc.cannotReviewOwn }, { status: 403 });
     }
 
     // One native review per user per business — prevents a single user from

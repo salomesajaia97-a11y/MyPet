@@ -15,8 +15,18 @@ export const profile: typeof ka = {
     listings: "Listings",
     favorites: "Favorites",
     messages: "Messages",
+    notifications: "Notifications",
     balance: "Balance",
     businesses: "My services",
+  },
+  notifications: {
+    title: "Notifications",
+    loading: "Loading…",
+    empty: "You don't have any notifications yet.",
+    businessApproved: {
+      title: "Business approved",
+      body: "Your service “{name}” has been approved and published.",
+    },
   },
   messages: {
     title: "Messages",
