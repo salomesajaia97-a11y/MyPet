@@ -3,6 +3,7 @@ import type { nav as ka } from "../ka/nav";
 export const nav: typeof ka = {
   addListing: "Add listing",
   messages: "Messages",
+  notifications: "Notifications",
   favorites: "Favorites",
   signIn: "Sign in",
   menu: "Menu",

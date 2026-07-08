@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck, MessageCircle, Menu, X } from "lucide-react";
+import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck, MessageCircle, Bell, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 import PhoneLink from "@/components/ui/PhoneLink";
@@ -54,6 +54,45 @@ function MessagesLink() {
       className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
     >
       <MessageCircle className="w-[18px] h-[18px]" />
+      {count > 0 && (
+        <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function NotificationsBell() {
+  const { status } = useSession();
+  const { t } = useT();
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let active = true;
+    const load = () =>
+      fetch("/api/profile/notifications/unread-count")
+        .then((r) => (r.ok ? r.json() : { count: 0 }))
+        .then((d) => {
+          if (active) setCount(d.count ?? 0);
+        })
+        .catch(() => {});
+    load();
+    const interval = setInterval(load, 60_000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [status]);
+
+  return (
+    <Link
+      href="/profile/notifications"
+      aria-label={t.nav.notifications}
+      className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
+    >
+      <Bell className="w-[18px] h-[18px]" />
       {count > 0 && (
         <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
           {count > 9 ? "9+" : count}
@@ -223,6 +262,9 @@ export function Navbar() {
 
           {/* Messages */}
           <MessagesLink />
+
+          {/* Notifications */}
+          {status === "authenticated" && <NotificationsBell />}
 
           {/* Favorites */}
           <Link

@@ -1,6 +1,7 @@
 export const nav = {
   addListing: "დამატება",
-  messages: "შეტყობინებები",
+  messages: "მიმოწერა",
+  notifications: "შეტყობინებები",
   favorites: "ფავორიტები",
   signIn: "შესვლა",
   menu: "მენიუ",
