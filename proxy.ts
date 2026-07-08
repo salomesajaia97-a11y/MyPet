@@ -27,5 +27,6 @@ export const config = {
     "/listings/new",
     "/listings/:id/edit",
     "/services/new",
+    "/services/:category/:id/edit",
   ],
 };

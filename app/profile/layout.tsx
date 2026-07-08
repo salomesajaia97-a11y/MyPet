@@ -2,24 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRound, List, Heart, MessageCircle, Wallet } from "lucide-react";
+import { UserRound, List, Heart, MessageCircle, Wallet, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 const TABS = [
-  { href: "/profile", label: "პროფილი", icon: UserRound, exact: true },
-  { href: "/profile/listings", label: "განცხადებები", icon: List },
-  { href: "/profile/favorites", label: "ფავორიტები", icon: Heart },
-  { href: "/profile/messages", label: "შეტყობინებები", icon: MessageCircle },
-  { href: "/profile/balance", label: "ბალანსი", icon: Wallet },
-];
+  { href: "/profile", key: "profile", icon: UserRound, exact: true },
+  { href: "/profile/listings", key: "listings", icon: List, exact: false },
+  { href: "/profile/businesses", key: "businesses", icon: Briefcase, exact: false },
+  { href: "/profile/favorites", key: "favorites", icon: Heart, exact: false },
+  { href: "/profile/messages", key: "messages", icon: MessageCircle, exact: false },
+  { href: "/profile/balance", key: "balance", icon: Wallet, exact: false },
+] as const;
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useT();
   const pathname = usePathname();
 
   return (
     <>
       <nav
-        aria-label="პროფილის ნავიგაცია"
+        aria-label={t.profile.nav.aria}
         className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-200"
       >
         <div className="max-w-5xl mx-auto px-4 flex items-center gap-1 overflow-x-auto">
@@ -40,7 +43,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
                 )}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />
-                {tab.label}
+                {t.profile.nav[tab.key]}
               </Link>
             );
           })}

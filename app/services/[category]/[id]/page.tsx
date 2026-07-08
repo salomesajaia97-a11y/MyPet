@@ -6,6 +6,8 @@ import ServiceReviews from "@/components/services/ServiceReviews";
 import { isValidObjectId } from "mongoose";
 import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
+import { auth } from "@/auth";
+import ServiceOwnerControls from "@/components/services/ServiceOwnerControls";
 
 interface Service {
   _id: string;
@@ -28,6 +30,7 @@ interface Service {
   lat?: number;
   lng?: number;
   userId?: string;
+  status?: "pending" | "approved";
 }
 
 const CATEGORY_META: Record<
@@ -65,6 +68,17 @@ export default async function ServiceDetailPage({
 
   const service = await getService(category, id);
   if (!service) notFound();
+
+  const session = await auth();
+  const isOwner =
+    !!session?.user?.id && service.userId === session.user.id;
+  const isAdmin = session?.user?.role === "admin";
+
+  // A pending business is private: only its owner or an admin may view it by
+  // direct URL. Everyone else gets a 404 (it isn't public until approved).
+  if (service.status === "pending" && !isOwner && !isAdmin) {
+    notFound();
+  }
 
   const address = [service.address, service.neighborhood, service.city]
     .filter(Boolean)
@@ -108,6 +122,17 @@ export default async function ServiceDetailPage({
           </div>
 
           <div className="p-6 space-y-5">
+            {(isOwner || isAdmin) && (
+              <div className="space-y-3 border border-[#0E4A5C]/15 bg-[#EBF6FA] rounded-xl p-4">
+                {service.status === "pending" && (
+                  <p className="text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    მოდერაციაშია — ხილვადი მხოლოდ თქვენთვის
+                  </p>
+                )}
+                <ServiceOwnerControls category={service.category} id={service._id} />
+              </div>
+            )}
+
             {/* Title + rating */}
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-3">
