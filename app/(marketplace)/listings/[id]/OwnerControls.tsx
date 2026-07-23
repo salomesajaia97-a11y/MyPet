@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Pencil, Trash2, Star, Sparkles } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 /**
  * Owner-only action toolbar for a listing. Rendered instead of the buyer
@@ -22,11 +23,17 @@ export function OwnerControls({
   isVip?: boolean;
 }) {
   const { t } = useT();
+  const { confirm, notify } = useConfirm();
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm(t.listings.owner.deleteConfirm)) return;
+    const ok = await confirm({
+      description: t.listings.owner.deleteConfirm,
+      confirmLabel: t.common.actions.delete,
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/marketplace/listing/${id}`, {
@@ -37,7 +44,7 @@ export function OwnerControls({
       router.refresh();
     } catch {
       setDeleting(false);
-      alert(t.listings.owner.deleteError);
+      await notify({ description: t.listings.owner.deleteError });
     }
   };
 

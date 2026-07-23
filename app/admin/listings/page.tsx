@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Star, Pencil, Trash2, Check } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 interface Row {
   _id: string;
@@ -24,6 +25,7 @@ interface Row {
 
 export default function AdminListingsPage() {
   const { t } = useT();
+  const { confirm } = useConfirm();
   const TYPES = [
     { value: "", label: t.admin.listings.allTypes },
     { value: "buy-sell", label: t.admin.listingTypes.buySell },
@@ -82,7 +84,12 @@ export default function AdminListingsPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm(t.admin.listings.deleteConfirm)) return;
+    const ok = await confirm({
+      description: t.admin.listings.deleteConfirm,
+      confirmLabel: t.common.actions.delete,
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(id);
     const res = await fetch(`/api/marketplace/listing/${id}`, { method: "DELETE" });
     if (res.ok) setRows((prev) => prev.filter((r) => r._id !== id));

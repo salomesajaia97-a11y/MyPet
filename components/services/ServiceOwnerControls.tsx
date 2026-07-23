@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 /**
  * Owner-only action toolbar for a business/service detail page. Rendered when
@@ -21,10 +22,16 @@ export default function ServiceOwnerControls({
 }) {
   const router = useRouter();
   const { t } = useT();
+  const { confirm, notify } = useConfirm();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm(t.services.owner.deleteConfirm)) return;
+    const ok = await confirm({
+      description: t.services.owner.deleteConfirm,
+      confirmLabel: t.common.actions.delete,
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/services/${category}/${id}`, {
@@ -35,7 +42,7 @@ export default function ServiceOwnerControls({
       router.refresh();
     } catch {
       setDeleting(false);
-      alert(t.services.owner.deleteFailed);
+      await notify({ description: t.services.owner.deleteFailed });
     }
   };
 

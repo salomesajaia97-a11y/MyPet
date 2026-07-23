@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Trash2, ExternalLink } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 interface Upload {
   _id: string;
@@ -15,6 +16,7 @@ interface Upload {
 
 export default function AdminUploadsPage() {
   const { t } = useT();
+  const { confirm } = useConfirm();
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +29,12 @@ export default function AdminUploadsPage() {
   }, []);
 
   async function deleteUpload(id: string) {
-    if (!confirm(t.admin.uploads.deleteConfirm)) return;
+    const ok = await confirm({
+      description: t.admin.uploads.deleteConfirm,
+      confirmLabel: t.common.actions.delete,
+      danger: true,
+    });
+    if (!ok) return;
     const res = await fetch(`/api/admin/uploads/${id}`, { method: "DELETE" });
     if (res.ok) {
       setUploads((prev) => prev.filter((u) => u._id !== id));

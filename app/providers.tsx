@@ -2,6 +2,7 @@
 import { SessionProvider } from "next-auth/react";
 import { FavoritesProvider } from "@/components/favorites/FavoritesProvider";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { ConfirmProvider } from "@/components/ui/ConfirmProvider";
 import type { Locale } from "@/lib/i18n";
 
 export function Providers({
@@ -14,7 +15,9 @@ export function Providers({
   return (
     <SessionProvider>
       <LanguageProvider initialLocale={initialLocale}>
-        <FavoritesProvider>{children}</FavoritesProvider>
+        <ConfirmProvider>
+          <FavoritesProvider>{children}</FavoritesProvider>
+        </ConfirmProvider>
       </LanguageProvider>
     </SessionProvider>
   );

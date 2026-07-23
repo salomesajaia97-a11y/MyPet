@@ -6,6 +6,7 @@ import { Stars } from "./Stars";
 import ReviewForm from "./ReviewForm";
 import type { Review, ReviewDraft } from "./types";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 function initials(name: string) {
   return name
@@ -47,6 +48,7 @@ export default function ReviewCard({
   onDeleteReply,
 }: Props) {
   const { t } = useT();
+  const { confirm } = useConfirm();
   const [editing, setEditing] = useState(false);
   const [replying, setReplying] = useState(false);
   const [replyText, setReplyText] = useState(review.ownerReply?.text ?? "");
@@ -147,7 +149,12 @@ export default function ReviewCard({
               type="button"
               disabled={busy}
               onClick={async () => {
-                if (!confirm(t.services.reviews.deleteConfirm)) return;
+                const ok = await confirm({
+                  description: t.services.reviews.deleteConfirm,
+                  confirmLabel: t.common.actions.delete,
+                  danger: true,
+                });
+                if (!ok) return;
                 setBusy(true);
                 try {
                   await onDelete(review._id);

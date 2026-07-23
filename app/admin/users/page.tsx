@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Trash2, ChevronDown } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 interface User {
   _id: string;
@@ -14,6 +15,7 @@ interface User {
 
 export default function AdminUsersPage() {
   const { t } = useT();
+  const { confirm } = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +39,12 @@ export default function AdminUsersPage() {
   }
 
   async function deleteUser(id: string) {
-    if (!confirm(t.admin.users.deleteConfirm)) return;
+    const ok = await confirm({
+      description: t.admin.users.deleteConfirm,
+      confirmLabel: t.common.actions.delete,
+      danger: true,
+    });
+    if (!ok) return;
     const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
     if (res.ok) {
       setUsers((prev) => prev.filter((u) => u._id !== id));

@@ -6,13 +6,34 @@ import { Footer } from "@/components/layout/Footer";
 import { Providers } from "./providers";
 import { getDictionary } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
+import { SITE_URL } from "@/lib/siteUrl";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = getDictionary(await getServerLocale());
+  const locale = await getServerLocale();
+  const t = getDictionary(locale);
   return {
-    title: t.common.metaTitle,
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: t.common.metaTitle,
+      // Child pages set only their own title; this appends the brand.
+      template: "%s · MyPet.ge",
+    },
     description: t.common.metaDescription,
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      siteName: "MyPet.ge",
+      url: SITE_URL,
+      title: t.common.metaTitle,
+      description: t.common.metaDescription,
+      locale: locale === "ka" ? "ka_GE" : "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t.common.metaTitle,
+      description: t.common.metaDescription,
+    },
   };
 }
 

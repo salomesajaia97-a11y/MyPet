@@ -27,4 +27,10 @@ export const common: typeof ka = {
     back: "Back",
     loading: "Loading...",
   },
+  dialog: {
+    confirmTitle: "Please confirm",
+    confirm: "Confirm",
+    cancel: "Cancel",
+    ok: "OK",
+  },
 };

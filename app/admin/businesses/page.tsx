@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, Trash2, MapPin, Phone } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 interface Business {
   _id: string;
@@ -18,6 +19,7 @@ interface Business {
 
 export default function AdminBusinessesPage() {
   const { t } = useT();
+  const { confirm } = useConfirm();
   const CATEGORY_LABELS: Record<string, string> = {
     "vet-clinics": t.admin.businesses.categories.vetClinic,
     "pet-hotels": t.admin.businesses.categories.petHotel,
@@ -48,7 +50,12 @@ export default function AdminBusinessesPage() {
   }
 
   async function reject(id: string) {
-    if (!confirm(t.admin.businesses.rejectConfirm)) return;
+    const ok = await confirm({
+      description: t.admin.businesses.rejectConfirm,
+      confirmLabel: t.admin.businesses.reject,
+      danger: true,
+    });
+    if (!ok) return;
     setBusyId(id);
     const res = await fetch(`/api/admin/businesses/${id}`, { method: "DELETE" });
     if (res.ok) setBusinesses((prev) => prev.filter((b) => b._id !== id));

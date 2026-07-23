@@ -26,4 +26,10 @@ export const common = {
     back: "უკან",
     loading: "იტვირთება...",
   },
+  dialog: {
+    confirmTitle: "დაადასტურეთ",
+    confirm: "დადასტურება",
+    cancel: "გაუქმება",
+    ok: "გასაგებია",
+  },
 };
