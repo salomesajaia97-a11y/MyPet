@@ -69,6 +69,9 @@ export function MarketplaceSearch({
       if (value) params.set(key, value);
       else params.delete(key);
     }
+    // Any filter/search change resets to page 1 — keeping the old page number
+    // would land the user on an empty page of the newly-filtered result set.
+    params.delete("page");
     const query = params.toString();
     router.push(query ? `${pathname}?${query}` : pathname);
   };

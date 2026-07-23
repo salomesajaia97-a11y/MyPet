@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { useSession } from "next-auth/react";
@@ -56,8 +57,14 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
   const isFavorite = useCallback((id: string) => ids.has(id), [ids]);
 
+  // Ids with a POST in flight — ignore repeat clicks so concurrent toggles for
+  // the same listing can't interleave and corrupt the optimistic state.
+  const pending = useRef<Set<string>>(new Set());
+
   const toggle = useCallback(
     async (id: string) => {
+      if (pending.current.has(id)) return;
+      pending.current.add(id);
       // Optimistic update, reconciled with the server response.
       setIds((prev) => {
         const next = new Set(prev);
@@ -87,6 +94,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
           else next.add(id);
           return next;
         });
+      } finally {
+        pending.current.delete(id);
       }
     },
     []

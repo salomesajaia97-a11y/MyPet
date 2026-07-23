@@ -5,12 +5,31 @@ import { NextResponse } from "next/server";
 // like Upstash Redis — swap this module out then.)
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
+let lastSweep = 0;
 
-/** Best-effort client identifier for unauthenticated endpoints. */
+// Drop expired buckets so the Map doesn't grow unboundedly with one entry per
+// distinct IP/user key. Runs at most once per minute, amortized over calls.
+function sweep(now: number) {
+  if (now - lastSweep < 60_000) return;
+  lastSweep = now;
+  for (const [key, b] of buckets) {
+    if (now >= b.resetAt) buckets.delete(key);
+  }
+}
+
+/**
+ * Best-effort client identifier for unauthenticated endpoints. Prefers the
+ * platform-set header (Vercel's `x-vercel-forwarded-for`, then `x-real-ip`)
+ * over raw `x-forwarded-for`, whose first hop is client-supplied and spoofable.
+ */
 export function clientIp(req: Request): string {
+  const vercel = req.headers.get("x-vercel-forwarded-for");
+  if (vercel) return vercel.split(",")[0].trim();
+  const real = req.headers.get("x-real-ip");
+  if (real) return real.trim();
   const xff = req.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "unknown";
+  return "unknown";
 }
 
 /**
@@ -20,6 +39,7 @@ export function clientIp(req: Request): string {
  */
 export function rateLimit(key: string, limit: number, windowMs: number): NextResponse | null {
   const now = Date.now();
+  sweep(now);
   const bucket = buckets.get(key);
 
   if (!bucket || now >= bucket.resetAt) {

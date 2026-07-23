@@ -40,8 +40,11 @@ const ListingSchema = new Schema(
   { timestamps: true }
 );
 
-ListingSchema.index({ type: 1 });
+// Browse queries filter by type (+ species) and always sort newest-first;
+// the compound index covers that access pattern. userId powers owner lookups.
+ListingSchema.index({ type: 1, createdAt: -1 });
 ListingSchema.index({ species: 1 });
+ListingSchema.index({ userId: 1 });
 ListingSchema.index({ isVip: 1, vipUntil: 1, createdAt: -1 });
 
 export default models.Listing || model("Listing", ListingSchema);

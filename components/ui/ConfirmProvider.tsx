@@ -45,6 +45,9 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const confirm = useCallback(
     (opts: ConfirmOptions) =>
       new Promise<boolean>((resolve) => {
+        // If a prior dialog is still pending, settle it false so its promise
+        // never dangles unresolved.
+        resolver.current?.(false);
         resolver.current = resolve;
         setState({ opts, mode: "confirm" });
       }),
@@ -54,6 +57,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const notify = useCallback(
     (opts: Omit<ConfirmOptions, "danger" | "confirmLabel" | "cancelLabel">) =>
       new Promise<void>((resolve) => {
+        resolver.current?.(false);
         resolver.current = () => resolve();
         setState({ opts, mode: "notify" });
       }),

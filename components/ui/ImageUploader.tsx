@@ -48,18 +48,28 @@ export function ImageUploader({
     if (!files) return;
     const picked = Array.from(files).slice(0, limit - slots.filter(s => "url" in s || "uploading" in s).length);
 
+    // Reserve exactly one slot index per picked file — including invalid ones —
+    // so an error slot can't be overwritten by a later valid file's upload.
     let offset = slots.length;
     for (const file of picked) {
+      const placeholderIndex = offset++;
       if (!ALLOWED.includes(file.type)) {
-        setSlots((prev) => [...prev, { error: `${file.name}: only JPEG/PNG/WebP` }]);
+        setSlots((prev) => {
+          const next = [...prev];
+          next[placeholderIndex] = { error: `${file.name}: only JPEG/PNG/WebP` };
+          return next;
+        });
         continue;
       }
       if (file.size > MAX_BYTES) {
-        setSlots((prev) => [...prev, { error: `${file.name}: max 5 MB` }]);
+        setSlots((prev) => {
+          const next = [...prev];
+          next[placeholderIndex] = { error: `${file.name}: max 5 MB` };
+          return next;
+        });
         continue;
       }
 
-      const placeholderIndex = offset++;
       setSlots((prev) => {
         const next = [...prev];
         next[placeholderIndex] = { uploading: true };
@@ -158,7 +168,12 @@ export function ImageUploader({
         accept="image/jpeg,image/png,image/webp"
         multiple={!single}
         className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => {
+          // handleFiles copies the FileList synchronously; reset the input after
+          // so re-selecting the same file (e.g. after removing it) fires change.
+          handleFiles(e.target.files);
+          e.target.value = "";
+        }}
       />
 
       <p className="text-xs text-stone-400">

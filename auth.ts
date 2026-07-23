@@ -21,10 +21,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+        // Coerce to string BEFORE querying — a raw object like {$ne:null} would
+        // be a NoSQL operator injection. Lowercase to match the stored (also
+        // lowercased) email so mixed-case logins succeed.
+        if (typeof credentials.email !== "string" || typeof credentials.password !== "string") {
+          return null;
+        }
+        const email = credentials.email.toLowerCase();
         await connectDB();
-        const user = await UserModel.findOne({ email: credentials.email });
+        const user = await UserModel.findOne({ email });
         if (!user || !user.passwordHash) return null;
-        const valid = await verifyPassword(credentials.password as string, user.passwordHash);
+        const valid = await verifyPassword(credentials.password, user.passwordHash);
         if (!valid) return null;
         return { id: user._id.toString(), email: user.email, name: user.name };
       },

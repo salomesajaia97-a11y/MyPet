@@ -36,7 +36,9 @@ export async function verifyPassword(password: string, stored: string): Promise<
     return false;
   }
 
-  if (!salt || !storedHash || !Number.isInteger(iterations)) return false;
+  // iterations must be a positive integer — pbkdf2 throws on <= 0, which would
+  // reject the whole verify instead of cleanly returning false.
+  if (!salt || !storedHash || !Number.isInteger(iterations) || iterations <= 0) return false;
 
   const hash = (await pbkdf2Async(password, salt, iterations, KEYLEN, DIGEST)).toString("hex");
   try {

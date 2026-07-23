@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -32,9 +32,12 @@ function pinIcon(indoor?: boolean) {
   });
 }
 
-// Zoom/pan so every pin is visible.
+// Zoom/pan so every pin is visible. Keyed on the coordinate VALUES (not the
+// array reference) so an unrelated re-render (e.g. a locale toggle up the tree)
+// doesn't re-run fitBounds and reset the user's pan/zoom.
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
+  const key = points.map((p) => p.join(",")).join(";");
   useEffect(() => {
     if (points.length === 0) return;
     if (points.length === 1) {
@@ -42,15 +45,22 @@ function FitBounds({ points }: { points: [number, number][] }) {
       return;
     }
     map.fitBounds(L.latLngBounds(points), { padding: [48, 48] });
-  }, [map, points]);
+    // points is derived from `key`; depending on the array ref would defeat the
+    // value-keying above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, key]);
   return null;
 }
 
 export default function PetFriendlyMap({ businesses }: { businesses: BusinessData[] }) {
-  const located = businesses
-    .map((b) => ({ business: b, pos: coordsFor(b) }))
-    .filter((l): l is { business: BusinessData; pos: [number, number] } => l.pos !== null);
-  const points = located.map((l) => l.pos);
+  const located = useMemo(
+    () =>
+      businesses
+        .map((b) => ({ business: b, pos: coordsFor(b) }))
+        .filter((l): l is { business: BusinessData; pos: [number, number] } => l.pos !== null),
+    [businesses]
+  );
+  const points = useMemo(() => located.map((l) => l.pos), [located]);
 
   return (
     <MapContainer

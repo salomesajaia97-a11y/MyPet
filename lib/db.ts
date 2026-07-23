@@ -38,6 +38,13 @@ export async function connectDB(): Promise<typeof mongoose> {
     );
   }
 
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    // A failed connect must clear the cached (rejected) promise, otherwise every
+    // later connectDB() re-awaits the same rejection and never reconnects.
+    cached.promise = null;
+    throw err;
+  }
   return cached.conn;
 }

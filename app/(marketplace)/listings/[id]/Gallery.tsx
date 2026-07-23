@@ -234,6 +234,7 @@ function Lightbox({
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
+            onTouchCancel={onTouchEnd}
             onDoubleClick={toggleZoom}
           >
             <div

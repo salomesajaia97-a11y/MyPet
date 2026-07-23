@@ -63,14 +63,25 @@ export default function ThreadPage() {
     };
   }, [fetchThread]);
 
-  // Poll for new messages every 5s.
+  // Poll for new messages every 5s. Skip once the thread is gone (404/403) so
+  // we don't hammer the API. Only replace state when the list actually changed
+  // (same last id + length) — otherwise every poll makes a new array reference
+  // and the scroll effect below yanks the user to the bottom mid-read.
   useEffect(() => {
+    if (notFound) return;
     const interval = setInterval(async () => {
       const d = await fetchThread();
-      if (d && d !== "error") setMessages(d.messages);
+      if (d && d !== "error") {
+        setMessages((prev) =>
+          prev.length === d.messages.length &&
+          prev[prev.length - 1]?._id === d.messages[d.messages.length - 1]?._id
+            ? prev
+            : d.messages
+        );
+      }
     }, 5000);
     return () => clearInterval(interval);
-  }, [fetchThread]);
+  }, [fetchThread, notFound]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
