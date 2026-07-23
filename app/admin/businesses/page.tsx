@@ -82,6 +82,8 @@ export default function AdminBusinessesPage() {
             >
               <div className="w-20 h-20 shrink-0 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
                 {b.images?.[0] ? (
+                  // Raw <img>: approved list can include scraped directory rows
+                  // with external image hosts not in remotePatterns.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
                 ) : (

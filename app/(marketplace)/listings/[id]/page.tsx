@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, User, Calendar, ArrowLeft, Star } from "lucide-react";
@@ -12,11 +14,15 @@ import { ContactSellerBox } from "./ContactSellerBox";
 import Gallery from "./Gallery";
 import { isVipActive } from "@/lib/marketplace/vip";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n/server";
 
 // Query the DB directly — no self-fetch to our own API (which would need an
 // absolute URL and break outside localhost). JSON round-trip serializes
 // ObjectIds/Dates to plain strings so `userId` compares cleanly to the session.
-async function getListing(id: string): Promise<Listing | null> {
+// Wrapped in React cache() so generateMetadata + the page share ONE query per
+// request instead of hitting the DB twice.
+const getListing = cache(async (id: string): Promise<Listing | null> => {
   if (!isValidObjectId(id)) return null;
   try {
     await connectDB();
@@ -25,7 +31,7 @@ async function getListing(id: string): Promise<Listing | null> {
   } catch {
     return null;
   }
-}
+});
 
 const backHref: Record<string, string> = {
   "buy-sell": "/buy-sell",
@@ -33,6 +39,46 @@ const backHref: Record<string, string> = {
   mating: "/mating",
   "lost-found": "/lost-found",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const listing = await getListing(id);
+  const t = getDictionary(await getServerLocale());
+  if (!listing) return { title: t.listings.editListing.notFound };
+
+  const typeLabels: Record<string, string> = {
+    "buy-sell": t.listings.types.buySell,
+    adoption: t.listings.types.adoption,
+    mating: t.listings.types.mating,
+    "lost-found": t.listings.types.lostFound,
+  };
+  const title = `${listing.breed} — ${typeLabels[listing.type] ?? ""}`.trim();
+  const description =
+    listing.description?.trim().slice(0, 160) ||
+    `${typeLabels[listing.type] ?? ""} · ${listing.location}`;
+  const image = listing.images?.[0];
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
 export default async function ListingDetailPage({
   params,

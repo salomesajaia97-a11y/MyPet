@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star, MapPin, Phone, Globe, Clock, ArrowLeft } from "lucide-react";
@@ -9,6 +11,8 @@ import BusinessModel from "@/lib/models/Business";
 import { auth } from "@/auth";
 import ServiceOwnerControls from "@/components/services/ServiceOwnerControls";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n/server";
 
 interface Service {
   _id: string;
@@ -55,10 +59,11 @@ const CATEGORY_BACK_KEY: Record<
 
 // Query the DB directly instead of self-fetching our own API (no absolute-URL
 // dependency). Serialize the lean doc to plain JSON for the client boundary.
-async function getService(
+// cache() so generateMetadata + the page share one query per request.
+const getService = cache(async (
   category: string,
   id: string
-): Promise<Service | null> {
+): Promise<Service | null> => {
   if (!isValidObjectId(id)) return null;
   try {
     await connectDB();
@@ -67,6 +72,42 @@ async function getService(
   } catch {
     return null;
   }
+});
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/services/[category]/[id]">): Promise<Metadata> {
+  const { category, id } = await params;
+  const t = getDictionary(await getServerLocale());
+  const service = await getService(category, id);
+  // Don't emit a real title for a missing OR still-pending business (pending
+  // ones aren't public — don't leak the name to crawlers).
+  if (!service || service.status === "pending") {
+    return { title: t.services.edit.notFound };
+  }
+
+  const title = service.name;
+  const description =
+    service.description?.trim().slice(0, 160) ||
+    [service.address, service.neighborhood, service.city].filter(Boolean).join(", ");
+  const image = service.images?.[0];
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
 }
 
 export default async function ServiceDetailPage({
@@ -115,6 +156,10 @@ export default async function ServiceDetailPage({
           {/* Hero image */}
           <div className="relative aspect-[16/9] bg-stone-100">
             {service.images?.[0] ? (
+              // Raw <img>: a business detail page may be a scraped directory
+              // entry whose image is on an external host not in remotePatterns,
+              // which next/image would reject. User-uploaded ones are Cloudinary
+              // but we can't tell them apart here, so stay unoptimized.
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={service.images[0]}

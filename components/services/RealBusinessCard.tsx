@@ -29,6 +29,9 @@ export function RealBusinessCard({ business, href }: Props) {
         {/* Image */}
         <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0 bg-[#EBF6FA]">
           {business.image ? (
+            // Raw <img>: directory businesses carry scraped image URLs from
+            // arbitrary external hosts, which next/image would reject (host not
+            // in remotePatterns). Keep unoptimized until images are self-hosted.
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={business.image}

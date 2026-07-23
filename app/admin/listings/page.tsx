@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Star, Pencil, Trash2, Check } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
@@ -151,10 +152,9 @@ export default function AdminListingsPage() {
               {rows.map((r) => (
                 <tr key={r._id} className="border-t border-gray-100">
                   <td className="px-3 py-2">
-                    <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
+                    <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
                       {r.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={r.image} alt={r.breed} className="w-full h-full object-cover" />
+                        <Image src={r.image} alt={r.breed} fill className="object-cover" sizes="48px" />
                       ) : (
                         <span>🐾</span>
                       )}

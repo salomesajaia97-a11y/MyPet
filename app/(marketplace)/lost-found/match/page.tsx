@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Sparkles, Upload, ArrowLeft, Loader2 } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
@@ -155,10 +156,9 @@ export default function LostPetMatchPage() {
                   href={`/listings/${m.id}`}
                   className="flex items-center gap-4 bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="w-20 h-20 shrink-0 rounded-xl bg-stone-100 overflow-hidden">
+                  <div className="relative w-20 h-20 shrink-0 rounded-xl bg-stone-100 overflow-hidden">
                     {m.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.image} alt={m.breed} className="w-full h-full object-cover" />
+                      <Image src={m.image} alt={m.breed} fill className="object-cover" sizes="80px" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl">🐾</div>
                     )}

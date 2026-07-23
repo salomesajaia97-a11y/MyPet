@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { Plus, Pencil } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 
@@ -76,11 +77,12 @@ function BusinessCard({ business }: { business: Business }) {
       <Link href={`/services/${business.category}/${business._id}`} className="block">
         <div className="relative aspect-[4/3] bg-stone-100">
           {business.images?.[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={business.images[0]}
               alt={business.name}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 400px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>

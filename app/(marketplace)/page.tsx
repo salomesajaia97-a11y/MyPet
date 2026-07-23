@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -547,12 +548,12 @@ function ListingCard({
         {/* Sweeping sheen on hover */}
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:translate-x-full transition-transform duration-700 ease-out" />
         {item.img ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={item.img}
             alt={item.breed}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 260px"
           />
         ) : (
           // No photo → keep the gradient backdrop with a paw glyph.
