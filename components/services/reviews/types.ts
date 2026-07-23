@@ -13,7 +13,8 @@ export interface Review {
   rating: number;
   text?: string;
   photos?: string[];
-  helpfulUserIds?: string[];
+  helpfulCount?: number;
+  votedByMe?: boolean;
   ownerReply?: OwnerReply;
   editedAt?: string;
   createdAt: string;

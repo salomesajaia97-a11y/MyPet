@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function Gallery({
   images,
@@ -14,6 +15,7 @@ export default function Gallery({
   alt: string;
   children?: React.ReactNode;
 }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const hasImages = images.length > 0;
@@ -40,7 +42,7 @@ export default function Gallery({
             type="button"
             onClick={() => openAt(0)}
             className="absolute inset-0 w-full h-full cursor-zoom-in"
-            aria-label="Open photo in fullscreen"
+            aria-label={t.listings.gallery.open}
           >
             <Image
               src={images[0]}
@@ -68,7 +70,7 @@ export default function Gallery({
               key={i}
               onClick={() => openAt(i + 1)}
               className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]"
-              aria-label={`Open photo ${i + 2} in fullscreen`}
+              aria-label={`${t.listings.gallery.openPhoto} ${i + 2}`}
             >
               <Image
                 src={src}
@@ -118,10 +120,14 @@ function Lightbox({
   go: (dir: 1 | -1) => void;
   multiple: boolean;
 }) {
+  const { t } = useT();
   // Zoom + pan state for the active image.
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
+  // True while a pinch/pan gesture is live — the CSS transition is disabled so
+  // the image tracks the finger instead of lagging behind an animation.
+  const [gesturing, setGesturing] = useState(false);
 
   // Gesture bookkeeping (refs so handlers stay stable, no re-render churn).
   const touchStartX = useRef(0);
@@ -170,10 +176,12 @@ function Lightbox({
     if (e.touches.length === 2) {
       pinchStartDist.current = dist(e.touches);
       pinchStartScale.current = scale;
+      setGesturing(true);
     } else if (e.touches.length === 1) {
       touchStartX.current = e.touches[0].clientX;
       if (scale > 1) {
         panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, tx, ty };
+        setGesturing(true);
       }
     }
   };
@@ -190,6 +198,7 @@ function Lightbox({
 
   const onTouchEnd = (e: React.TouchEvent) => {
     panStart.current = null;
+    setGesturing(false);
     if (scale > 1) return; // zoomed: don't treat as swipe
     if (!multiple) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
@@ -209,12 +218,12 @@ function Lightbox({
           className="fixed inset-0 z-50 w-screen h-screen border-0 bg-transparent p-0 outline-none flex items-center justify-center"
           aria-describedby={undefined}
         >
-          <Dialog.Title className="sr-only">{alt} — photo viewer</Dialog.Title>
+          <Dialog.Title className="sr-only">{alt} — {t.listings.gallery.viewer}</Dialog.Title>
 
           {/* Close */}
           <Dialog.Close
             className="absolute top-4 right-4 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-colors"
-            aria-label="Close"
+            aria-label={t.listings.gallery.close}
           >
             <X className="w-5 h-5" />
           </Dialog.Close>
@@ -228,7 +237,7 @@ function Lightbox({
             onDoubleClick={toggleZoom}
           >
             <div
-              className="relative w-full h-full max-w-5xl motion-safe:transition-transform"
+              className={`relative w-full h-full max-w-5xl ${gesturing ? "" : "motion-safe:transition-transform"}`}
               style={{
                 transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
                 cursor: scale > 1 ? "grab" : "zoom-in",
@@ -251,7 +260,7 @@ function Lightbox({
               <button
                 type="button"
                 onClick={() => step(-1)}
-                aria-label="Previous photo"
+                aria-label={t.listings.gallery.prev}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-colors"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -259,7 +268,7 @@ function Lightbox({
               <button
                 type="button"
                 onClick={() => step(1)}
-                aria-label="Next photo"
+                aria-label={t.listings.gallery.next}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-colors"
               >
                 <ChevronRight className="w-6 h-6" />
@@ -282,7 +291,7 @@ function Lightbox({
                   type="button"
                   key={i}
                   onClick={() => jumpTo(i)}
-                  aria-label={`Go to photo ${i + 1}`}
+                  aria-label={`${t.listings.gallery.goToPhoto} ${i + 1}`}
                   className={`relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden transition-opacity ${
                     i === index ? "ring-2 ring-white opacity-100" : "opacity-60 hover:opacity-100"
                   }`}

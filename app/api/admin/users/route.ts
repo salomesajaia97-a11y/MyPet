@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import UserModel from "@/lib/models/User";
@@ -15,6 +15,6 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   await connectDB();
-  const users = await UserModel.find({}, "-passwordHash").sort({ createdAt: -1 }).lean();
+  const users = await UserModel.find({}, "-passwordHash").sort({ createdAt: -1 }).limit(500).lean();
   return NextResponse.json(users);
 }

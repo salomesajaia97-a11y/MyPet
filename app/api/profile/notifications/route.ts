@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isValidObjectId } from "mongoose";
 import { connectDB } from "@/lib/db";
 import NotificationModel from "@/lib/models/Notification";
 import { auth } from "@/auth";
@@ -10,17 +11,21 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await connectDB();
-  const notifications = await NotificationModel.find({ userId: session.user.id })
-    .sort({ createdAt: -1 })
-    .limit(50)
-    .lean();
-  const unread = await NotificationModel.countDocuments({
-    userId: session.user.id,
-    read: false,
-  });
+  try {
+    await connectDB();
+    const notifications = await NotificationModel.find({ userId: session.user.id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+    const unread = await NotificationModel.countDocuments({
+      userId: session.user.id,
+      read: false,
+    });
 
-  return NextResponse.json({ notifications, unread });
+    return NextResponse.json({ notifications, unread });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 /**
@@ -41,10 +46,19 @@ export async function PATCH(req: NextRequest) {
     /* no body → mark all */
   }
 
-  await connectDB();
-  const filter: Record<string, unknown> = { userId: session.user.id, read: false };
-  if (typeof id === "string") filter._id = id;
-  await NotificationModel.updateMany(filter, { read: true });
+  // A malformed id would make updateMany throw a CastError (uncaught 500).
+  if (id !== undefined && (typeof id !== "string" || !isValidObjectId(id))) {
+    return NextResponse.json({ error: "Invalid notification id" }, { status: 400 });
+  }
 
-  return NextResponse.json({ success: true });
+  try {
+    await connectDB();
+    const filter: Record<string, unknown> = { userId: session.user.id, read: false };
+    if (typeof id === "string") filter._id = id;
+    await NotificationModel.updateMany(filter, { read: true });
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

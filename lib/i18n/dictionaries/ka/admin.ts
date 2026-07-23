@@ -1,4 +1,13 @@
 export const admin = {
+  // Sidebar (admin/layout.tsx).
+  title: "ადმინი",
+  nav: {
+    dashboard: "დაფა",
+    listings: "განცხადებები",
+    businesses: "ბიზნესები",
+    users: "მომხმარებლები",
+    uploads: "ატვირთვები",
+  },
   dashboard: {
     title: "დაფა",
     stats: {

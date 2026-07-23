@@ -2,10 +2,12 @@ import Link from "next/link";
 import { PawPrint, Send, MessageCircle, Mail } from "lucide-react";
 import { getServerDictionary } from "@/lib/i18n/server";
 
+// No real social accounts yet — render as inert placeholders (not `href="#"`
+// links that jump to the top of the page). Swap in real URLs when available.
 const SOCIALS = [
-  { label: "Telegram", href: "#", Icon: Send },
-  { label: "Messenger", href: "#", Icon: MessageCircle },
-  { label: "Email", href: "#", Icon: Mail },
+  { label: "Telegram", Icon: Send },
+  { label: "Messenger", Icon: MessageCircle },
+  { label: "Email", Icon: Mail },
 ];
 
 export async function Footer() {
@@ -81,15 +83,15 @@ export async function Footer() {
               </Link>
             ))}
             <div className="flex items-center gap-2 mt-3">
-              {SOCIALS.map(({ label, href, Icon }) => (
-                <Link
+              {SOCIALS.map(({ label, Icon }) => (
+                <span
                   key={label}
-                  href={href}
                   aria-label={label}
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-stone-200 text-stone-500 hover:border-[#0E4A5C]/40 hover:text-[#0E4A5C] transition-colors"
+                  title={label}
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-stone-200 text-stone-400"
                 >
                   <Icon className="w-[18px] h-[18px]" strokeWidth={1.75} />
-                </Link>
+                </span>
               ))}
             </div>
           </div>

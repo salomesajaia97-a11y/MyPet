@@ -45,9 +45,19 @@ export async function GET(req: NextRequest) {
 
   try {
     await connectDB();
-    const reviews = await ReviewModel.find({ businessId })
+    // Optional session — only used to flag the caller's own helpful votes.
+    const session = await auth();
+    const me = session?.user?.id;
+    const raw = await ReviewModel.find({ businessId })
       .sort({ createdAt: -1 })
-      .lean();
+      .limit(200)
+      .lean<Array<Record<string, unknown> & { helpfulUserIds?: unknown[] }>>();
+    // Never ship the raw voter id list to clients (privacy). Return only the
+    // aggregate count and whether the current user has voted.
+    const reviews = raw.map(({ helpfulUserIds, ...rest }) => {
+      const ids = (helpfulUserIds ?? []).map((x) => String(x));
+      return { ...rest, helpfulCount: ids.length, votedByMe: !!me && ids.includes(me) };
+    });
     return NextResponse.json({ reviews });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

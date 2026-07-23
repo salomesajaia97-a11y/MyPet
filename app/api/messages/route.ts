@@ -95,6 +95,7 @@ export async function GET() {
   await connectDB();
   const threads = await ThreadModel.find({ $or: [{ buyerId: me }, { ownerId: me }] })
     .sort({ lastMessageAt: -1 })
+    .limit(100)
     .lean<
       {
         _id: { toString(): string };
@@ -117,31 +118,44 @@ export async function GET() {
     .select("name email image")
     .lean<{ _id: { toString(): string }; name?: string; email?: string; image?: string }[]>();
   const userMap = new Map(users.map((u) => [u._id.toString(), u]));
-  const dict = getDictionary(await getServerLocale());
 
-  const items = await Promise.all(
-    threads.map(async (t) => {
-      const iAmBuyer = t.buyerId.toString() === me;
-      const myReadAt = iAmBuyer ? t.buyerReadAt : t.ownerReadAt;
-      const otherId = iAmBuyer ? t.ownerId.toString() : t.buyerId.toString();
-      const other = userMap.get(otherId);
-      const unread = await MessageModel.countDocuments({
-        threadId: t._id,
-        senderId: { $ne: me },
-        ...(myReadAt ? { createdAt: { $gt: myReadAt } } : {}),
-      });
-      return {
-        _id: t._id.toString(),
-        listingId: t.listingId.toString(),
-        listingTitle: t.listingTitle,
-        lastMessageBody: t.lastMessageBody,
-        lastMessageAt: t.lastMessageAt,
-        otherName: other?.name || other?.email?.split("@")[0] || dict.misc.user,
-        otherImage: other?.image ?? null,
-        unread,
-      };
-    })
-  );
+  // Unread counts for ALL threads in one query (was N+1 countDocuments). Pull
+  // the timestamps of messages from the other party, then bucket per thread and
+  // count those newer than my last read.
+  const inbound = await MessageModel.find({
+    threadId: { $in: threads.map((t) => t._id) },
+    senderId: { $ne: me },
+  })
+    .select("threadId createdAt")
+    .lean<{ threadId: { toString(): string }; createdAt: Date }[]>();
+  const stampsByThread = new Map<string, Date[]>();
+  for (const m of inbound) {
+    const k = m.threadId.toString();
+    const arr = stampsByThread.get(k);
+    if (arr) arr.push(m.createdAt);
+    else stampsByThread.set(k, [m.createdAt]);
+  }
+
+  const items = threads.map((th) => {
+    const iAmBuyer = th.buyerId.toString() === me;
+    const myReadAt = iAmBuyer ? th.buyerReadAt : th.ownerReadAt;
+    const otherId = iAmBuyer ? th.ownerId.toString() : th.buyerId.toString();
+    const other = userMap.get(otherId);
+    const stamps = stampsByThread.get(th._id.toString()) ?? [];
+    const unread = myReadAt
+      ? stamps.filter((d) => d > myReadAt).length
+      : stamps.length;
+    return {
+      _id: th._id.toString(),
+      listingId: th.listingId.toString(),
+      listingTitle: th.listingTitle,
+      lastMessageBody: th.lastMessageBody,
+      lastMessageAt: th.lastMessageAt,
+      otherName: other?.name || other?.email?.split("@")[0] || t.misc.user,
+      otherImage: other?.image ?? null,
+      unread,
+    };
+  });
 
   return NextResponse.json({ threads: items });
 }

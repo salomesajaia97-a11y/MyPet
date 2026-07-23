@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
   await connectDB();
   const businesses = await BusinessModel.find({ status })
     .sort({ createdAt: -1 })
+    .limit(500)
     .lean();
   return NextResponse.json({ businesses });
 }

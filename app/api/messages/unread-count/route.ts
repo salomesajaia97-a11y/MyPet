@@ -17,7 +17,7 @@ export async function GET() {
     .select("buyerId ownerId buyerReadAt ownerReadAt")
     .lean<
       {
-        _id: unknown;
+        _id: { toString(): string };
         buyerId: { toString(): string };
         ownerId: { toString(): string };
         buyerReadAt: Date | null;
@@ -25,19 +25,28 @@ export async function GET() {
       }[]
     >();
 
-  // Count each thread's unread messages concurrently rather than serially.
-  const perThread = await Promise.all(
-    threads.map((t) => {
-      const iAmBuyer = t.buyerId.toString() === me;
-      const myReadAt = iAmBuyer ? t.buyerReadAt : t.ownerReadAt;
-      return MessageModel.countDocuments({
-        threadId: t._id,
-        senderId: { $ne: me },
-        ...(myReadAt ? { createdAt: { $gt: myReadAt } } : {}),
-      });
-    })
-  );
-  const total = perThread.reduce((sum, n) => sum + n, 0);
+  // One query for all inbound messages (was N+1 countDocuments), bucketed per
+  // thread, then counted against each thread's last-read timestamp in memory.
+  const inbound = await MessageModel.find({
+    threadId: { $in: threads.map((t) => t._id) },
+    senderId: { $ne: me },
+  })
+    .select("threadId createdAt")
+    .lean<{ threadId: { toString(): string }; createdAt: Date }[]>();
+  const stampsByThread = new Map<string, Date[]>();
+  for (const m of inbound) {
+    const k = m.threadId.toString();
+    const arr = stampsByThread.get(k);
+    if (arr) arr.push(m.createdAt);
+    else stampsByThread.set(k, [m.createdAt]);
+  }
+
+  const total = threads.reduce((sum, t) => {
+    const iAmBuyer = t.buyerId.toString() === me;
+    const myReadAt = iAmBuyer ? t.buyerReadAt : t.ownerReadAt;
+    const stamps = stampsByThread.get(t._id.toString()) ?? [];
+    return sum + (myReadAt ? stamps.filter((d) => d > myReadAt).length : stamps.length);
+  }, 0);
 
   return NextResponse.json({ count: total });
 }

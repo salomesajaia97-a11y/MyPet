@@ -66,6 +66,10 @@ function NewListingForm() {
       // Store location as "<city>, <district>" so the city filter matches.
       location: [data.city, data.district].filter(Boolean).join(", "),
     };
+    // city/district are folded into `location` above; don't also send the raw
+    // fields (matches the edit form).
+    delete body.city;
+    delete body.district;
 
     if (type === "buy-sell") {
       body.price = Number(data.price);

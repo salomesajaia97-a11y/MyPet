@@ -3,23 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, ImageIcon, Store, ListChecks } from "lucide-react";
-
-const nav = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/listings", label: "Listings", icon: ListChecks },
-  { href: "/admin/businesses", label: "Businesses", icon: Store },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/uploads", label: "Uploads", icon: ImageIcon },
-];
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useT();
+
+  const nav = [
+    { href: "/admin", label: t.admin.nav.dashboard, icon: LayoutDashboard },
+    { href: "/admin/listings", label: t.admin.nav.listings, icon: ListChecks },
+    { href: "/admin/businesses", label: t.admin.nav.businesses, icon: Store },
+    { href: "/admin/users", label: t.admin.nav.users, icon: Users },
+    { href: "/admin/uploads", label: t.admin.nav.uploads, icon: ImageIcon },
+  ];
 
   return (
     <div className="flex min-h-screen">
       <aside className="w-56 bg-gray-900 text-gray-100 flex flex-col py-6 px-4 shrink-0">
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6 px-2">
-          Admin
+          {t.admin.title}
         </p>
         <nav className="flex flex-col gap-1">
           {nav.map(({ href, label, icon: Icon }) => {

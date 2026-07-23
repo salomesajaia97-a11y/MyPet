@@ -15,6 +15,6 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   await connectDB();
-  const uploads = await UploadModel.find({}).sort({ createdAt: -1 }).lean();
+  const uploads = await UploadModel.find({}).sort({ createdAt: -1 }).limit(500).lean();
   return NextResponse.json(uploads);
 }

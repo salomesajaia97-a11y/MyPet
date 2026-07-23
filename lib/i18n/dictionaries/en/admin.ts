@@ -1,6 +1,14 @@
 import type { admin as ka } from "../ka/admin";
 
 export const admin: typeof ka = {
+  title: "Admin",
+  nav: {
+    dashboard: "Dashboard",
+    listings: "Listings",
+    businesses: "Businesses",
+    users: "Users",
+    uploads: "Uploads",
+  },
   dashboard: {
     title: "Dashboard",
     stats: {

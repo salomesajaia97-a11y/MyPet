@@ -95,6 +95,15 @@ export const listings: typeof ka = {
     send: "Send",
     sendError: "Failed to send",
   },
+  gallery: {
+    open: "Open photo in fullscreen",
+    openPhoto: "Open photo",
+    close: "Close",
+    prev: "Previous photo",
+    next: "Next photo",
+    goToPhoto: "Go to photo",
+    viewer: "photo viewer",
+  },
   owner: {
     deleteConfirm: "Are you sure you want to delete this listing?",
     deleteError: "Delete failed. Please try again.",

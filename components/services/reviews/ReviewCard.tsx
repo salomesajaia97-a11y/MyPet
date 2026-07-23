@@ -54,8 +54,8 @@ export default function ReviewCard({
 
   const isAuthor =
     review.source === "native" && !!review.userId && review.userId === currentUserId;
-  const helpfulCount = review.helpfulUserIds?.length ?? 0;
-  const voted = !!currentUserId && (review.helpfulUserIds ?? []).includes(currentUserId);
+  const helpfulCount = review.helpfulCount ?? 0;
+  const voted = !!review.votedByMe;
   const canVote = !!currentUserId && !isAuthor;
 
   if (editing) {
