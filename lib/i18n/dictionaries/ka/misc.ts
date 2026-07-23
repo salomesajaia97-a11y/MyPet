@@ -23,6 +23,7 @@ export const misc = {
   searchDisabled: "AI ძებნა ჯერ არ არის გააქტიურებული.",
   searchRetryReformulate: "ვერ მოხერხდა. სცადეთ სხვა ფორმულირება.",
   searchRetry: "ვერ მოხერხდა. სცადეთ თავიდან.",
+  searchLoginRequired: "AI ძებნის გამოსაყენებლად გაიარეთ ავტორიზაცია.",
   searchPlaceholder: "აღწერე ბუნებრივ ენაზე — AI იპოვის",
   searching: "ვეძებ…",
   aiSearch: "AI ძებნა",

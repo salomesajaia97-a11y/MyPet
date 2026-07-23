@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { aiEnabled, parseSearchQuery } from "@/lib/ai";
-import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { rateLimit } from "@/lib/rateLimit";
+import { auth } from "@/auth";
 
 const VALID_TYPES = ["buy-sell", "adoption", "mating", "lost-found"];
 
@@ -12,8 +13,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // NL parsing calls the model — rate-limit per IP to bound cost.
-  const limited = rateLimit(`ai-search:${clientIp(req)}`, 20, 10 * 60_000);
+  // Each call hits the paid model. Require a session and key the limit on the
+  // user id — an IP-only limit lets anyone rotate IPs to burn the quota.
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limited = rateLimit(`ai-search:${session.user.id}`, 20, 10 * 60_000);
   if (limited) return limited;
 
   let query: unknown;

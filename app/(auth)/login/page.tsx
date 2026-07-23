@@ -36,8 +36,11 @@ export default function LoginPage() {
     // load discards that cache and carries the new session cookie. Honour the
     // proxy's `callbackUrl`, but only same-origin relative paths (no open
     // redirect).
+    // Accept only same-origin absolute paths. Reject protocol-relative (`//`)
+    // AND backslash (`/\`) forms — browsers normalise `\`→`/`, so `/\evil.com`
+    // would resolve to `//evil.com` and navigate off-site (open redirect).
     const raw = new URLSearchParams(window.location.search).get("callbackUrl");
-    const target = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+    const target = raw && /^\/(?![/\\])/.test(raw) ? raw : "/";
     window.location.assign(target);
   }
 

@@ -9,11 +9,22 @@ import { rateLimit } from "@/lib/rateLimit";
 const MAX_TEXT = 2000;
 const MAX_PHOTOS = 3;
 
+// Only our own Cloudinary uploads — reject arbitrary/`javascript:` URLs that
+// would otherwise be stored and rendered into an <a href> (stored XSS).
+function isOwnUpload(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && parsed.hostname === "res.cloudinary.com";
+  } catch {
+    return false;
+  }
+}
+
 function parsePhotos(input: unknown): string[] | null {
   if (input === undefined || input === null) return [];
   if (!Array.isArray(input)) return null;
   if (input.length > MAX_PHOTOS) return null;
-  if (!input.every((p) => typeof p === "string" && p.length > 0)) return null;
+  if (!input.every((p) => typeof p === "string" && p.length > 0 && isOwnUpload(p))) return null;
   return input;
 }
 

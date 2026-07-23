@@ -25,6 +25,7 @@ export const misc: typeof ka = {
   searchDisabled: "AI search is not enabled yet.",
   searchRetryReformulate: "Couldn't complete the search. Try rephrasing.",
   searchRetry: "Couldn't complete the search. Please try again.",
+  searchLoginRequired: "Log in to use AI search.",
   searchPlaceholder: "Describe in natural language — AI will find it",
   searching: "Searching…",
   aiSearch: "AI Search",

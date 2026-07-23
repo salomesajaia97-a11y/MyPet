@@ -39,6 +39,10 @@ export function SmartSearch() {
         setError(t.misc.searchDisabled);
         return;
       }
+      if (res.status === 401) {
+        setError(t.misc.searchLoginRequired);
+        return;
+      }
       if (!res.ok || !data.redirect) {
         setError(data.error ?? t.misc.searchRetryReformulate);
         return;
