@@ -108,8 +108,36 @@ export default async function ListingDetailPage({
       ? `${listing.age} ${t.listings.detail.monthUnit}`
       : `${Math.floor(listing.age / 12)} ${t.listings.detail.yearUnit}`;
 
+  // Product structured data → richer Google results (price, image). Offer is
+  // added only when the listing has a price (buy-sell always, mating when set).
+  const hasPrice =
+    (listing.type === "buy-sell" || listing.type === "mating") &&
+    typeof listing.price === "number";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: listing.breed,
+    ...(listing.images?.length ? { image: listing.images } : {}),
+    ...(listing.description ? { description: listing.description } : {}),
+    ...(hasPrice
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: listing.price,
+            priceCurrency:
+              listing.type === "buy-sell" && listing.currency === "USD" ? "USD" : "GEL",
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Back button */}
         <Link
@@ -267,6 +295,8 @@ export default async function ListingDetailPage({
                 id={id}
                 backHref={backHref[listing.type] ?? "/buy-sell"}
                 isVip={vip}
+                type={listing.type}
+                isResolved={listing.type === "lost-found" ? listing.isResolved : false}
               />
             ) : (
               <div className="border-t pt-5 space-y-3">

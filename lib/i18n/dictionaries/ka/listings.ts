@@ -113,5 +113,8 @@ export const listings = {
     promote: "დაწინაურება",
     manage: "განცხადების მართვა",
     deleting: "იშლება…",
+    markResolved: "მოგვარებულად მონიშვნა",
+    markUnresolved: "აქტიურად დაბრუნება",
+    resolveError: "სტატუსის შეცვლა ვერ მოხერხდა. სცადეთ თავიდან.",
   },
 };

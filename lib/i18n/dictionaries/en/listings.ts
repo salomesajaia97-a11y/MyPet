@@ -114,5 +114,8 @@ export const listings: typeof ka = {
     promote: "Promote",
     manage: "Manage listing",
     deleting: "Deleting…",
+    markResolved: "Mark as resolved",
+    markUnresolved: "Mark as active",
+    resolveError: "Couldn't update status. Please try again.",
   },
 };

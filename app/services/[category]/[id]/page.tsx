@@ -140,8 +140,46 @@ export default async function ServiceDetailPage({
   // Real ratings only: show the badge solely when genuine native reviews exist.
   const nativeCount = service.nativeRatingCount ?? 0;
 
+  // LocalBusiness structured data → rich Google results (rating stars, address,
+  // phone). Optional fields are included only when present.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: service.name,
+    ...(service.images?.length ? { image: service.images } : {}),
+    ...(service.description ? { description: service.description } : {}),
+    ...(service.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: service.address,
+            ...(service.city ? { addressLocality: service.city } : {}),
+            addressCountry: "GE",
+          },
+        }
+      : {}),
+    ...(service.phone ? { telephone: service.phone } : {}),
+    ...(service.website ? { url: service.website } : {}),
+    ...(typeof service.lat === "number" && typeof service.lng === "number"
+      ? { geo: { "@type": "GeoCoordinates", latitude: service.lat, longitude: service.lng } }
+      : {}),
+    ...(nativeCount > 0 && typeof service.aggregateRating === "number"
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: service.aggregateRating,
+            reviewCount: nativeCount,
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Back */}
         <Link

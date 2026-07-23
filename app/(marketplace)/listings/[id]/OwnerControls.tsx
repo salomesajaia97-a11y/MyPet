@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Pencil, Trash2, Star, Sparkles } from "lucide-react";
+import { Pencil, Trash2, Star, Sparkles, CheckCircle2, RotateCcw } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 
@@ -17,15 +17,40 @@ export function OwnerControls({
   id,
   backHref,
   isVip = false,
+  type,
+  isResolved = false,
 }: {
   id: string;
   backHref: string;
   isVip?: boolean;
+  type?: string;
+  isResolved?: boolean;
 }) {
   const { t } = useT();
   const { confirm, notify } = useConfirm();
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const [resolved, setResolved] = useState(isResolved);
+  const [resolving, setResolving] = useState(false);
+
+  const toggleResolved = async () => {
+    const next = !resolved;
+    setResolving(true);
+    try {
+      const res = await fetch(`/api/marketplace/listing/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isResolved: next }),
+      });
+      if (!res.ok) throw new Error("resolve failed");
+      setResolved(next);
+      router.refresh();
+    } catch {
+      await notify({ description: t.listings.owner.resolveError });
+    } finally {
+      setResolving(false);
+    }
+  };
 
   const handleDelete = async () => {
     const ok = await confirm({
@@ -87,6 +112,33 @@ export function OwnerControls({
       <p className="text-sm font-semibold text-[#0F2830] mb-3">
         {t.listings.owner.manage}
       </p>
+
+      {/* Lost & Found: let the owner close the loop once the pet is found. */}
+      {type === "lost-found" && (
+        <button
+          type="button"
+          onClick={toggleResolved}
+          disabled={resolving}
+          className={`mb-3 w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl transition-colors disabled:opacity-60 ${
+            resolved
+              ? "border border-slate-200 text-stone-600 hover:bg-slate-50"
+              : "bg-green-600 hover:bg-green-700 text-white"
+          }`}
+        >
+          {resolved ? (
+            <>
+              <RotateCcw className="w-4 h-4" />
+              {t.listings.owner.markUnresolved}
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-4 h-4" />
+              {t.listings.owner.markResolved}
+            </>
+          )}
+        </button>
+      )}
+
       <div className="flex gap-3">
         <Link
           href={`/listings/${id}/edit`}
