@@ -8,12 +8,28 @@ import { SPECIES, CITIES } from "@/lib/marketplace/filters";
 // if the key is unset, so a missing key never throws at import time.
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-// The gemini-2.0 free preview IDs were retired from OpenRouter (400 "not a valid
-// model ID"), and the remaining :free models are rate-limited/unreliable. These
-// 2.5 models are current, cheap (~$0.00001/search, ~$0.0004/image), and handle
-// Georgian + vision well.
-const SEARCH_MODEL = "google/gemini-2.5-flash-lite";
-const MATCH_MODEL = "google/gemini-2.5-flash";
+
+// Free-only models (user constraint). The gemini-2.0 free preview IDs were
+// retired (400 "not a valid model ID"); OpenRouter no longer offers any free
+// Gemini tier. The free pool is heavily rate-limited (429/502) and small models
+// vary in quality, so each task uses a FALLBACK CHAIN — the first model that
+// returns usable content wins, otherwise we roll to the next. Ordered by
+// Georgian/vision quality. Trade-off: under heavy free-pool throttling every
+// model in a chain can 429 at once, in which case the route returns its 502.
+//
+// Text (Georgian → filters): Google Gemma reads the Georgian script well; the
+// Nemotron 120B is a last-resort backup. (gpt-oss can't read Georgian; the
+// "reasoning" free models burn the whole budget before emitting JSON.)
+const SEARCH_MODELS = [
+  "google/gemma-4-31b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+];
+// Vision (pet photo comparison): the only free multimodal models available.
+const MATCH_MODELS = [
+  "nvidia/nemotron-nano-12b-v2-vl:free",
+  "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+];
 
 export function aiEnabled(): boolean {
   return !!process.env.OPENROUTER_API_KEY;
@@ -24,43 +40,55 @@ interface ChatMessage {
   content: unknown;
 }
 
-// One request to OpenRouter → the assistant's message text. Throws on transport
-// or API errors so the caller can log and return a 502.
-async function openrouterChat(body: {
-  model: string;
-  messages: ChatMessage[];
-  max_tokens: number;
-  temperature?: number;
-  response_format?: { type: "json_object" };
-}): Promise<string> {
+// Try each model in `models` until one returns non-empty content. Free models
+// frequently 429/502 or (for reasoning models) return empty content, so a
+// failure on one is expected and we simply fall through to the next. Throws only
+// when every model in the chain fails, so the caller can log and return a 502.
+// No `response_format` is sent — several free providers reject it with a 400,
+// and the callers already parse JSON defensively via extractJson().
+async function openrouterChat(
+  models: readonly string[],
+  messages: ChatMessage[],
+  maxTokens: number
+): Promise<string> {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) throw new Error("OPENROUTER_API_KEY is not set");
 
-  const res = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      // Optional attribution headers OpenRouter uses for its dashboard/rankings.
-      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://my-pet-self.vercel.app",
-      "X-Title": "MyPet.ge",
-    },
-    body: JSON.stringify(body),
-  });
+  let lastError = "no models tried";
+  for (const model of models) {
+    try {
+      const res = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+          // Optional attribution headers OpenRouter uses for its dashboard/rankings.
+          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://my-pet-self.vercel.app",
+          "X-Title": "MyPet.ge",
+        },
+        body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature: 0 }),
+      });
 
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`OpenRouter ${res.status}: ${detail.slice(0, 400)}`);
+      if (!res.ok) {
+        lastError = `${model} → HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 200)}`;
+        continue;
+      }
+      const data = (await res.json()) as {
+        choices?: { message?: { content?: string } }[];
+        error?: { message?: string };
+      };
+      if (data.error) {
+        lastError = `${model} → ${data.error.message ?? "error"}`;
+        continue;
+      }
+      const content = data.choices?.[0]?.message?.content;
+      if (typeof content === "string" && content.trim()) return content;
+      lastError = `${model} → empty content`;
+    } catch (err) {
+      lastError = `${model} → ${err instanceof Error ? err.message : String(err)}`;
+    }
   }
-
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-    error?: { message?: string };
-  };
-  if (data.error) throw new Error(`OpenRouter: ${data.error.message ?? "unknown error"}`);
-  const content = data.choices?.[0]?.message?.content;
-  if (typeof content !== "string") throw new Error("OpenRouter: no content in response");
-  return content;
+  throw new Error(`All free models failed. Last: ${lastError}`);
 }
 
 // Free models don't reliably honour strict json_schema, so we ask for JSON and
@@ -117,7 +145,11 @@ Respond with ONLY a JSON object, no prose, with exactly these string keys: type,
 function normalizeFilters(p: Record<string, unknown>): SearchFilters {
   const oneOf = <T extends string>(v: unknown, allowed: readonly string[]): T | "" =>
     typeof v === "string" && allowed.includes(v) ? (v as T) : "";
-  const digits = (v: unknown) => (typeof v === "string" && /^\d+$/.test(v) ? v : "");
+  // Free models often emit numeric fields as JSON numbers, not strings.
+  const digits = (v: unknown) => {
+    if (typeof v === "number" && Number.isFinite(v) && v >= 0) return String(Math.trunc(v));
+    return typeof v === "string" && /^\d+$/.test(v) ? v : "";
+  };
   return {
     type: oneOf(p.type, ["buy-sell", "adoption", "mating", "lost-found"]),
     species: oneOf(p.species, SPECIES_SLUGS),
@@ -131,16 +163,14 @@ function normalizeFilters(p: Record<string, unknown>): SearchFilters {
 }
 
 export async function parseSearchQuery(query: string): Promise<SearchFilters | null> {
-  const content = await openrouterChat({
-    model: SEARCH_MODEL,
-    max_tokens: 400,
-    temperature: 0,
-    response_format: { type: "json_object" },
-    messages: [
+  const content = await openrouterChat(
+    SEARCH_MODELS,
+    [
       { role: "system", content: SYSTEM },
       { role: "user", content: query },
     ],
-  });
+    400
+  );
 
   const parsed = extractJson<Record<string, unknown>>(content);
   if (!parsed) return null;
@@ -204,16 +234,14 @@ export async function matchLostPet(
   });
   content.push({ type: "text", text: MATCH_INSTRUCTION });
 
-  const out = await openrouterChat({
-    model: MATCH_MODEL,
-    max_tokens: 1200,
-    temperature: 0,
-    response_format: { type: "json_object" },
-    messages: [
+  const out = await openrouterChat(
+    MATCH_MODELS,
+    [
       { role: "system", content: MATCH_SYSTEM },
       { role: "user", content },
     ],
-  });
+    1200
+  );
 
   const parsed = extractJson<{
     matches?: { index?: unknown; score?: unknown; reason?: unknown }[];
