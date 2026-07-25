@@ -204,7 +204,8 @@ const MATCH_SYSTEM =
 const MATCH_INSTRUCTION = `The FIRST image is the QUERY pet, the SECOND is a candidate.
 Rate 0-100 how likely they are the SAME pet — judge species, breed, coat colour, markings, size.
 90-100 near-identical / same animal; 60-89 same breed & colour; 30-59 some resemblance; 0-29 clearly different (e.g. dog vs cat).
-Return ONLY JSON: {"score":<0-100 integer>,"reason":"<short Georgian explanation>"}.`;
+Return ONLY JSON: {"score":<0-100 integer>,"reason":"<explanation>"}.
+The "reason" MUST be written in the Georgian language (ქართული ენა) only — never Russian or English — one short sentence.`;
 
 // Below this score a candidate is not shown as a match.
 const MATCH_THRESHOLD = 40;
