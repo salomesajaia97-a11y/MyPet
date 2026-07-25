@@ -25,10 +25,13 @@ const SEARCH_MODELS = [
   "google/gemma-4-26b-a4b-it:free",
   "nvidia/nemotron-3-super-120b-a12b:free",
 ];
-// Vision (pet photo comparison): the only free multimodal models available.
+// Vision (pet photo comparison): Gemma-4 is multimodal and, unlike the Nemotron
+// free models, actually rates pet similarity reliably (Nemotron returned empty
+// or hallucinated matches). Nemotron VL kept only as a last-ditch fallback.
 const MATCH_MODELS = [
+  "google/gemma-4-26b-a4b-it:free",
+  "google/gemma-4-31b-it:free",
   "nvidia/nemotron-nano-12b-v2-vl:free",
-  "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
 ];
 
 export function aiEnabled(): boolean {
@@ -192,12 +195,19 @@ export interface MatchResult {
 }
 
 const MATCH_SYSTEM =
-  "You are a careful pet-identification assistant for a lost & found board. You compare a QUERY photo against numbered candidate photos and report only genuine same-animal matches. Be conservative: a different-species, different-breed, or clearly different-coloured animal is NOT a match. Judge on coat colour, patterns/markings, breed, size, collar, and other distinctive features — not merely 'same breed'.";
+  "You compare two pet photos for a lost & found board and rate how likely they show the SAME lost pet.";
 
-const MATCH_INSTRUCTION = `Which candidates are likely the SAME individual animal as the QUERY pet?
-Respond with ONLY a JSON object of the form:
-{"matches":[{"index":<1-based candidate number>,"score":<0-100 integer, how likely SAME individual>,"reason":"<short Georgian explanation>"}]}
-Only include candidates with a real visual resemblance (score >= 30). Sort most-confident first. If none match, return {"matches":[]}.`;
+// One candidate per request. Weak free vision models badly mis-number a single
+// prompt containing many images (they count the query image, invent indices,
+// score a cat as a dog). Comparing the query against exactly ONE candidate at a
+// time removes all indexing ambiguity and is what makes the free models reliable.
+const MATCH_INSTRUCTION = `The FIRST image is the QUERY pet, the SECOND is a candidate.
+Rate 0-100 how likely they are the SAME pet — judge species, breed, coat colour, markings, size.
+90-100 near-identical / same animal; 60-89 same breed & colour; 30-59 some resemblance; 0-29 clearly different (e.g. dog vs cat).
+Return ONLY JSON: {"score":<0-100 integer>,"reason":"<short Georgian explanation>"}.`;
+
+// Below this score a candidate is not shown as a match.
+const MATCH_THRESHOLD = 40;
 
 const scoreToConfidence = (score: number): "high" | "medium" | "low" =>
   score >= 75 ? "high" : score >= 45 ? "medium" : "low";
@@ -209,9 +219,10 @@ const clampScore = (v: unknown): number => {
 };
 
 /**
- * Compare an uploaded pet photo (base64) against candidate listing photos and
- * return the likely same-animal matches, ranked by score. Candidates are
- * referenced back to their listing id via the returned 1-based index.
+ * Compare an uploaded pet photo (base64) against each candidate listing photo,
+ * one model call per candidate, and return the likely same-pet matches ranked by
+ * score. Returns null only if EVERY candidate call failed (e.g. the whole free
+ * pool is rate-limited) so the route can distinguish "no match" from "AI down".
  */
 export async function matchLostPet(
   queryBase64: string,
@@ -220,50 +231,48 @@ export async function matchLostPet(
 ): Promise<MatchResult[] | null> {
   if (candidates.length === 0) return [];
 
-  // OpenAI-compatible multimodal content: text + image_url parts. The query
-  // image is inlined as a data URL; candidates are passed by their public URL.
-  const content: Array<
-    { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
-  > = [
-    { type: "text", text: "QUERY pet (the animal to identify):" },
-    { type: "image_url", image_url: { url: `data:${queryMediaType};base64,${queryBase64}` } },
-  ];
-  candidates.forEach((c, i) => {
-    content.push({ type: "text", text: `Candidate ${i + 1}:` });
-    content.push({ type: "image_url", image_url: { url: c.imageUrl } });
-  });
-  content.push({ type: "text", text: MATCH_INSTRUCTION });
+  const dataUrl = `data:${queryMediaType};base64,${queryBase64}`;
+  const results: MatchResult[] = [];
+  let anySuccess = false;
 
-  const out = await openrouterChat(
-    MATCH_MODELS,
-    [
-      { role: "system", content: MATCH_SYSTEM },
-      { role: "user", content },
-    ],
-    1200
-  );
+  // Sequential on purpose: parallel calls trip the free-tier rate limit (429).
+  for (const c of candidates) {
+    try {
+      const out = await openrouterChat(
+        MATCH_MODELS,
+        [
+          { role: "system", content: MATCH_SYSTEM },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "QUERY pet (first image):" },
+              { type: "image_url", image_url: { url: dataUrl } },
+              { type: "text", text: "Candidate (second image):" },
+              { type: "image_url", image_url: { url: c.imageUrl } },
+              { type: "text", text: MATCH_INSTRUCTION },
+            ],
+          },
+        ],
+        400
+      );
+      const parsed = extractJson<{ score?: unknown; reason?: unknown }>(out);
+      if (!parsed) continue; // got a response but no parseable JSON — skip this one
+      anySuccess = true;
+      const score = clampScore(parsed.score);
+      if (score >= MATCH_THRESHOLD) {
+        results.push({
+          id: c.id,
+          score,
+          confidence: scoreToConfidence(score),
+          reason: typeof parsed.reason === "string" ? parsed.reason : "",
+        });
+      }
+    } catch (err) {
+      // A single candidate failing (rate limit / timeout) must not abort the rest.
+      console.error("[matchLostPet] candidate failed:", err instanceof Error ? err.message : err);
+    }
+  }
 
-  const parsed = extractJson<{
-    matches?: { index?: unknown; score?: unknown; reason?: unknown }[];
-  }>(out);
-  if (!parsed || !Array.isArray(parsed.matches)) return null;
-
-  return parsed.matches
-    .filter(
-      (m) =>
-        Number.isInteger(m.index) &&
-        (m.index as number) >= 1 &&
-        (m.index as number) <= candidates.length
-    )
-    .map((m) => {
-      const score = clampScore(m.score);
-      return {
-        id: candidates[(m.index as number) - 1].id,
-        score,
-        confidence: scoreToConfidence(score),
-        reason: typeof m.reason === "string" ? m.reason : "",
-      };
-    })
-    .filter((m) => m.score >= 30)
-    .sort((a, b) => b.score - a.score);
+  if (!anySuccess) return null;
+  return results.sort((a, b) => b.score - a.score);
 }
