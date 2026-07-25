@@ -1,19 +1,81 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { SPECIES, CITIES } from "@/lib/marketplace/filters";
 
-// Lazily construct the client so missing creds don't crash the module at
-// import time — the route checks `aiEnabled()` first and returns 503 if unset.
-// Accepts either an API key or an OAuth auth token; the SDK resolves whichever
-// is present from the environment.
+// AI features are powered by OpenRouter (https://openrouter.ai), which exposes an
+// OpenAI-compatible chat-completions API. We hit it with plain `fetch` so there's
+// no SDK dependency and it runs on the default Node runtime. Two free Gemini
+// models are used: a fast text model for query parsing and a vision model for
+// lost-pet photo matching. The route checks `aiEnabled()` first and returns 503
+// if the key is unset, so a missing key never throws at import time.
+
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const SEARCH_MODEL = "google/gemini-2.0-flash-lite-preview-02-05:free";
+const MATCH_MODEL = "google/gemini-2.0-flash-exp:free";
+
 export function aiEnabled(): boolean {
-  return !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+  return !!process.env.OPENROUTER_API_KEY;
 }
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!client) client = new Anthropic(); // resolves ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN from env
-  return client;
+interface ChatMessage {
+  role: "system" | "user" | "assistant";
+  content: unknown;
 }
+
+// One request to OpenRouter → the assistant's message text. Throws on transport
+// or API errors so the caller can log and return a 502.
+async function openrouterChat(body: {
+  model: string;
+  messages: ChatMessage[];
+  max_tokens: number;
+  temperature?: number;
+  response_format?: { type: "json_object" };
+}): Promise<string> {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error("OPENROUTER_API_KEY is not set");
+
+  const res = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+      // Optional attribution headers OpenRouter uses for its dashboard/rankings.
+      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://my-pet-self.vercel.app",
+      "X-Title": "MyPet.ge",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`OpenRouter ${res.status}: ${detail.slice(0, 400)}`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+    error?: { message?: string };
+  };
+  if (data.error) throw new Error(`OpenRouter: ${data.error.message ?? "unknown error"}`);
+  const content = data.choices?.[0]?.message?.content;
+  if (typeof content !== "string") throw new Error("OpenRouter: no content in response");
+  return content;
+}
+
+// Free models don't reliably honour strict json_schema, so we ask for JSON and
+// parse defensively: strip any ```json fences, then take the outermost {...}.
+function extractJson<T>(text: string): T | null {
+  let s = text.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) return null;
+  try {
+    return JSON.parse(s.slice(start, end + 1)) as T;
+  } catch {
+    return null;
+  }
+}
+
+// ── Natural-language search parser ──────────────────────────────────────────
 
 export interface SearchFilters {
   type: "" | "buy-sell" | "adoption" | "mating" | "lost-found";
@@ -26,25 +88,7 @@ export interface SearchFilters {
   q: string; // breed keyword or ""
 }
 
-const SPECIES_SLUGS = SPECIES.map((s) => s.slug);
-
-// JSON schema the model is constrained to. Empty string = "not specified" for
-// every field (avoids nullable-enum complexity in structured outputs).
-const SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    type: { type: "string", enum: ["", "buy-sell", "adoption", "mating", "lost-found"] },
-    species: { type: "string", enum: ["", ...SPECIES_SLUGS] },
-    city: { type: "string", enum: ["", ...CITIES] },
-    sex: { type: "string", enum: ["", "male", "female"] },
-    status: { type: "string", enum: ["", "lost", "found"] },
-    minPrice: { type: "string" },
-    maxPrice: { type: "string" },
-    q: { type: "string" },
-  },
-  required: ["type", "species", "city", "sex", "status", "minPrice", "maxPrice", "q"],
-} as const;
+const SPECIES_SLUGS = SPECIES.map((s) => s.slug) as readonly string[];
 
 const SYSTEM = `You convert a natural-language pet-marketplace search (usually Georgian, sometimes English) into structured filters for MyPet.ge.
 
@@ -56,30 +100,47 @@ Sections (field "type"):
 Leave "type" as "" if unclear.
 
 Rules:
-- species: map to one of dog, cat, bird, rabbit, reptile, other. "ძაღლი/puppy/dog"→dog, "კატა/cat"→cat. "" if none.
-- city: only a value from the allowed list, matching the user's city; else "".
+- species: one of dog, cat, bird, rabbit, reptile, other. "ძაღლი/puppy/dog"→dog, "კატა/cat"→cat. "" if none.
+- city: EXACTLY one Georgian name from this allowed list, matching the user's city; else "". Allowed cities: ${CITIES.join(", ")}.
 - minPrice/maxPrice: digits only (GEL). "under 500"→maxPrice "500"; "over 200"→minPrice "200". Else "".
 - q: a breed keyword if named (e.g. "ლაბრადორი", "labrador"); else "".
 - sex/status only when clearly implied; else "".
-Return every field; use "" for anything not specified.`;
+
+Respond with ONLY a JSON object, no prose, with exactly these string keys: type, species, city, sex, status, minPrice, maxPrice, q. Use "" for anything not specified.`;
+
+// Coerce whatever the model returns into a valid, safe SearchFilters. Anything
+// outside the allowed vocabulary collapses to "" so it can't inject a bad param.
+function normalizeFilters(p: Record<string, unknown>): SearchFilters {
+  const oneOf = <T extends string>(v: unknown, allowed: readonly string[]): T | "" =>
+    typeof v === "string" && allowed.includes(v) ? (v as T) : "";
+  const digits = (v: unknown) => (typeof v === "string" && /^\d+$/.test(v) ? v : "");
+  return {
+    type: oneOf(p.type, ["buy-sell", "adoption", "mating", "lost-found"]),
+    species: oneOf(p.species, SPECIES_SLUGS),
+    city: typeof p.city === "string" && (CITIES as readonly string[]).includes(p.city) ? p.city : "",
+    sex: oneOf(p.sex, ["male", "female"]),
+    status: oneOf(p.status, ["lost", "found"]),
+    minPrice: digits(p.minPrice),
+    maxPrice: digits(p.maxPrice),
+    q: typeof p.q === "string" ? p.q.slice(0, 60) : "",
+  };
+}
 
 export async function parseSearchQuery(query: string): Promise<SearchFilters | null> {
-  const res = await getClient().messages.create({
-    model: "claude-opus-4-8",
+  const content = await openrouterChat({
+    model: SEARCH_MODEL,
     max_tokens: 400,
-    thinking: { type: "disabled" },
-    output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
-    system: SYSTEM,
-    messages: [{ role: "user", content: query }],
+    temperature: 0,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: SYSTEM },
+      { role: "user", content: query },
+    ],
   });
 
-  const text = res.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") return null;
-  try {
-    return JSON.parse(text.text) as SearchFilters;
-  } catch {
-    return null;
-  }
+  const parsed = extractJson<Record<string, unknown>>(content);
+  if (!parsed) return null;
+  return normalizeFilters(parsed);
 }
 
 // ── Lost-pet photo matcher ──────────────────────────────────────────────────
@@ -91,35 +152,32 @@ export interface MatchCandidate {
 
 export interface MatchResult {
   id: string;
+  score: number; // 0–100 likelihood it's the same individual animal
   confidence: "high" | "medium" | "low";
-  reason: string;
+  reason: string; // short Georgian explanation
 }
 
-const MATCH_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    matches: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          index: { type: "integer" },
-          confidence: { type: "string", enum: ["high", "medium", "low"] },
-          reason: { type: "string" },
-        },
-        required: ["index", "confidence", "reason"],
-      },
-    },
-  },
-  required: ["matches"],
-} as const;
+const MATCH_SYSTEM =
+  "You are a careful pet-identification assistant for a lost & found board. You compare a QUERY photo against numbered candidate photos and report only genuine same-animal matches. Be conservative: a different-species, different-breed, or clearly different-coloured animal is NOT a match. Judge on coat colour, patterns/markings, breed, size, collar, and other distinctive features — not merely 'same breed'.";
+
+const MATCH_INSTRUCTION = `Which candidates are likely the SAME individual animal as the QUERY pet?
+Respond with ONLY a JSON object of the form:
+{"matches":[{"index":<1-based candidate number>,"score":<0-100 integer, how likely SAME individual>,"reason":"<short Georgian explanation>"}]}
+Only include candidates with a real visual resemblance (score >= 30). Sort most-confident first. If none match, return {"matches":[]}.`;
+
+const scoreToConfidence = (score: number): "high" | "medium" | "low" =>
+  score >= 75 ? "high" : score >= 45 ? "medium" : "low";
+
+const clampScore = (v: unknown): number => {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+};
 
 /**
  * Compare an uploaded pet photo (base64) against candidate listing photos and
- * return the likely same-animal matches, ranked by confidence. Candidates are
- * referenced back to their listing id via the returned index.
+ * return the likely same-animal matches, ranked by score. Candidates are
+ * referenced back to their listing id via the returned 1-based index.
  */
 export async function matchLostPet(
   queryBase64: string,
@@ -128,39 +186,52 @@ export async function matchLostPet(
 ): Promise<MatchResult[] | null> {
   if (candidates.length === 0) return [];
 
-  const content: Anthropic.ContentBlockParam[] = [
+  // OpenAI-compatible multimodal content: text + image_url parts. The query
+  // image is inlined as a data URL; candidates are passed by their public URL.
+  const content: Array<
+    { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+  > = [
     { type: "text", text: "QUERY pet (the animal to identify):" },
-    { type: "image", source: { type: "base64", media_type: queryMediaType, data: queryBase64 } },
+    { type: "image_url", image_url: { url: `data:${queryMediaType};base64,${queryBase64}` } },
   ];
   candidates.forEach((c, i) => {
     content.push({ type: "text", text: `Candidate ${i + 1}:` });
-    content.push({ type: "image", source: { type: "url", url: c.imageUrl } });
+    content.push({ type: "image_url", image_url: { url: c.imageUrl } });
   });
-  content.push({
-    type: "text",
-    text: `Which candidates are likely the SAME individual animal as the QUERY pet? Compare species, breed, size, coloring, and distinctive markings — not just "same breed". Only include a candidate if there is a real visual resemblance. Return matches sorted most-confident first, with the candidate's number as "index" (1-based) and a short Georgian "reason".`,
+  content.push({ type: "text", text: MATCH_INSTRUCTION });
+
+  const out = await openrouterChat({
+    model: MATCH_MODEL,
+    max_tokens: 1200,
+    temperature: 0,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: MATCH_SYSTEM },
+      { role: "user", content },
+    ],
   });
 
-  const res = await getClient().messages.create({
-    model: "claude-opus-4-8",
-    max_tokens: 1000,
-    thinking: { type: "disabled" },
-    output_config: { effort: "low", format: { type: "json_schema", schema: MATCH_SCHEMA } },
-    system:
-      "You are a careful pet-identification assistant for a lost & found board. You compare a query photo against candidate photos and report only genuine same-animal matches. Be conservative: a different-colored or different-breed animal is not a match.",
-    messages: [{ role: "user", content }],
-  });
+  const parsed = extractJson<{
+    matches?: { index?: unknown; score?: unknown; reason?: unknown }[];
+  }>(out);
+  if (!parsed || !Array.isArray(parsed.matches)) return null;
 
-  const text = res.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") return null;
-  try {
-    const parsed = JSON.parse(text.text) as {
-      matches: { index: number; confidence: "high" | "medium" | "low"; reason: string }[];
-    };
-    return parsed.matches
-      .filter((m) => m.index >= 1 && m.index <= candidates.length)
-      .map((m) => ({ id: candidates[m.index - 1].id, confidence: m.confidence, reason: m.reason }));
-  } catch {
-    return null;
-  }
+  return parsed.matches
+    .filter(
+      (m) =>
+        Number.isInteger(m.index) &&
+        (m.index as number) >= 1 &&
+        (m.index as number) <= candidates.length
+    )
+    .map((m) => {
+      const score = clampScore(m.score);
+      return {
+        id: candidates[(m.index as number) - 1].id,
+        score,
+        confidence: scoreToConfidence(score),
+        reason: typeof m.reason === "string" ? m.reason : "",
+      };
+    })
+    .filter((m) => m.score >= 30)
+    .sort((a, b) => b.score - a.score);
 }

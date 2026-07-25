@@ -12,7 +12,7 @@ type Media = (typeof ALLOWED_MEDIA)[number];
 export async function POST(req: NextRequest) {
   if (!aiEnabled()) {
     return NextResponse.json(
-      { error: "AI matcher is not configured (set ANTHROPIC_API_KEY)." },
+      { error: "AI matcher is not configured (set OPENROUTER_API_KEY)." },
       { status: 503 }
     );
   }
@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
       if (!l) return null;
       return {
         id: m.id,
+        score: m.score,
         confidence: m.confidence,
         reason: m.reason,
         breed: l.breed ?? "",

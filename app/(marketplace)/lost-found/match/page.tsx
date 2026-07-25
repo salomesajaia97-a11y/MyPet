@@ -9,6 +9,7 @@ import { useT } from "@/components/i18n/LanguageProvider";
 
 interface Match {
   id: string;
+  score: number;
   confidence: "high" | "medium" | "low";
   reason: string;
   breed: string;
@@ -166,7 +167,7 @@ export default function LostPetMatchPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${CONF_CLASS[m.confidence]}`}>
-                        {t.marketplace.conf[m.confidence]}
+                        {m.score}% · {t.marketplace.conf[m.confidence]}
                       </span>
                       <span className="text-xs text-stone-400">
                         {m.status === "lost" ? t.marketplace.statusLostOption : t.marketplace.statusFoundOption}

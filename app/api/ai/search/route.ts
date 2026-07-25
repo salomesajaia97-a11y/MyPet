@@ -8,7 +8,7 @@ const VALID_TYPES = ["buy-sell", "adoption", "mating", "lost-found"];
 export async function POST(req: NextRequest) {
   if (!aiEnabled()) {
     return NextResponse.json(
-      { error: "AI search is not configured (set ANTHROPIC_API_KEY)." },
+      { error: "AI search is not configured (set OPENROUTER_API_KEY)." },
       { status: 503 }
     );
   }
