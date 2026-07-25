@@ -8,8 +8,12 @@ import { SPECIES, CITIES } from "@/lib/marketplace/filters";
 // if the key is unset, so a missing key never throws at import time.
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const SEARCH_MODEL = "google/gemini-2.0-flash-lite-preview-02-05:free";
-const MATCH_MODEL = "google/gemini-2.0-flash-exp:free";
+// The gemini-2.0 free preview IDs were retired from OpenRouter (400 "not a valid
+// model ID"), and the remaining :free models are rate-limited/unreliable. These
+// 2.5 models are current, cheap (~$0.00001/search, ~$0.0004/image), and handle
+// Georgian + vision well.
+const SEARCH_MODEL = "google/gemini-2.5-flash-lite";
+const MATCH_MODEL = "google/gemini-2.5-flash";
 
 export function aiEnabled(): boolean {
   return !!process.env.OPENROUTER_API_KEY;
