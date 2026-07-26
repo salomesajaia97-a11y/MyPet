@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, ImageIcon, Store, ListChecks } from "lucide-react";
+import { LayoutDashboard, Users, ImageIcon, Store, ListChecks, CreditCard } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -12,6 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const nav = [
     { href: "/admin", label: t.admin.nav.dashboard, icon: LayoutDashboard },
     { href: "/admin/listings", label: t.admin.nav.listings, icon: ListChecks },
+    { href: "/admin/payments", label: t.admin.nav.payments, icon: CreditCard },
     { href: "/admin/businesses", label: t.admin.nav.businesses, icon: Store },
     { href: "/admin/users", label: t.admin.nav.users, icon: Users },
     { href: "/admin/uploads", label: t.admin.nav.uploads, icon: ImageIcon },
