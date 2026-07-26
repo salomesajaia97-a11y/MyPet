@@ -7,7 +7,7 @@ import PaymentModel from "@/lib/models/Payment";
 import { handleMutationError } from "@/lib/api/errors";
 import { rateLimit } from "@/lib/rateLimit";
 import { getServerLocale } from "@/lib/i18n/server";
-import { flittBaseUrl } from "@/lib/flitt/config";
+import { flittBaseUrl, isFlittConfigured } from "@/lib/flitt/config";
 import { createCheckoutUrl, FlittError } from "@/lib/flitt/client";
 import { VIP_PACKAGES, isVipTier } from "@/lib/marketplace/vipPackages";
 
@@ -18,6 +18,12 @@ function newOrderId(listingId: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Fail before creating a Payment row we could never complete.
+  if (!isFlittConfigured()) {
+    console.error("[flitt] checkout attempted but Flitt credentials are not configured");
+    return NextResponse.json({ error: "Payments are temporarily unavailable" }, { status: 503 });
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

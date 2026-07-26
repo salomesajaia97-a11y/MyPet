@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { getFlittConfig } from "@/lib/flitt/config";
+import { getFlittConfig, isFlittConfigured } from "@/lib/flitt/config";
 import { verifySignature } from "@/lib/flitt/signature";
 import { reconcilePayment } from "@/lib/flitt/reconcile";
 import type { FlittCallbackPayload } from "@/lib/flitt/types";
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const payload = await readPayload(req);
   const orderId = payload?.order_id ? String(payload.order_id) : req.nextUrl.searchParams.get("order_id");
 
-  if (payload) {
+  if (payload && isFlittConfigured()) {
     const { paymentKey } = getFlittConfig();
     if (verifySignature(paymentKey, payload)) {
       try {

@@ -47,6 +47,18 @@ export function getFlittConfig(): FlittConfig {
 }
 
 /**
+ * Whether real credentials are present, without throwing.
+ *
+ * `getFlittConfig()` deliberately throws in production when credentials are
+ * missing, so callers that run before a payment exists must check this first
+ * and answer with a clean status instead of an unhandled 500.
+ */
+export function isFlittConfigured(): boolean {
+  if (process.env.FLITT_MERCHANT_ID && process.env.FLITT_PAYMENT_KEY) return true;
+  return process.env.VERCEL_ENV !== "production";
+}
+
+/**
  * Origin Flitt should call back to.
  *
  * `lib/siteUrl.ts` is deliberately not reused as-is: its fallback is the stable

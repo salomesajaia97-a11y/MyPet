@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import PaymentModel from "@/lib/models/Payment";
 import ListingModel from "@/lib/models/Listing";
-import { getFlittConfig } from "@/lib/flitt/config";
+import { getFlittConfig, isFlittConfigured } from "@/lib/flitt/config";
 import { getOrderStatus } from "@/lib/flitt/client";
 import { verifySignature } from "@/lib/flitt/signature";
 import { reconcilePayment } from "@/lib/flitt/reconcile";
@@ -41,7 +41,7 @@ export async function GET(
 
     // Self-healing path: if the callback never landed, ask Flitt directly and
     // run the exact same reconcile the webhook would have run.
-    if (PENDING.has(payment.status)) {
+    if (PENDING.has(payment.status) && isFlittConfigured()) {
       try {
         const remote = await getOrderStatus(orderId);
         const { paymentKey } = getFlittConfig();

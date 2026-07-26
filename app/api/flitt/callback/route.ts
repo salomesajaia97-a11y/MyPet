@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { getFlittConfig } from "@/lib/flitt/config";
+import { getFlittConfig, isFlittConfigured } from "@/lib/flitt/config";
 import { verifySignature } from "@/lib/flitt/signature";
 import { reconcilePayment } from "@/lib/flitt/reconcile";
 import type { FlittCallbackPayload } from "@/lib/flitt/types";
@@ -20,6 +20,14 @@ export async function POST(req: NextRequest) {
     payload = (await req.json()) as FlittCallbackPayload;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  // Checked before reading config, which throws in production when credentials
+  // are unset. A 503 keeps the callback on Flitt's retry schedule so it is
+  // redelivered once the environment is configured, rather than being lost.
+  if (!isFlittConfigured()) {
+    console.error("[flitt] callback received but Flitt credentials are not configured");
+    return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
   const { paymentKey } = getFlittConfig();

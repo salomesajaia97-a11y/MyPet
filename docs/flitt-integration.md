@@ -61,7 +61,7 @@ no window where a lapsed listing holds a slot someone else is paying for.
 | `FLITT_PAYMENT_KEY` | real payment key | unset → `"test"` |
 | `FLITT_CREDIT_KEY` | real credit key | unset (unused in v1) |
 | `FLITT_API_BASE` | `https://pay.flitt.com` | same |
-| `NEXT_PUBLIC_SITE_URL` | `https://mypetge.online` | leave unset |
+| `NEXT_PUBLIC_SITE_URL` | `https://www.mypetge.online` | leave unset |
 
 Credentials live only in Vercel environment variables. Never commit them.
 
@@ -82,9 +82,14 @@ Any expiry and CVV.
 
 ## Going live
 
-1. Set `NEXT_PUBLIC_SITE_URL=https://mypetge.online` in Vercel production.
-2. Confirm `https://mypetge.online/api/flitt/callback` answers directly — no
-   redirect, HTTPS, under 30s. Flitt source IPs: `54.154.216.60`, `3.75.125.89`.
+1. Set `NEXT_PUBLIC_SITE_URL=https://www.mypetge.online` in Vercel production.
+   **The `www` is required.** The apex `mypetge.online` answers `308` and
+   redirects to `www`, and Flitt does not follow redirects — an apex callback
+   URL would mean every payment notification is silently dropped.
+2. Confirm `https://www.mypetge.online/api/flitt/callback` answers directly —
+   no redirect, HTTPS, under 30s. A `POST` with a bad signature must return
+   `400`; `503` means the credentials are not set yet.
+   Flitt source IPs: `54.154.216.60`, `3.75.125.89`.
 3. Set `FLITT_MERCHANT_ID`, `FLITT_PAYMENT_KEY`, `FLITT_CREDIT_KEY` in Vercel
    **production only**.
 4. Redeploy. Buy one Standard VIP with a real card, then refund it from the
