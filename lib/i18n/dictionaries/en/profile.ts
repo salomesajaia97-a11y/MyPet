@@ -80,11 +80,13 @@ export const profile: typeof ka = {
     },
   },
   balance: {
-    title: "Top up balance",
+    title: "Balance",
     current: "Current balance",
-    topupLabel: "Top-up amount",
-    placeholder: "Coming soon",
-    topUp: "Top up",
-    note: "Payment system coming soon.",
+    promoTitle: "Promote a listing",
+    promoBody:
+      "Promotion does not use your balance — you pay by card directly for a specific listing.",
+    promoCta: "See VIP packages",
+    myListings: "My listings",
+    historyCta: "Payment history",
   },
 };
