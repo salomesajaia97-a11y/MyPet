@@ -41,7 +41,7 @@ Ranking is a strict order: `ultra > super > standard > none`.
 | Decision | Choice | Rationale |
 | --- | --- | --- |
 | Checkout flow | Server-to-server `POST /api/checkout/url`, then redirect the browser to the returned `checkout_url` | The signature never enters the DOM; API errors are handled server-side; the local order is persisted before the customer leaves |
-| Environment | Env-driven. Local/preview use Flitt test merchant `1549901` / secret `test`; production uses merchant `4057706` | Lets the whole flow be exercised with test cards; going live is one env change, no code change |
+| Environment | Env-driven. Local/preview use Flitt test merchant `1549901` / secret `test`; production uses the live merchant id from env | Lets the whole flow be exercised with test cards; going live is one env change, no code change |
 | Callback domain | `https://mypetge.online` | Requires `NEXT_PUBLIC_SITE_URL` set in Vercel production |
 | Repeat purchase on an already-VIP listing | Extend from the current expiry; tier never downgrades | A user who buys Super with 2 days left gets `now + 2d + 7d`. No paid time is ever lost |
 | Refunds | Out of scope for v1; handled manually in the Flitt merchant portal | Rare at 3–12 GEL. Refund policy is still published on the pricing page |
@@ -162,7 +162,7 @@ The homepage VIP row in `app/(marketplace)/page.tsx` already filters in memory w
 
 | Env var | Production | Local / preview |
 | --- | --- | --- |
-| `FLITT_MERCHANT_ID` | `4057706` | `1549901` |
+| `FLITT_MERCHANT_ID` | live merchant id (Vercel env only) | `1549901` |
 | `FLITT_PAYMENT_KEY` | live payment key | `test` |
 | `FLITT_CREDIT_KEY` | live credit key | `testcredit` |
 | `FLITT_API_BASE` | `https://pay.flitt.com` | same |
@@ -358,7 +358,7 @@ Because `next dev` and `next build` cannot run on the development machine, type 
 1. Merge with sandbox credentials. Production `FLITT_MERCHANT_ID` unset, so the code path uses the test merchant and no real money moves.
 2. Set `NEXT_PUBLIC_SITE_URL=https://mypetge.online` in Vercel production.
 3. Verify the callback endpoint is publicly reachable over HTTPS with no redirect, and register it in the Flitt merchant portal.
-4. Set `FLITT_MERCHANT_ID=4057706`, `FLITT_PAYMENT_KEY`, and `FLITT_CREDIT_KEY` in Vercel production only.
+4. Set `FLITT_MERCHANT_ID`, `FLITT_PAYMENT_KEY`, and `FLITT_CREDIT_KEY` in Vercel production only.
 5. Redeploy. Buy one Standard VIP with a real card as a smoke test, then refund it from the Flitt portal.
 
 **Credential hygiene:** the payment key and credit private key were shared in a chat transcript and should be treated as exposed. Rotate both in the Flitt merchant portal once the integration is verified, and update the Vercel environment variables to match.
