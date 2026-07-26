@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import type { Listing } from "@/types/marketplace";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { PromoteDialog } from "@/components/vip/PromoteDialog";
+import { isVipActive } from "@/lib/marketplace/vip";
 
 export default function MyListingsPage() {
   const { t } = useT();
@@ -61,6 +63,8 @@ export default function MyListingsPage() {
 
 function ListingCard({ listing }: { listing: Listing }) {
   const { t } = useT();
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const vip = isVipActive(listing);
   const price =
     (listing.type === "buy-sell" || listing.type === "mating") &&
     listing.price !== null &&
@@ -69,7 +73,10 @@ function ListingCard({ listing }: { listing: Listing }) {
       : null;
 
   return (
-    <Link href={`/listings/${listing._id}`} className="block">
+    <div>
+      {/* The promote button lives outside the Link — a button nested inside an
+          anchor is not valid interactive markup. */}
+      <Link href={`/listings/${listing._id}`} className="block">
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
         <div className="relative aspect-[4/3] bg-stone-100">
           {listing.images[0] ? (
@@ -99,6 +106,21 @@ function ListingCard({ listing }: { listing: Listing }) {
           </p>
         </div>
       </div>
-    </Link>
+      </Link>
+
+      <button
+        type="button"
+        onClick={() => setPromoteOpen(true)}
+        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-amber-500 py-2 text-xs font-bold text-white hover:bg-amber-600"
+      >
+        <Sparkles className="h-3.5 w-3.5" />
+        {vip ? t.listings.owner.extend : t.listings.owner.promote}
+      </button>
+      <PromoteDialog
+        listingId={listing._id}
+        open={promoteOpen}
+        onClose={() => setPromoteOpen(false)}
+      />
+    </div>
   );
 }

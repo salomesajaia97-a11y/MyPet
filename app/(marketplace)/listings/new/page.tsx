@@ -102,11 +102,15 @@ function NewListingForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      const json = await res.json();
       if (!res.ok) {
-        const json = await res.json();
         throw new Error(json.error ?? t.listings.form.genericError);
       }
-      router.push(`/${type}`);
+      // Land on the new listing with the promote picker already open — the
+      // moment the owner most wants visibility. Falls back to the section index
+      // if the API ever stops returning the created document.
+      const newId = json?.listing?._id as string | undefined;
+      router.push(newId ? `/listings/${newId}?promote=1` : `/${type}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.listings.form.genericError);
     } finally {
