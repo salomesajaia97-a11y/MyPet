@@ -18,6 +18,7 @@ export const profile: typeof ka = {
     notifications: "Notifications",
     balance: "Balance",
     businesses: "My services",
+    payments: "Payments",
   },
   notifications: {
     title: "Notifications",

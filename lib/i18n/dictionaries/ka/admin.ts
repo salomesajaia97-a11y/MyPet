@@ -7,6 +7,7 @@ export const admin = {
     businesses: "ბიზნესები",
     users: "მომხმარებლები",
     uploads: "ატვირთვები",
+    payments: "გადახდები",
   },
   dashboard: {
     title: "დაფა",

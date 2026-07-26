@@ -8,6 +8,7 @@ export const admin: typeof ka = {
     businesses: "Businesses",
     users: "Users",
     uploads: "Uploads",
+    payments: "Payments",
   },
   dashboard: {
     title: "Dashboard",

@@ -16,6 +16,7 @@ export const profile = {
     notifications: "შეტყობინებები",
     balance: "ბალანსი",
     businesses: "ჩემი სერვისები",
+    payments: "გადახდები",
   },
   notifications: {
     title: "შეტყობინებები",
