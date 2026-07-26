@@ -10,6 +10,8 @@ import { formatAge } from "@/lib/marketplace/format";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Dictionary } from "@/lib/i18n";
 import type { BuySellListing } from "@/types/marketplace";
+import { VipBadge } from "@/components/vip/VipBadge";
+import { activeRank, tierForRank } from "@/lib/marketplace/vip";
 
 export default async function BuySellPage({
   searchParams,
@@ -53,10 +55,20 @@ export default async function BuySellPage({
 }
 
 function ListingCard({ listing, t }: { listing: BuySellListing; t: Dictionary }) {
+  // Only a live promotion earns a badge — activeRank() returns 0 once
+  // `vipUntil` has passed, so a lapsed listing renders as an ordinary one.
+  const tier = tierForRank(activeRank(listing));
   return (
     <Link href={`/listings/${listing._id}`} className="block">
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
+    <div className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer ${
+        tier === "ultra" ? "ring-2 ring-orange-400" : tier ? "ring-2 ring-amber-300/70" : ""
+      }`}>
       <div className="relative aspect-[4/3] bg-stone-100">
+        {tier && (
+          <div className="absolute top-3 left-3 z-10">
+            <VipBadge tier={tier} label={t.vip.badge[tier]} />
+          </div>
+        )}
         {listing.images[0] ? (
           <Image
             src={listing.images[0]}

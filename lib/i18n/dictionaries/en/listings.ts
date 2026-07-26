@@ -110,7 +110,6 @@ export const listings: typeof ka = {
     vipActive: "Your listing is VIP — it appears on the homepage",
     promoteTitle: "Boost visibility — promote to VIP",
     promoteDesc: "A VIP listing appears first on the homepage. For a small fee.",
-    soon: "Coming soon",
     vipUntil: "Active until",
     extend: "Extend",
     promoteError: "Could not start the promotion",

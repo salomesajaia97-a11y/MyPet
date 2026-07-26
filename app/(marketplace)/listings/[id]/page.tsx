@@ -82,10 +82,15 @@ export async function generateMetadata({
 
 export default async function ListingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ promote?: string }>;
 }) {
   const { id } = await params;
+  // `?promote=1` comes from the post-create redirect — open the picker straight
+  // away, at the moment the owner most wants visibility.
+  const { promote } = await searchParams;
   const listing = await getListing(id);
   if (!listing) notFound();
 
@@ -295,8 +300,10 @@ export default async function ListingDetailPage({
                 id={id}
                 backHref={backHref[listing.type] ?? "/buy-sell"}
                 isVip={vip}
+                vipUntil={listing.vipUntil ?? null}
                 type={listing.type}
                 isResolved={listing.type === "lost-found" ? listing.isResolved : false}
+                autoPromote={promote === "1"}
               />
             ) : (
               <div className="border-t pt-5 space-y-3">

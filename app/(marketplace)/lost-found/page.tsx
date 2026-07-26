@@ -8,6 +8,8 @@ import { Pager } from "@/components/marketplace/Pager";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import type { LostFoundListing } from "@/types/marketplace";
+import { VipBadge } from "@/components/vip/VipBadge";
+import { activeRank, tierForRank } from "@/lib/marketplace/vip";
 
 export default async function LostFoundPage({
   searchParams,
@@ -71,10 +73,20 @@ export default async function LostFoundPage({
 function ListingCard({ listing, t, locale }: { listing: LostFoundListing; t: Dictionary; locale: Locale }) {
   const isLost = listing.status === "lost";
   const species = t.marketplace.species[listing.species as keyof typeof t.marketplace.species] ?? listing.species;
+  // Only a live promotion earns a badge — activeRank() returns 0 once
+  // `vipUntil` has passed, so a lapsed listing renders as an ordinary one.
+  const tier = tierForRank(activeRank(listing));
   return (
     <Link href={`/listings/${listing._id}`} className="block">
-      <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
+      <div className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer ${
+        tier === "ultra" ? "ring-2 ring-orange-400" : tier ? "ring-2 ring-amber-300/70" : ""
+      }`}>
         <div className="relative aspect-[4/3] bg-stone-100">
+          {tier && (
+            <div className="absolute top-3 left-3 z-10">
+              <VipBadge tier={tier} label={t.vip.badge[tier]} />
+            </div>
+          )}
           {listing.images[0] ? (
             <Image
               src={listing.images[0]}

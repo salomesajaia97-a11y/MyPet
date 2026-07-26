@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Pencil, Trash2, Star, Sparkles, CheckCircle2, RotateCcw } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
+import { PromoteDialog } from "@/components/vip/PromoteDialog";
 
 /**
  * Owner-only action toolbar for a listing. Rendered instead of the buyer
@@ -17,14 +18,18 @@ export function OwnerControls({
   id,
   backHref,
   isVip = false,
+  vipUntil = null,
   type,
   isResolved = false,
+  autoPromote = false,
 }: {
   id: string;
   backHref: string;
   isVip?: boolean;
+  vipUntil?: string | null;
   type?: string;
   isResolved?: boolean;
+  autoPromote?: boolean;
 }) {
   const { t } = useT();
   const { confirm, notify } = useConfirm();
@@ -32,6 +37,9 @@ export function OwnerControls({
   const [deleting, setDeleting] = useState(false);
   const [resolved, setResolved] = useState(isResolved);
   const [resolving, setResolving] = useState(false);
+  // Seeded from the query flag so the post-create upsell lands with the picker
+  // already open.
+  const [promoteOpen, setPromoteOpen] = useState(autoPromote);
 
   const toggleResolved = async () => {
     const next = !resolved;
@@ -75,13 +83,24 @@ export function OwnerControls({
 
   return (
     <div className="border-t pt-5">
-      {/* Promote-to-VIP note. Placeholder for the future paid-promotion flow —
-          the button is intentionally inert until checkout is wired up. Hidden
-          once the listing is already VIP. */}
+      {/* Paid promotion. Buying again while already VIP extends from the
+          current expiry rather than restarting, so no paid time is lost. */}
       {isVip ? (
-        <div className="mb-5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm font-semibold text-amber-700">
+        <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm font-semibold text-amber-700">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          {t.listings.owner.vipActive}
+          <span>{t.listings.owner.vipActive}</span>
+          {vipUntil && (
+            <span className="text-xs font-medium text-amber-600">
+              {t.listings.owner.vipUntil} {new Date(vipUntil).toLocaleDateString()}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setPromoteOpen(true)}
+            className="ml-auto rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600"
+          >
+            {t.listings.owner.extend}
+          </button>
         </div>
       ) : (
         <div className="mb-5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 px-4 py-3.5">
@@ -99,15 +118,16 @@ export function OwnerControls({
             </div>
             <button
               type="button"
-              disabled
-              title={t.listings.owner.soon}
-              className="shrink-0 self-center cursor-not-allowed rounded-lg bg-amber-500/90 px-3 py-2 text-xs font-bold text-white opacity-80"
+              onClick={() => setPromoteOpen(true)}
+              className="shrink-0 self-center rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white hover:bg-amber-600"
             >
               {t.listings.owner.promote}
             </button>
           </div>
         </div>
       )}
+
+      <PromoteDialog listingId={id} open={promoteOpen} onClose={() => setPromoteOpen(false)} />
 
       <p className="text-sm font-semibold text-[#0F2830] mb-3">
         {t.listings.owner.manage}
