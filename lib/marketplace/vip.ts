@@ -12,3 +12,8 @@ export function isVipActive(l: {
   if (!l.vipUntil) return true;
   return new Date(l.vipUntil).getTime() > Date.now();
 }
+
+// Tier-aware placement math lives in vipMath.ts so it stays pure and testable
+// without a database. Re-exported here so callers have a single VIP import.
+export { activeRank, computeVipGrant, tierForRank } from "./vipMath";
+export type { VipListingFields } from "./vipMath";
