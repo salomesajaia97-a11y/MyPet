@@ -76,7 +76,9 @@ export async function POST(req: NextRequest) {
         amount: pkg.amount,
         orderDesc: `MyPet VIP ${pkg.tier} - ${pkg.days} days - listing ${listingId}`,
         serverCallbackUrl: `${base}/api/flitt/callback`,
-        responseUrl: `${base}/payment/result?order_id=${encodeURIComponent(orderId)}`,
+        // Routed through an API handler, not straight to the page: Flitt may
+        // return the customer with a POST, which a page route cannot answer.
+        responseUrl: `${base}/api/flitt/return?order_id=${encodeURIComponent(orderId)}`,
         lang: locale === "en" ? "en" : "ka",
         merchantData: JSON.stringify({ listingId, tier: pkg.tier }),
       });
