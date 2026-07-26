@@ -30,11 +30,37 @@ export async function getListings(
 ): Promise<Listing[]> {
   await connectDB();
   const page = getPage(params);
-  const docs = await ListingModel.find(buildListingFilter(type, params))
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * PAGE_SIZE)
-    .limit(PAGE_SIZE)
-    .lean();
+  const docs = await ListingModel.aggregate([
+    { $match: buildListingFilter(type, params) },
+    // Placement rank is computed per query rather than stored-and-swept, so a
+    // promotion drops out of the paid positions the instant `vipUntil` passes.
+    // A cron sweep would leave a window where a lapsed listing keeps a slot
+    // someone else is paying for.
+    {
+      $addFields: {
+        effRank: {
+          $cond: [
+            {
+              $and: [
+                { $eq: ["$isVip", true] },
+                {
+                  $or: [
+                    { $eq: [{ $ifNull: ["$vipUntil", null] }, null] },
+                    { $gt: ["$vipUntil", new Date()] },
+                  ],
+                },
+              ],
+            },
+            { $ifNull: ["$vipRank", 0] },
+            0,
+          ],
+        },
+      },
+    },
+    { $sort: { effRank: -1, createdAt: -1 } },
+    { $skip: (page - 1) * PAGE_SIZE },
+    { $limit: PAGE_SIZE },
+  ]);
   return JSON.parse(JSON.stringify(docs)) as Listing[];
 }
 

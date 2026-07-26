@@ -28,7 +28,7 @@ import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { SmartSearch } from "@/components/ai/SmartSearch";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { CITIES, SPECIES as SPECIES_OPTIONS } from "@/lib/marketplace/filters";
-import { isVipActive } from "@/lib/marketplace/vip";
+import { activeRank, isVipActive } from "@/lib/marketplace/vip";
 import type { Listing } from "@/types/marketplace";
 
 // Placeholder (index 0) is the default/reset value — `handleSearch` skips it
@@ -213,7 +213,13 @@ export default function HomePage() {
         // No padding with plain listings — an unpaid listing must never wear the
         // VIP badge. Empty when nothing is VIP. "New" row = all recent listings
         // regardless of VIP status, newest first (already sorted above).
-        const vip = all.filter(isVipActive).slice(0, 4);
+        // Highest-paying tier first, then newest, so an Ultra buyer outranks a
+        // Standard one for the four homepage slots. `all` is already sorted
+        // newest-first, and Array.sort is stable, so equal ranks keep that order.
+        const vip = all
+          .filter(isVipActive)
+          .sort((a, b) => activeRank(b) - activeRank(a))
+          .slice(0, 4);
         const rest = all.slice(0, 8);
 
         setVipListings(vip.map(toCard));
