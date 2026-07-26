@@ -18,8 +18,11 @@ export interface BaseListing {
   // Paid VIP promotion. `isVip` is set only after payment (or by an admin);
   // `vipUntil` is the expiry of the paid period (null = no expiry). A listing
   // surfaces in the homepage VIP row only while both hold — see isVipActive().
+  // `vipRank` mirrors `vipTier` numerically (1/2/3) so placement can be sorted.
   isVip?: boolean;
   vipUntil?: string | null;
+  vipTier?: "standard" | "super" | "ultra" | null;
+  vipRank?: number;
 }
 
 export interface BuySellListing extends BaseListing {

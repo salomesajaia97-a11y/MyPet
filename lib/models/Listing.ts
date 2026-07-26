@@ -32,10 +32,14 @@ const ListingSchema = new Schema(
     reward: Number,
     isResolved: { type: Boolean, default: false },
     // Paid VIP promotion. New listings default to non-VIP; `isVip` flips only
-    // after payment (future) or an admin grant. `vipUntil` bounds the paid
-    // period — null means no expiry. Homepage VIP row filters via isVipActive().
+    // after an approved payment or an admin grant. `vipUntil` bounds the paid
+    // period — null means no expiry. `vipRank` is denormalized from `vipTier`
+    // (1 standard, 2 super, 3 ultra) so MongoDB can sort placement directly;
+    // applyVipForOrder() is the only writer, which keeps the two in sync.
     isVip: { type: Boolean, default: false },
     vipUntil: { type: Date, default: null },
+    vipTier: { type: String, enum: ["standard", "super", "ultra", null], default: null },
+    vipRank: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -45,6 +49,6 @@ const ListingSchema = new Schema(
 ListingSchema.index({ type: 1, createdAt: -1 });
 ListingSchema.index({ species: 1 });
 ListingSchema.index({ userId: 1 });
-ListingSchema.index({ isVip: 1, vipUntil: 1, createdAt: -1 });
+ListingSchema.index({ isVip: 1, vipUntil: 1, vipRank: -1, createdAt: -1 });
 
 export default models.Listing || model("Listing", ListingSchema);
