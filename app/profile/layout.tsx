@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRound, List, Heart, MessageCircle, Wallet, Briefcase, Bell } from "lucide-react";
+import { UserRound, List, Heart, MessageCircle, Wallet, Briefcase, Bell, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/components/i18n/LanguageProvider";
 
@@ -14,6 +14,7 @@ const TABS = [
   { href: "/profile/favorites", key: "favorites", icon: Heart, exact: false },
   { href: "/profile/messages", key: "messages", icon: MessageCircle, exact: false },
   { href: "/profile/balance", key: "balance", icon: Wallet, exact: false },
+  { href: "/profile/payments", key: "payments", icon: Receipt, exact: false },
 ] as const;
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
