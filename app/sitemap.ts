@@ -46,15 +46,37 @@ const XML_ENTITIES: Record<string, string> = {
 
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (c) => XML_ENTITIES[c]);
 
+const XML_TEXT: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+};
+
+// Some image URLs were scraped from pages that had already HTML-escaped them,
+// so they sit in the DB as `...?a=1&amp;b=2`. Escaping those again yields
+// `&amp;amp;` and hands Google a URL that 404s, so decode to a plain string
+// first — repeatedly, since a few are double-encoded at the source.
+function decodeXmlEntities(value: string): string {
+  let previous: string;
+  let out = value;
+  do {
+    previous = out;
+    out = out.replace(/&(amp|lt|gt|quot|apos);/g, (_, name: string) => XML_TEXT[name]);
+  } while (out !== previous);
+  return out;
+}
+
 /**
  * Percent-encode the URL (stored image paths can contain spaces and other
- * characters that are illegal in a `<loc>`), then XML-escape it. Returns null
- * for anything that isn't a parseable absolute URL so the caller can drop it
- * instead of emitting a broken entry.
+ * characters that are illegal in a `<loc>`), then XML-escape it exactly once.
+ * Returns null for anything that isn't a parseable absolute URL so the caller
+ * can drop it instead of emitting a broken entry.
  */
 function xmlSafeUrl(raw: string): string | null {
   try {
-    return escapeXml(new URL(raw).href);
+    return escapeXml(new URL(decodeXmlEntities(raw)).href);
   } catch {
     return null;
   }
