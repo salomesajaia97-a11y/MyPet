@@ -14,9 +14,12 @@ import { useT } from "@/components/i18n/LanguageProvider";
 export function FavoriteButton({
   listingId,
   className = "",
+  iconClassName = "w-3.5 h-3.5",
 }: {
   listingId: string;
   className?: string;
+  /** Heart sizing — cards use the compact default, the detail page a larger one. */
+  iconClassName?: string;
 }) {
   const favorites = useFavorites();
   const { status } = useSession();
@@ -44,7 +47,7 @@ export function FavoriteButton({
       className={className}
     >
       <Heart
-        className={`w-3.5 h-3.5 transition-colors ${
+        className={`${iconClassName} transition-colors ${
           active ? "fill-rose-500 text-rose-500" : "text-stone-400 hover:text-rose-500"
         }`}
       />

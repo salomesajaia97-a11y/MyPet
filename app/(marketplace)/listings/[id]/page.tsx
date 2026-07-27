@@ -12,6 +12,7 @@ import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
 import { ContactSellerBox } from "./ContactSellerBox";
 import Gallery from "./Gallery";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { ViewCounter } from "./ViewCounter";
 import { isVipActive } from "@/lib/marketplace/vip";
 import { formatPublishedDate, shortListingId } from "@/lib/marketplace/views";
@@ -239,6 +240,14 @@ export default async function ListingDetailPage({
                 </span>
               )}
             </div>
+            {/* Same heart as the cards, sized up for the detail view. Rendered
+                after the badges so it paints above the full-image zoom button
+                and receives the click itself. */}
+            <FavoriteButton
+              listingId={id}
+              iconClassName="w-5 h-5"
+              className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all shadow"
+            />
             {listing.type === "buy-sell" && (
               <div className="absolute bottom-3 right-3 pointer-events-none bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
                 {listing.currency === "USD"
