@@ -65,9 +65,14 @@ describe("pageMetadata", () => {
     expect(meta.openGraph?.url).toBe(`${SITE_URL}/buy-sell`);
   });
 
-  it("leaves images unset so the generated OG card is inherited", () => {
+  // Nested metadata is merged shallowly, so defining `openGraph` at all drops
+  // the root opengraph-image. Every page must restate the default card.
+  it("falls back to the site OG card when the page has no image", () => {
     const meta = pageMetadata({ locale: "ka", title: "T", description: "D", path: "/" });
-    expect(meta.openGraph && "images" in meta.openGraph).toBe(false);
+    expect(meta.openGraph).toMatchObject({
+      images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630 }],
+    });
+    expect(meta.twitter).toMatchObject({ images: [`${SITE_URL}/opengraph-image`] });
   });
 
   it("uses the page's own images when it has them", () => {
