@@ -40,6 +40,10 @@ const ListingSchema = new Schema(
     vipUntil: { type: Date, default: null },
     vipTier: { type: String, enum: ["standard", "super", "ultra", null], default: null },
     vipRank: { type: Number, default: 0 },
+    // Detail-page view counter, incremented at most once per visitor per day by
+    // the view route. Listings created before this field existed simply read as
+    // absent and are rendered as 0 — no backfill, the numbers are real traffic.
+    views: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

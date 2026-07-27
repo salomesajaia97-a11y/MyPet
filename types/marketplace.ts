@@ -23,6 +23,8 @@ export interface BaseListing {
   vipUntil?: string | null;
   vipTier?: "standard" | "super" | "ultra" | null;
   vipRank?: number;
+  // Absent on listings created before the counter shipped — render as 0.
+  views?: number;
 }
 
 export interface BuySellListing extends BaseListing {

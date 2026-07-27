@@ -2,7 +2,7 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Phone, User, Calendar, ArrowLeft, Star } from "lucide-react";
+import { MapPin, Phone, User, Calendar, ArrowLeft, Star, Tag } from "lucide-react";
 import PhoneLink from "@/components/ui/PhoneLink";
 import type { Listing } from "@/types/marketplace";
 import { auth } from "@/auth";
@@ -12,7 +12,9 @@ import ListingModel from "@/lib/models/Listing";
 import { OwnerControls } from "./OwnerControls";
 import { ContactSellerBox } from "./ContactSellerBox";
 import Gallery from "./Gallery";
+import { ViewCounter } from "./ViewCounter";
 import { isVipActive } from "@/lib/marketplace/vip";
+import { formatPublishedDate, shortListingId } from "@/lib/marketplace/views";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
@@ -270,6 +272,21 @@ export default async function ListingDetailPage({
                   {listing.location}
                 </span>
               </div>
+            </div>
+
+            {/* Posting facts: when it went up, its reference number, and how
+                many people have opened it. Kept between hairlines so it reads
+                as metadata about the ad rather than about the animal. */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-stone-100 py-3 text-sm text-stone-500">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                {t.listings.detail.published} {formatPublishedDate(listing.createdAt, locale)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Tag className="w-4 h-4" />
+                {t.listings.detail.listingId} #{shortListingId(id)}
+              </span>
+              <ViewCounter listingId={id} initialViews={listing.views ?? 0} />
             </div>
 
             {/* Type-specific badges */}

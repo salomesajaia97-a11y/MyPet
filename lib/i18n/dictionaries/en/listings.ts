@@ -85,6 +85,9 @@ export const listings: typeof ka = {
     description: "Description",
     contact: "Contact",
     call: "Call",
+    published: "Published",
+    listingId: "Listing ID",
+    views: "views",
   },
   contactSeller: {
     loginPrompt: "To contact the seller,",

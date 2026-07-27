@@ -84,6 +84,9 @@ export const listings = {
     description: "აღწერა",
     contact: "კონტაქტი",
     call: "დარეკვა",
+    published: "გამოქვეყნდა",
+    listingId: "განცხადების ID",
+    views: "ნახვები",
   },
   contactSeller: {
     loginPrompt: "გამყიდველთან დასაკავშირებლად",
