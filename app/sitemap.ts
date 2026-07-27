@@ -32,9 +32,37 @@ export const revalidate = 3600;
 /** Google ignores anything past 50k URLs / 50 MB in one sitemap file. */
 const MAX_PER_TYPE = 20000;
 
+// Next serializes this route's return value into XML by raw interpolation
+// (`<loc>${url}</loc>`), so nothing here is escaped for us. A single `&` from a
+// CDN query string is enough to break the whole document with
+// "EntityRef: expecting ';'". Every URL goes through xmlSafeUrl() below.
+const XML_ENTITIES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&apos;",
+};
+
+const escapeXml = (value: string) => value.replace(/[&<>"']/g, (c) => XML_ENTITIES[c]);
+
+/**
+ * Percent-encode the URL (stored image paths can contain spaces and other
+ * characters that are illegal in a `<loc>`), then XML-escape it. Returns null
+ * for anything that isn't a parseable absolute URL so the caller can drop it
+ * instead of emitting a broken entry.
+ */
+function xmlSafeUrl(raw: string): string | null {
+  try {
+    return escapeXml(new URL(raw).href);
+  } catch {
+    return null;
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = STATIC.map((r) => ({
-    url: `${SITE_URL}${r.path}`,
+    url: xmlSafeUrl(`${SITE_URL}${r.path}`) ?? `${SITE_URL}${r.path}`,
     changeFrequency: r.changeFrequency,
     priority: r.priority,
   }));
@@ -74,12 +102,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Only absolute URLs are valid in an image sitemap; a listing can hold a
     // relative or blank path, so those are filtered out rather than emitted.
     const httpImages = (images?: string[]) =>
-      (images ?? []).filter((src) => /^https?:\/\//.test(src)).slice(0, 5);
+      (images ?? [])
+        .filter((src) => /^https?:\/\//.test(src))
+        .map(xmlSafeUrl)
+        .filter((src): src is string => src !== null)
+        .slice(0, 5);
 
     const listingEntries: MetadataRoute.Sitemap = listings.map((l) => {
       const images = httpImages(l.images);
       return {
-        url: `${SITE_URL}/listings/${l._id.toString()}`,
+        url: `${SITE_URL}/listings/${encodeURIComponent(l._id.toString())}`,
         lastModified: l.updatedAt ?? l.createdAt,
         changeFrequency: "weekly",
         priority: 0.6,
@@ -90,7 +122,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const businessEntries: MetadataRoute.Sitemap = businesses.map((b) => {
       const images = httpImages(b.images);
       return {
-        url: `${SITE_URL}/services/${b.category}/${b._id.toString()}`,
+        url: `${SITE_URL}/services/${encodeURIComponent(b.category)}/${encodeURIComponent(b._id.toString())}`,
         lastModified: b.updatedAt ?? b.createdAt,
         changeFrequency: "weekly",
         // Business pages change rarely but are the durable, link-worthy pages
