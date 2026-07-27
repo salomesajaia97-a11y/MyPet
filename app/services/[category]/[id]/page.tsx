@@ -13,6 +13,18 @@ import ServiceOwnerControls from "@/components/services/ServiceOwnerControls";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, graph } from "@/lib/seo/jsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
+import {
+  BRAND_KEYWORDS,
+  buildKeywords,
+  CARE_KEYWORDS,
+  HOTEL_KEYWORDS,
+  PET_FRIENDLY_KEYWORDS,
+  VET_KEYWORDS,
+} from "@/lib/seo/keywords";
 
 interface Service {
   _id: string;
@@ -74,40 +86,60 @@ const getService = cache(async (
   }
 });
 
+/** Intent keywords per service category, prefixed with the business's own name. */
+const KEYWORDS_BY_CATEGORY: Record<string, string[]> = {
+  "vet-clinics": VET_KEYWORDS.slice(0, 16),
+  "pet-hotels": HOTEL_KEYWORDS.slice(0, 12),
+  "pet-shops": CARE_KEYWORDS.slice(0, 14),
+  "pet-friendly": PET_FRIENDLY_KEYWORDS.slice(0, 10),
+};
+
+/** schema.org type per category — more specific than a bare LocalBusiness. */
+const SCHEMA_TYPE_BY_CATEGORY: Record<string, string> = {
+  "vet-clinics": "VeterinaryCare",
+  "pet-hotels": "LodgingBusiness",
+  "pet-shops": "PetStore",
+  "pet-friendly": "LocalBusiness",
+};
+
 export async function generateMetadata({
   params,
 }: PageProps<"/services/[category]/[id]">): Promise<Metadata> {
   const { category, id } = await params;
-  const t = getDictionary(await getServerLocale());
+  const locale = await getServerLocale();
+  const t = getDictionary(locale);
   const service = await getService(category, id);
   // Don't emit a real title for a missing OR still-pending business (pending
-  // ones aren't public — don't leak the name to crawlers).
+  // ones aren't public — don't leak the name to crawlers, and keep both out
+  // of the index).
   if (!service || service.status === "pending") {
-    return { title: t.services.edit.notFound };
+    return { title: t.services.edit.notFound, robots: { index: false, follow: false } };
   }
 
+  const locality = [service.neighborhood, service.city].filter(Boolean).join(", ");
   const title = service.name;
   const description =
     service.description?.trim().slice(0, 160) ||
     [service.address, service.neighborhood, service.city].filter(Boolean).join(", ");
-  const image = service.images?.[0];
 
-  return {
+  return pageMetadata({
+    locale,
     title,
     description,
-    openGraph: {
-      type: "article",
-      title,
-      description,
-      images: image ? [{ url: image }] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: image ? [image] : undefined,
-    },
-  };
+    path: `/services/${category}/${id}`,
+    type: "article",
+    images: service.images?.length ? service.images : undefined,
+    keywords: buildKeywords(
+      [
+        service.name,
+        locality ? `${service.name} ${locality}` : "",
+        service.city ?? "",
+        ...(service.tags ?? []),
+      ],
+      KEYWORDS_BY_CATEGORY[category] ?? [],
+      BRAND_KEYWORDS.slice(0, 5),
+    ),
+  });
 }
 
 export default async function ServiceDetailPage({
@@ -140,11 +172,16 @@ export default async function ServiceDetailPage({
   // Real ratings only: show the badge solely when genuine native reviews exist.
   const nativeCount = service.nativeRatingCount ?? 0;
 
-  // LocalBusiness structured data → rich Google results (rating stars, address,
-  // phone). Optional fields are included only when present.
+  const pageUrl = `${SITE_URL}/services/${category}/${service._id}`;
+
+  // Business structured data → rich Google results (rating stars, address,
+  // phone). The @type is narrowed per category (VeterinaryCare, PetStore, …)
+  // because the specific types carry more weight in local search than a bare
+  // LocalBusiness. Optional fields are included only when present.
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": SCHEMA_TYPE_BY_CATEGORY[category] ?? "LocalBusiness",
+    "@id": `${pageUrl}#business`,
+    mainEntityOfPage: pageUrl,
     name: service.name,
     ...(service.images?.length ? { image: service.images } : {}),
     ...(service.description ? { description: service.description } : {}),
@@ -159,7 +196,13 @@ export default async function ServiceDetailPage({
         }
       : {}),
     ...(service.phone ? { telephone: service.phone } : {}),
-    ...(service.website ? { url: service.website } : {}),
+    ...(service.website ? { url: service.website, sameAs: [service.website] } : {}),
+    ...(service.tags?.length ? { keywords: service.tags.join(", ") } : {}),
+    // A 24/7 clinic is exactly what "ვეტკლინიკა 24 საათი" searches want.
+    ...(service.is24h ? { openingHours: "Mo-Su 00:00-23:59" } : {}),
+    ...(typeof service.pricePerNight === "number"
+      ? { priceRange: `${service.pricePerNight} GEL` }
+      : {}),
     ...(typeof service.lat === "number" && typeof service.lng === "number"
       ? { geo: { "@type": "GeoCoordinates", latitude: service.lat, longitude: service.lng } }
       : {}),
@@ -176,9 +219,16 @@ export default async function ServiceDetailPage({
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd
+        data={graph(
+          jsonLd,
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.seo.services.title, path: "/services" },
+            { name: backLabel, path: backHref },
+            { name: service.name, path: `/services/${category}/${service._id}` },
+          ]),
+        )}
       />
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Back */}

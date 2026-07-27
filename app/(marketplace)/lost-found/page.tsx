@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
@@ -10,6 +11,35 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 import type { LostFoundListing } from "@/types/marketplace";
 import { VipBadge } from "@/components/vip/VipBadge";
 import { activeRank, tierForRank } from "@/lib/marketplace/vip";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { browsePageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, collectionPageJsonLd, graph } from "@/lib/seo/jsonLd";
+import {
+  BRAND_KEYWORDS,
+  buildKeywords,
+  CITY_KEYWORDS,
+  LOST_FOUND_KEYWORDS,
+} from "@/lib/seo/keywords";
+
+const KEYWORDS = buildKeywords(LOST_FOUND_KEYWORDS, CITY_KEYWORDS, BRAND_KEYWORDS);
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const { locale, t } = await getServerDictionary();
+  return browsePageMetadata({
+    locale,
+    title: t.seo.lostFound.title,
+    description: t.seo.lostFound.description,
+    path: "/lost-found",
+    keywords: KEYWORDS,
+    searchParams: sp,
+    pageWord: t.seo.pageWord,
+  });
+}
 
 export default async function LostFoundPage({
   searchParams,
@@ -25,6 +55,27 @@ export default async function LostFoundPage({
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <JsonLd
+        data={graph(
+          collectionPageJsonLd({
+            locale,
+            name: t.seo.lostFound.title,
+            description: t.seo.lostFound.description,
+            path: "/lost-found",
+            totalItems: total,
+            keywords: KEYWORDS.slice(0, 25),
+            items: listings.map((l) => ({
+              name: l.breed,
+              path: `/listings/${l._id}`,
+              image: l.images?.[0],
+            })),
+          }),
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.seo.lostFound.title, path: "/lost-found" },
+          ]),
+        )}
+      />
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <h1 className="sr-only">{t.marketplace.titleLostFound}</h1>
         <Suspense fallback={null}>

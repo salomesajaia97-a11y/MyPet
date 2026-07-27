@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
@@ -11,6 +12,41 @@ import type { Dictionary } from "@/lib/i18n";
 import type { MatingListing } from "@/types/marketplace";
 import { VipBadge } from "@/components/vip/VipBadge";
 import { activeRank, tierForRank } from "@/lib/marketplace/vip";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { browsePageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, collectionPageJsonLd, graph } from "@/lib/seo/jsonLd";
+import {
+  BRAND_KEYWORDS,
+  BREED_KEYWORDS,
+  buildKeywords,
+  CITY_KEYWORDS,
+  MATING_KEYWORDS,
+} from "@/lib/seo/keywords";
+
+const KEYWORDS = buildKeywords(
+  MATING_KEYWORDS,
+  BREED_KEYWORDS.slice(0, 16),
+  CITY_KEYWORDS,
+  BRAND_KEYWORDS,
+);
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const { locale, t } = await getServerDictionary();
+  return browsePageMetadata({
+    locale,
+    title: t.seo.mating.title,
+    description: t.seo.mating.description,
+    path: "/mating",
+    keywords: KEYWORDS,
+    searchParams: sp,
+    pageWord: t.seo.pageWord,
+  });
+}
 
 export default async function MatingPage({
   searchParams,
@@ -18,7 +54,7 @@ export default async function MatingPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const { t } = await getServerDictionary();
+  const { locale, t } = await getServerDictionary();
   const [listings, total] = await Promise.all([
     getListings("mating", sp) as Promise<MatingListing[]>,
     countListings("mating", sp),
@@ -26,6 +62,27 @@ export default async function MatingPage({
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <JsonLd
+        data={graph(
+          collectionPageJsonLd({
+            locale,
+            name: t.seo.mating.title,
+            description: t.seo.mating.description,
+            path: "/mating",
+            totalItems: total,
+            keywords: KEYWORDS.slice(0, 25),
+            items: listings.map((l) => ({
+              name: l.breed,
+              path: `/listings/${l._id}`,
+              image: l.images?.[0],
+            })),
+          }),
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.seo.mating.title, path: "/mating" },
+          ]),
+        )}
+      />
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <h1 className="sr-only">{t.marketplace.titleMating}</h1>
         <Suspense fallback={null}>

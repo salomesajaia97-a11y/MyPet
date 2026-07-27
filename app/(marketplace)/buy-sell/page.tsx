@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
@@ -12,6 +13,41 @@ import type { Dictionary } from "@/lib/i18n";
 import type { BuySellListing } from "@/types/marketplace";
 import { VipBadge } from "@/components/vip/VipBadge";
 import { activeRank, tierForRank } from "@/lib/marketplace/vip";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { browsePageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, collectionPageJsonLd, graph } from "@/lib/seo/jsonLd";
+import {
+  BRAND_KEYWORDS,
+  BREED_KEYWORDS,
+  BUY_SELL_KEYWORDS,
+  buildKeywords,
+  CITY_KEYWORDS,
+} from "@/lib/seo/keywords";
+
+const KEYWORDS = buildKeywords(
+  BUY_SELL_KEYWORDS,
+  BREED_KEYWORDS,
+  CITY_KEYWORDS,
+  BRAND_KEYWORDS,
+);
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const { locale, t } = await getServerDictionary();
+  return browsePageMetadata({
+    locale,
+    title: t.seo.buySell.title,
+    description: t.seo.buySell.description,
+    path: "/buy-sell",
+    keywords: KEYWORDS,
+    searchParams: sp,
+    pageWord: t.seo.pageWord,
+  });
+}
 
 export default async function BuySellPage({
   searchParams,
@@ -19,7 +55,7 @@ export default async function BuySellPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const { t } = await getServerDictionary();
+  const { locale, t } = await getServerDictionary();
   const [listings, total] = await Promise.all([
     getListings("buy-sell", sp) as Promise<BuySellListing[]>,
     countListings("buy-sell", sp),
@@ -27,6 +63,29 @@ export default async function BuySellPage({
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      {/* Describe the page as a real index of the listings it renders, so the
+          section can rank on its own rather than only via detail pages. */}
+      <JsonLd
+        data={graph(
+          collectionPageJsonLd({
+            locale,
+            name: t.seo.buySell.title,
+            description: t.seo.buySell.description,
+            path: "/buy-sell",
+            totalItems: total,
+            keywords: KEYWORDS.slice(0, 25),
+            items: listings.map((l) => ({
+              name: l.breed,
+              path: `/listings/${l._id}`,
+              image: l.images?.[0],
+            })),
+          }),
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.seo.buySell.title, path: "/buy-sell" },
+          ]),
+        )}
+      />
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         <h1 className="sr-only">{t.marketplace.titleBuySell}</h1>
         <Suspense fallback={null}>

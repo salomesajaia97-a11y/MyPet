@@ -11,6 +11,7 @@ import { admin } from "./ka/admin";
 import { pages } from "./ka/pages";
 import { misc } from "./ka/misc";
 import { vip } from "./ka/vip";
+import { seo } from "./ka/seo";
 
 /**
  * Georgian dictionary — the source-of-truth shape. `en.ts` mirrors it exactly
@@ -31,4 +32,5 @@ export const ka = {
   pages,
   misc,
   vip,
+  seo,
 } as const;

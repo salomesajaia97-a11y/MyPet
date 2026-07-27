@@ -3,8 +3,11 @@ export const common = {
   brandSuffix: ".ge",
   tagline: "ყიდვა, გაჩუქება და სერვისები — ერთ სივრცეში",
   skipToContent: "მთავარ კონტენტზე გადასვლა",
-  metaTitle: "MyPet — საქართველოს პრემიუმ ცხოველთა პლატფორმა",
-  metaDescription: "იყიდე, გაყიდე, გააჩუქე და მოძებნე სერვისები შენი ცხოველებისთვის.",
+  // Homepage <title> (used as-is, the brand template is not applied to it) and
+  // the SERP snippet — both front-loaded with the queries we rank for.
+  metaTitle: "MyPet.ge — ცხოველების განცხადებები, ყიდვა, გაჩუქება და სერვისები",
+  metaDescription:
+    "შინაური ცხოველების პორტალი საქართველოში — ძაღლების და კატების ყიდვა-გაყიდვა, გაჩუქება უფასოდ, შეჯვარება, დაკარგული და ნაპოვნი ცხოველები, ვეტკლინიკები და სასტუმროები.",
   // Shared marketplace / service category labels (reused by navbar + footer).
   categories: {
     buySell: "ყიდვა-გაყიდვა",

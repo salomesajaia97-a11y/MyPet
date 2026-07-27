@@ -12,6 +12,7 @@ import { admin } from "./en/admin";
 import { pages } from "./en/pages";
 import { misc } from "./en/misc";
 import { vip } from "./en/vip";
+import { seo } from "./en/seo";
 
 /** English dictionary — must mirror `ka` exactly (typed against it). */
 export const en: typeof ka = {
@@ -28,4 +29,5 @@ export const en: typeof ka = {
   pages,
   misc,
   vip,
+  seo,
 };

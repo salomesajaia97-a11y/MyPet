@@ -1,18 +1,63 @@
+import type { Metadata } from "next";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { ServicesSearch } from "@/components/services/ServicesSearch";
 import { ServicesFab } from "@/components/services/ServicesFab";
 import { MapPanel } from "@/components/services/MapPanel";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, collectionPageJsonLd, graph } from "@/lib/seo/jsonLd";
+import {
+  BRAND_KEYWORDS,
+  buildKeywords,
+  CITY_KEYWORDS,
+  PET_FRIENDLY_KEYWORDS,
+} from "@/lib/seo/keywords";
 
 export const dynamic = "force-dynamic";
 
+const KEYWORDS = buildKeywords(PET_FRIENDLY_KEYWORDS, CITY_KEYWORDS, BRAND_KEYWORDS);
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale, t } = await getServerDictionary();
+  return pageMetadata({
+    locale,
+    title: t.seo.petFriendly.title,
+    description: t.seo.petFriendly.description,
+    path: "/services/pet-friendly",
+    keywords: KEYWORDS,
+  });
+}
+
 export default async function PetFriendlyPage() {
-  const { t } = await getServerDictionary();
+  const { locale, t } = await getServerDictionary();
   const businesses = await fetchDBBusinesses("pet-friendly");
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <JsonLd
+        data={graph(
+          collectionPageJsonLd({
+            locale,
+            name: t.seo.petFriendly.title,
+            description: t.seo.petFriendly.description,
+            path: "/services/pet-friendly",
+            keywords: KEYWORDS.slice(0, 25),
+            items: businesses.slice(0, 50).map((b) => ({
+              name: b.name,
+              path: `/services/pet-friendly/${b._id}`,
+              image: b.image || undefined,
+            })),
+            totalItems: businesses.length,
+          }),
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.seo.services.title, path: "/services" },
+            { name: t.seo.petFriendly.title, path: "/services/pet-friendly" },
+          ]),
+        )}
+      />
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         <div>
           <h1 className="text-3xl font-black text-[#0F2830] mb-1">{t.services.categories.petFriendly.title}</h1>

@@ -7,6 +7,10 @@ import { Providers } from "./providers";
 import { getDictionary } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
 import { SITE_URL } from "@/lib/siteUrl";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_KEYWORDS } from "@/lib/seo/keywords";
+import { SITE_NAME, SITE_TITLE_TEMPLATE, TWITTER_HANDLE } from "@/lib/seo/metadata";
+import { graph, organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,20 +21,46 @@ export async function generateMetadata(): Promise<Metadata> {
     title: {
       default: t.common.metaTitle,
       // Child pages set only their own title; this appends the brand.
-      template: "%s · MyPet.ge",
+      template: SITE_TITLE_TEMPLATE,
     },
     description: t.common.metaDescription,
+    // Site-wide head terms. Section pages replace this with their own intent
+    // set (see lib/seo/keywords.ts) rather than inheriting the broad list.
+    keywords: SITE_KEYWORDS,
+    applicationName: SITE_NAME,
+    category: "pets",
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
     alternates: { canonical: "/" },
+    // Phone numbers are rendered as real tel: links already; leaving detection
+    // on lets Safari rewrite listing text into its own broken links.
+    formatDetection: { telephone: false, address: false, email: false },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     openGraph: {
       type: "website",
-      siteName: "MyPet.ge",
+      siteName: SITE_NAME,
       url: SITE_URL,
       title: t.common.metaTitle,
       description: t.common.metaDescription,
       locale: locale === "ka" ? "ka_GE" : "en_US",
+      alternateLocale: locale === "ka" ? "en_US" : "ka_GE",
+      // og:image comes from app/opengraph-image.tsx (file convention).
     },
     twitter: {
       card: "summary_large_image",
+      site: TWITTER_HANDLE,
+      creator: TWITTER_HANDLE,
       title: t.common.metaTitle,
       description: t.common.metaDescription,
     },
@@ -43,6 +73,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} className={GeistSans.variable}>
       <body>
+        {/* Site-level entities (Organization + WebSite with a SearchAction).
+            Emitted once from the root so every page inherits them and page-level
+            nodes can reference them by @id. */}
+        <JsonLd
+          data={graph(
+            organizationJsonLd(t.common.metaDescription),
+            websiteJsonLd(locale, t.common.metaTitle, t.common.metaDescription),
+          )}
+        />
         <Providers initialLocale={locale}>
           <a
             href="#main"

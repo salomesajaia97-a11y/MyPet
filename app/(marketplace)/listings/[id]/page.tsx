@@ -16,6 +16,18 @@ import { isVipActive } from "@/lib/marketplace/vip";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, graph, ORGANIZATION_ID, WEBSITE_ID } from "@/lib/seo/jsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
+import {
+  ADOPTION_KEYWORDS,
+  BRAND_KEYWORDS,
+  BUY_SELL_KEYWORDS,
+  buildKeywords,
+  LOST_FOUND_KEYWORDS,
+  MATING_KEYWORDS,
+} from "@/lib/seo/keywords";
 
 // Query the DB directly — no self-fetch to our own API (which would need an
 // absolute URL and break outside localhost). JSON round-trip serializes
@@ -40,6 +52,14 @@ const backHref: Record<string, string> = {
   "lost-found": "/lost-found",
 };
 
+/** Intent keywords per listing type — the breed and city are prepended live. */
+const KEYWORDS_BY_TYPE: Record<string, string[]> = {
+  "buy-sell": BUY_SELL_KEYWORDS.slice(0, 18),
+  adoption: ADOPTION_KEYWORDS.slice(0, 18),
+  mating: MATING_KEYWORDS.slice(0, 14),
+  "lost-found": LOST_FOUND_KEYWORDS.slice(0, 18),
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -47,8 +67,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const listing = await getListing(id);
-  const t = getDictionary(await getServerLocale());
-  if (!listing) return { title: t.listings.editListing.notFound };
+  const locale = await getServerLocale();
+  const t = getDictionary(locale);
+  // A deleted or bogus id must not be indexed — it would otherwise ship a
+  // soft-404 with a real canonical URL.
+  if (!listing) {
+    return { title: t.listings.editListing.notFound, robots: { index: false, follow: false } };
+  }
 
   const typeLabels: Record<string, string> = {
     "buy-sell": t.listings.types.buySell,
@@ -60,24 +85,27 @@ export async function generateMetadata({
   const description =
     listing.description?.trim().slice(0, 160) ||
     `${typeLabels[listing.type] ?? ""} · ${listing.location}`;
-  const image = listing.images?.[0];
 
-  return {
+  return pageMetadata({
+    locale,
     title,
     description,
-    openGraph: {
-      type: "article",
-      title,
-      description,
-      images: image ? [{ url: image }] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: image ? [image] : undefined,
-    },
-  };
+    path: `/listings/${id}`,
+    type: "article",
+    images: listing.images?.length ? listing.images : undefined,
+    // The breed and location are what people actually type; they lead, with
+    // the section's intent terms behind them.
+    keywords: buildKeywords(
+      [
+        listing.breed,
+        `${listing.breed} ${listing.location}`,
+        listing.location,
+        `${typeLabels[listing.type] ?? ""} ${listing.breed}`.trim(),
+      ],
+      KEYWORDS_BY_TYPE[listing.type] ?? [],
+      BRAND_KEYWORDS.slice(0, 5),
+    ),
+  });
 }
 
 export default async function ListingDetailPage({
@@ -94,7 +122,7 @@ export default async function ListingDetailPage({
   const listing = await getListing(id);
   if (!listing) notFound();
 
-  const { t } = await getServerDictionary();
+  const { t, locale } = await getServerDictionary();
   const typeLabels: Record<string, string> = {
     "buy-sell": t.listings.types.buySell,
     adoption: t.listings.types.adoption,
@@ -113,35 +141,77 @@ export default async function ListingDetailPage({
       ? `${listing.age} ${t.listings.detail.monthUnit}`
       : `${Math.floor(listing.age / 12)} ${t.listings.detail.yearUnit}`;
 
-  // Product structured data → richer Google results (price, image). Offer is
-  // added only when the listing has a price (buy-sell always, mating when set).
-  const hasPrice =
-    (listing.type === "buy-sell" || listing.type === "mating") &&
-    typeof listing.price === "number";
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: listing.breed,
-    ...(listing.images?.length ? { image: listing.images } : {}),
-    ...(listing.description ? { description: listing.description } : {}),
-    ...(hasPrice
+  const url = `${SITE_URL}/listings/${id}`;
+  const sectionHref = backHref[listing.type] ?? "/buy-sell";
+
+  // A lost/found post is an announcement, not something for sale — emitting it
+  // as a Product would be a structured-data policy violation. Everything else
+  // is a real offer (adoption is simply priced at 0).
+  const priced =
+    listing.type === "buy-sell" || listing.type === "mating"
+      ? typeof listing.price === "number"
+        ? listing.price
+        : 0
+      : listing.type === "adoption"
+        ? 0
+        : null;
+
+  const mainEntity =
+    listing.type === "lost-found"
       ? {
+          "@type": "Article",
+          "@id": `${url}#listing`,
+          url,
+          headline: `${listing.breed} — ${typeLabels[listing.type]}`,
+          ...(listing.images?.length ? { image: listing.images } : {}),
+          ...(listing.description ? { articleBody: listing.description } : {}),
+          datePublished: listing.createdAt,
+          inLanguage: locale === "en" ? "en" : "ka",
+          contentLocation: {
+            "@type": "Place",
+            name: [listing.neighborhood, listing.location].filter(Boolean).join(", "),
+          },
+          publisher: { "@id": ORGANIZATION_ID },
+          isPartOf: { "@id": WEBSITE_ID },
+        }
+      : {
+          "@type": "Product",
+          "@id": `${url}#listing`,
+          url,
+          name: listing.breed,
+          sku: listing._id,
+          category: typeLabels[listing.type],
+          ...(listing.images?.length ? { image: listing.images } : {}),
+          ...(listing.description ? { description: listing.description } : {}),
+          additionalProperty: [
+            { "@type": "PropertyValue", name: "species", value: listing.species },
+            { "@type": "PropertyValue", name: "breed", value: listing.breed },
+            { "@type": "PropertyValue", name: "ageMonths", value: listing.age },
+          ],
           offers: {
             "@type": "Offer",
-            price: listing.price,
+            url,
+            price: priced,
             priceCurrency:
               listing.type === "buy-sell" && listing.currency === "USD" ? "USD" : "GEL",
             availability: "https://schema.org/InStock",
+            itemCondition: "https://schema.org/NewCondition",
+            areaServed: { "@type": "Place", name: listing.location },
+            seller: { "@type": "Person", name: listing.contactName },
           },
-        }
-      : {}),
-  };
+        };
 
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd
+        data={graph(
+          mainEntity,
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: typeLabels[listing.type] ?? t.seo.breadcrumbs.listings, path: sectionHref },
+            { name: listing.breed, path: `/listings/${id}` },
+          ]),
+        )}
       />
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Back button */}

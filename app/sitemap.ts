@@ -18,6 +18,7 @@ const STATIC: Array<{ path: string; priority: number; changeFrequency: "daily" |
   { path: "/services/pet-hotels", priority: 0.7, changeFrequency: "weekly" },
   { path: "/services/pet-shops", priority: 0.7, changeFrequency: "weekly" },
   { path: "/services/pet-friendly", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/vip", priority: 0.5, changeFrequency: "monthly" },
   { path: "/about", priority: 0.4, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.4, changeFrequency: "monthly" },
   { path: "/terms", priority: 0.3, changeFrequency: "monthly" },
@@ -27,6 +28,9 @@ const STATIC: Array<{ path: string; priority: number; changeFrequency: "daily" |
 // Re-generate at most once an hour; a stale sitemap is fine and this avoids a
 // DB hit on every crawler request.
 export const revalidate = 3600;
+
+/** Google ignores anything past 50k URLs / 50 MB in one sitemap file. */
+const MAX_PER_TYPE = 20000;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = STATIC.map((r) => ({
@@ -40,29 +44,61 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     await connectDB();
     const [listings, businesses] = await Promise.all([
-      ListingModel.find({}, "updatedAt")
+      // `images` rides along so each entry can carry an image sitemap tag —
+      // pet photos are what earn the click in Google Images.
+      ListingModel.find({}, "images updatedAt createdAt")
         .sort({ createdAt: -1 })
-        .limit(5000)
-        .lean<{ _id: { toString(): string }; updatedAt?: Date }[]>(),
-      BusinessModel.find({ status: "approved" }, "category updatedAt")
+        .limit(MAX_PER_TYPE)
+        .lean<
+          {
+            _id: { toString(): string };
+            images?: string[];
+            updatedAt?: Date;
+            createdAt?: Date;
+          }[]
+        >(),
+      BusinessModel.find({ status: "approved" }, "category images updatedAt createdAt")
         .sort({ createdAt: -1 })
-        .limit(5000)
-        .lean<{ _id: { toString(): string }; category: string; updatedAt?: Date }[]>(),
+        .limit(MAX_PER_TYPE)
+        .lean<
+          {
+            _id: { toString(): string };
+            category: string;
+            images?: string[];
+            updatedAt?: Date;
+            createdAt?: Date;
+          }[]
+        >(),
     ]);
 
-    const listingEntries: MetadataRoute.Sitemap = listings.map((l) => ({
-      url: `${SITE_URL}/listings/${l._id.toString()}`,
-      lastModified: l.updatedAt,
-      changeFrequency: "weekly",
-      priority: 0.6,
-    }));
+    // Only absolute URLs are valid in an image sitemap; a listing can hold a
+    // relative or blank path, so those are filtered out rather than emitted.
+    const httpImages = (images?: string[]) =>
+      (images ?? []).filter((src) => /^https?:\/\//.test(src)).slice(0, 5);
 
-    const businessEntries: MetadataRoute.Sitemap = businesses.map((b) => ({
-      url: `${SITE_URL}/services/${b.category}/${b._id.toString()}`,
-      lastModified: b.updatedAt,
-      changeFrequency: "weekly",
-      priority: 0.6,
-    }));
+    const listingEntries: MetadataRoute.Sitemap = listings.map((l) => {
+      const images = httpImages(l.images);
+      return {
+        url: `${SITE_URL}/listings/${l._id.toString()}`,
+        lastModified: l.updatedAt ?? l.createdAt,
+        changeFrequency: "weekly",
+        priority: 0.6,
+        ...(images.length ? { images } : {}),
+      };
+    });
+
+    const businessEntries: MetadataRoute.Sitemap = businesses.map((b) => {
+      const images = httpImages(b.images);
+      return {
+        url: `${SITE_URL}/services/${b.category}/${b._id.toString()}`,
+        lastModified: b.updatedAt ?? b.createdAt,
+        changeFrequency: "weekly",
+        // Business pages change rarely but are the durable, link-worthy pages
+        // on the site — ranked above an individual classified.
+        priority: 0.7,
+        ...(images.length ? { images } : {}),
+      };
+    });
 
     return [...staticEntries, ...listingEntries, ...businessEntries];
   } catch {
