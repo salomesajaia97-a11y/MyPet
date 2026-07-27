@@ -19,19 +19,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 bg-gray-900 text-gray-100 flex flex-col py-6 px-4 shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6 px-2">
+    <div className="flex min-h-screen flex-col lg:flex-row">
+      {/* Sidebar on desktop; on mobile it becomes a swipeable strip along the top
+          so the content column keeps the full viewport width. */}
+      <aside className="w-full lg:w-56 bg-gray-900 text-gray-100 flex flex-col py-3 lg:py-6 px-3 lg:px-4 shrink-0">
+        <p className="hidden lg:block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6 px-2">
           {t.admin.title}
         </p>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-row lg:flex-col gap-1 overflow-x-auto no-scrollbar">
           {nav.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 lg:gap-3 shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   active
                     ? "bg-gray-700 text-white"
                     : "text-gray-400 hover:bg-gray-800 hover:text-white"
@@ -44,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
       </aside>
-      <main className="flex-1 bg-gray-50 p-8 overflow-auto">{children}</main>
+      <main className="flex-1 min-w-0 bg-gray-50 p-4 sm:p-6 lg:p-8 overflow-auto">{children}</main>
     </div>
   );
 }

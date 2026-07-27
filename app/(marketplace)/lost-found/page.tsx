@@ -76,7 +76,7 @@ export default async function LostFoundPage({
           ]),
         )}
       />
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-5xl mx-auto px-4 py-6 pb-24 lg:pb-6 space-y-5">
         <h1 className="sr-only">{t.marketplace.titleLostFound}</h1>
         <Suspense fallback={null}>
           <MarketplaceTabs active="lost-found" />

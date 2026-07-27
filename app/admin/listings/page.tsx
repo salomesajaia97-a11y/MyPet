@@ -137,7 +137,7 @@ export default function AdminListingsPage() {
         <p className="text-gray-400">{t.admin.listings.empty}</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[42rem] text-sm">
             <thead className="bg-gray-50 text-gray-500 text-left">
               <tr>
                 <th className="px-3 py-2 font-medium">{t.admin.listings.cols.photo}</th>

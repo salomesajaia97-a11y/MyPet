@@ -24,7 +24,7 @@ export function LanguageToggle({ className }: { className?: string }) {
           onClick={() => setLocale(l)}
           aria-pressed={locale === l}
           className={cn(
-            "rounded-full px-2 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E4A5C]/40",
+            "rounded-full px-1.5 sm:px-2 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E4A5C]/40",
             locale === l
               ? "bg-[#0E4A5C] text-white"
               : "text-stone-500 hover:text-[#0E4A5C]"

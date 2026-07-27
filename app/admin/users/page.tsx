@@ -57,8 +57,8 @@ export default function AdminUsersPage() {
       {loading ? (
         <p className="text-gray-500">{t.admin.users.loading}</p>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+          <table className="w-full min-w-[36rem] text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">{t.admin.users.cols.name}</th>

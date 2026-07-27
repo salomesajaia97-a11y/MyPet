@@ -57,7 +57,7 @@ export function PromoteDialog({
       aria-label={t.vip.dialog.title}
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-white p-5 sm:p-6 shadow-xl">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h2 className="text-lg font-bold text-[#0F2830]">{t.vip.dialog.title}</h2>

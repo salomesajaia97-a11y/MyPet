@@ -27,7 +27,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
         aria-label={t.profile.nav.aria}
         className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-200"
       >
-        <div className="max-w-5xl mx-auto px-4 flex items-center gap-1 overflow-x-auto">
+        <div className="max-w-5xl mx-auto px-4 flex items-center gap-1 overflow-x-auto no-scrollbar">
           {TABS.map((tab) => {
             const active = tab.exact
               ? pathname === tab.href

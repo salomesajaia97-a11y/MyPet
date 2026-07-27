@@ -27,7 +27,10 @@ export function RealBusinessCard({ business, href }: Props) {
       )}
       <div className="flex">
         {/* Image */}
-        <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0 bg-[#EBF6FA]">
+        {/* Fixed-width column that stretches to the card's height — a fixed
+            square left a dead band under short images once the info column
+            wrapped onto extra lines on narrow screens. */}
+        <div className="relative w-24 xs:w-28 sm:w-44 min-h-[7rem] sm:min-h-[11rem] shrink-0 self-stretch bg-[#DCEAF1]">
           {business.image ? (
             // Raw <img>: directory businesses carry scraped image URLs from
             // arbitrary external hosts, which next/image would reject (host not
@@ -51,12 +54,12 @@ export function RealBusinessCard({ business, href }: Props) {
         </div>
 
         {/* Info */}
-        <div className="p-4 flex-1 space-y-2 min-w-0">
+        <div className="p-3 sm:p-4 flex-1 space-y-2 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div>
-              <p className="font-bold text-[#0F2830] text-base leading-tight">{business.name}</p>
+            <div className="min-w-0">
+              <p className="font-bold text-[#0F2830] text-sm sm:text-base leading-tight break-words">{business.name}</p>
               {business.nameKa && business.nameKa !== business.name && (
-                <p className="text-stone-400 text-xs mt-0.5">{business.nameKa}</p>
+                <p className="text-stone-400 text-xs mt-0.5 break-words">{business.nameKa}</p>
               )}
             </div>
             {business.pricePerNight && (
@@ -93,8 +96,8 @@ export function RealBusinessCard({ business, href }: Props) {
               .filter(Boolean)
               .join(", ");
             return loc ? (
-              <p className="text-xs text-stone-500 flex items-center gap-1.5">
-                <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
+              <p className="text-xs text-stone-500 flex items-start gap-1.5 break-words">
+                <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-stone-400" />
                 {loc}
               </p>
             ) : null;
@@ -102,7 +105,7 @@ export function RealBusinessCard({ business, href }: Props) {
 
           {/* Phone & Website — sit above the stretched link overlay so they
               stay clickable; stop propagation so they don't trigger card nav. */}
-          <div className="relative z-[2] flex items-center gap-4 w-fit">
+          <div className="relative z-[2] flex flex-wrap items-center gap-x-4 gap-y-1 w-fit max-w-full">
             {business.phone && (
               <PhoneLink phone={business.phone} className="text-xs text-[#0E4A5C] flex items-center gap-1.5 hover:underline">
                 <Phone className="w-3 h-3 shrink-0" />
@@ -110,7 +113,7 @@ export function RealBusinessCard({ business, href }: Props) {
               </PhoneLink>
             )}
             {business.website && (
-              <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 hover:text-[#0E4A5C]">
+              <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 whitespace-nowrap hover:text-[#0E4A5C]">
                 <Globe className="w-3 h-3" />
                 {t.services.website}
               </a>

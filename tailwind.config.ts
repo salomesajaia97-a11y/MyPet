@@ -6,6 +6,11 @@ const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // Extra-small breakpoint for the narrowest phones still in use (320–379px),
+      // where the nav's icon row needs one more step of collapsing than `sm`.
+      screens: {
+        xs: "380px",
+      },
       colors: {
         cream: {
           50: "#faf8f4",

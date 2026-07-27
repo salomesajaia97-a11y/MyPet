@@ -58,7 +58,7 @@ export default async function PetFriendlyPage() {
           ]),
         )}
       />
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-7xl mx-auto px-4 py-6 pb-28 lg:pb-6 space-y-5">
         <div>
           <h1 className="text-3xl font-black text-[#0F2830] mb-1">{t.services.categories.petFriendly.title}</h1>
           <p className="text-stone-500 text-sm">{t.services.categories.petFriendly.subtitle}</p>

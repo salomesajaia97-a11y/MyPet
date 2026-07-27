@@ -160,7 +160,7 @@ export function MarketplaceSearch({
 
           {/* Price range (buy-sell / mating) */}
           {showPrice && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex w-full sm:w-auto items-center gap-1.5">
               <input
                 type="number"
                 min="0"
@@ -170,7 +170,7 @@ export function MarketplaceSearch({
                 onChange={(e) => setMinPrice(e.target.value)}
                 onBlur={applyPrice}
                 onKeyDown={priceKeyDown}
-                className={`${controlClass} w-28`}
+                className={`${controlClass} w-full min-w-0 sm:w-28`}
                 aria-label={t.marketplace.minPriceLabel}
               />
               <span className="text-stone-300">–</span>
@@ -183,7 +183,7 @@ export function MarketplaceSearch({
                 onChange={(e) => setMaxPrice(e.target.value)}
                 onBlur={applyPrice}
                 onKeyDown={priceKeyDown}
-                className={`${controlClass} w-28`}
+                className={`${controlClass} w-full min-w-0 sm:w-28`}
                 aria-label={t.marketplace.maxPriceLabel}
               />
             </div>

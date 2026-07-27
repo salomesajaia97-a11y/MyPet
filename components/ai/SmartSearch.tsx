@@ -75,7 +75,7 @@ export function SmartSearch() {
         <button
           type="submit"
           disabled={loading || query.trim().length < 2}
-          className="bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-5 font-semibold text-sm flex items-center gap-2 transition-colors disabled:opacity-60 whitespace-nowrap"
+          className="bg-[#0E4A5C] hover:bg-[#0B3D4E] text-white px-3 sm:px-5 font-semibold text-sm flex items-center gap-1.5 sm:gap-2 shrink-0 transition-colors disabled:opacity-60 whitespace-nowrap"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
           {loading ? t.misc.searching : t.misc.aiSearch}

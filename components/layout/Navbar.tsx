@@ -51,7 +51,7 @@ function MessagesLink() {
     <Link
       href="/profile/messages"
       aria-label={t.nav.messages}
-      className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
+      className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
     >
       <MessageCircle className="w-[18px] h-[18px]" />
       {count > 0 && (
@@ -90,7 +90,7 @@ function NotificationsBell() {
     <Link
       href="/profile/notifications"
       aria-label={t.nav.notifications}
-      className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
+      className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
     >
       <Bell className="w-[18px] h-[18px]" />
       {count > 0 && (
@@ -135,7 +135,7 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
           aria-expanded={open}
           aria-label={t.nav.userMenu}
           className={cn(
-            "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E4A5C]/40",
+            "flex items-center gap-1.5 sm:gap-2 border rounded-full pl-1 pr-1.5 xs:pr-2 sm:pr-3 py-1 shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E4A5C]/40",
             open ? "border-stone-300 bg-stone-50" : "border-stone-200 hover:border-stone-300"
           )}
         >
@@ -148,11 +148,11 @@ function UserMenu({ session }: { session: NonNullable<ReturnType<typeof useSessi
           <span className="text-sm font-medium text-stone-700 max-w-[60px] truncate hidden sm:block">
             {name || email.split("@")[0]}
           </span>
-          <ChevronDown className={cn("w-3.5 h-3.5 text-stone-400 transition-transform", open && "rotate-180")} />
+          <ChevronDown className={cn("hidden xs:block w-3.5 h-3.5 text-stone-400 transition-transform", open && "rotate-180")} />
         </button>
 
         {open && (
-          <div role="menu" className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-64 z-50 overflow-hidden">
+          <div role="menu" className="absolute right-0 top-[calc(100%+6px)] bg-white border border-stone-200 rounded-2xl shadow-xl w-64 max-w-[calc(100vw-2rem)] z-50 overflow-hidden">
             <div className="flex items-center gap-3 px-4 py-4 border-b border-stone-100">
               <div className="w-10 h-10 rounded-full bg-[#0E4A5C] flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
                 {avatarUrl ? (
@@ -239,31 +239,34 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-stone-200">
       {/* Row 1 — main bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-[#0E4A5C] flex items-center justify-center">
-            <PawPrint className="w-5 h-5 text-white" />
+        <Link href="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0E4A5C] flex items-center justify-center shrink-0">
+            <PawPrint className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <span className="font-black text-lg tracking-tight">
+          <span className="font-black text-base sm:text-lg tracking-tight">
             <span className="text-[#0E4A5C]">MyPet</span>
             <span className="text-stone-400 font-light">.ge</span>
           </span>
         </Link>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-1.5">
+        {/* Right actions — each item sheds padding/labels as the screen narrows so
+            the row never outgrows the viewport (the language switch and, on the
+            narrowest phones, favorites move into the mobile menu instead). */}
+        <div className="flex items-center gap-0.5 sm:gap-1.5">
           {/* Add listing — visible on mobile too (icon-only on the smallest screens) */}
           <Link
             href="/listings/new"
-            className="flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-3 sm:px-4 py-2 text-sm font-semibold"
+            aria-label={t.nav.addListing}
+            className="flex items-center gap-1.5 border border-[#0E4A5C] text-[#0E4A5C] hover:bg-[#0E4A5C] hover:text-white transition-all rounded-lg px-2.5 sm:px-4 py-2 text-sm font-semibold shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">{t.nav.addListing}</span>
           </Link>
 
-          {/* Language switch */}
-          <LanguageToggle />
+          {/* Language switch — mobile users get it inside the menu panel below */}
+          <LanguageToggle className="hidden sm:flex" />
 
           {/* Messages */}
           <MessagesLink />
@@ -275,7 +278,7 @@ export function Navbar() {
           <Link
             href="/profile/favorites"
             aria-label={t.nav.favorites}
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
+            className="hidden xs:flex w-8 h-8 sm:w-9 sm:h-9 items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
           >
             <Heart className="w-[18px] h-[18px]" />
           </Link>
@@ -288,10 +291,11 @@ export function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-[#0E4A5C] transition-colors px-3 py-2"
+              aria-label={t.nav.signIn}
+              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-[#0E4A5C] transition-colors px-2 sm:px-3 py-2 shrink-0"
             >
               <LogIn className="w-4 h-4" />
-              <span>{t.nav.signIn}</span>
+              <span className="hidden xs:inline">{t.nav.signIn}</span>
             </Link>
           )}
         </div>
@@ -357,6 +361,15 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              {/* Favorites — only lives here on the narrowest phones, where the
+                  icon is dropped from the top bar to keep it inside the viewport. */}
+              <Link
+                href="/profile/favorites"
+                className="xs:hidden flex items-center gap-2 py-2.5 text-sm font-medium text-stone-600 hover:text-[#0E4A5C] border-b border-stone-100 transition-colors"
+              >
+                <Heart className="w-4 h-4" />
+                {t.nav.favorites}
+              </Link>
               <PhoneLink
                 phone="+995 551 08 09 60"
                 className="flex items-center gap-1.5 py-2.5 text-sm text-stone-500 hover:text-[#0E4A5C] transition-colors"
@@ -364,6 +377,8 @@ export function Navbar() {
                 <Phone className="w-3.5 h-3.5" />
                 551 08 09 60
               </PhoneLink>
+              {/* Language switch — hidden from the top bar on mobile, offered here */}
+              <LanguageToggle className="sm:hidden self-start my-2" />
             </nav>
           </div>
         )}

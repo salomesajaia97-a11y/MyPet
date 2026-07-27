@@ -79,7 +79,7 @@ export default function AdminPaymentsPage() {
         <p className="py-20 text-center text-sm text-gray-400">{t.vip.payments.empty}</p>
       ) : (
         <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
-          <table className="min-w-full text-sm">
+          <table className="min-w-[52rem] w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
               <tr>
                 <th className="px-4 py-3">{t.vip.payments.date}</th>

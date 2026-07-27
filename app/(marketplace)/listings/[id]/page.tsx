@@ -262,16 +262,17 @@ export default async function ListingDetailPage({
             )}
           </Gallery>
 
-          <div className="p-6 space-y-5">
-            {/* Title row */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-[#0F2830]">
+          <div className="p-4 sm:p-6 space-y-5">
+            {/* Title row — stacks on phones so neither the title nor the
+                age/location pair has to wrap inside a half-width column. */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#0F2830] break-words">
                   {listing.breed}
                   {listing.age < 12 ? ` ${t.listings.detail.puppy}` : ""}
                 </h1>
               </div>
-              <div className="flex flex-col items-end gap-1 text-sm text-stone-500">
+              <div className="flex flex-row flex-wrap sm:flex-col items-start sm:items-end gap-x-4 gap-y-1 text-sm text-stone-500 sm:shrink-0">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
                   {ageLabel}

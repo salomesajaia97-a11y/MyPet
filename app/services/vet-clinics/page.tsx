@@ -57,7 +57,7 @@ export default async function VetClinicsPage() {
           ]),
         )}
       />
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-5xl mx-auto px-4 py-6 pb-28 lg:pb-6 space-y-5">
         <div>
           <h1 className="text-3xl font-black text-[#0F2830] mb-1">{t.services.categories.vetClinics.title}</h1>
           <p className="text-stone-500 text-sm">{t.services.categories.vetClinics.subtitle}</p>
