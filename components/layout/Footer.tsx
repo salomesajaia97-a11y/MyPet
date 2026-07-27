@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { PawPrint, Send, MessageCircle, Mail } from "lucide-react";
+import Image from "next/image";
+import { Send, MessageCircle, Mail } from "lucide-react";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 // No real social accounts yet — render as inert placeholders (not `href="#"`
@@ -39,9 +40,7 @@ export async function Footer() {
           {/* Brand */}
           <div className="max-w-xs">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-[#0E4A5C] flex items-center justify-center">
-                <PawPrint className="w-5 h-5 text-white" />
-              </div>
+              <Image src="/logo.png" alt="" width={36} height={36} className="w-9 h-9" />
               <span className="font-black text-lg tracking-tight">
                 <span className="text-[#0E4A5C]">MyPet</span>
                 <span className="text-stone-400 font-light">.ge</span>

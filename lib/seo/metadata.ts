@@ -14,6 +14,16 @@ export const SITE_PROFILES = ["https://t.me/mypetge"];
 export const OG_IMAGE_URL = `${SITE_URL}/opengraph-image`;
 
 /**
+ * The square brand mark (`public/logo.png`), as an absolute URL.
+ *
+ * Distinct from OG_IMAGE_URL on purpose: structured data wants an actual logo,
+ * and Google rejects a wide social card in `Organization.logo` — it expects
+ * something close to square that it can crop into a knowledge panel.
+ */
+export const LOGO_URL = `${SITE_URL}/logo.png`;
+export const LOGO_SIZE = 512;
+
+/**
  * Default social card, restated explicitly on every page.
  *
  * The root `opengraph-image.tsx` file convention cannot be relied on to flow

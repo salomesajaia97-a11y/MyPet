@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { PawPrint, Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck, MessageCircle, Bell, Menu, X } from "lucide-react";
+import { Plus, Heart, LogIn, LogOut, Phone, ChevronDown, List, Wallet, UserRound, ShieldCheck, MessageCircle, Bell, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState, useRef, useEffect } from "react";
 import PhoneLink from "@/components/ui/PhoneLink";
@@ -242,9 +243,17 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0E4A5C] flex items-center justify-center shrink-0">
-            <PawPrint className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-          </div>
+          {/* The mark carries its own teal and rounded corners, so it needs no
+              wrapper background. `priority` because it sits in the header and
+              would otherwise pop in after first paint on every route. */}
+          <Image
+            src="/logo.png"
+            alt=""
+            width={36}
+            height={36}
+            priority
+            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0"
+          />
           <span className="font-black text-base sm:text-lg tracking-tight">
             <span className="text-[#0E4A5C]">MyPet</span>
             <span className="text-stone-400 font-light">.ge</span>

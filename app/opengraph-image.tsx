@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { OG_LOGO_DATA_URI } from "./og-logo";
 
 /**
  * Site-wide social card. Root-segment file convention, so every page that
@@ -28,24 +29,23 @@ export default async function OpengraphImage() {
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+          {/* The real mark, inlined as a data URI — satori cannot fetch a URL
+              or read the filesystem while rendering.
+              It sits on a light chip rather than straight on the background:
+              the mark's own teal (#175375) is within a few points of the
+              card's gradient (#0E4A5C), so unbacked it would dissolve into it
+              and leave a floating white paw. */}
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "84px",
-              height: "84px",
-              borderRadius: "999px",
-              background: "#EBF6FA",
-              color: "#0E4A5C",
-              fontSize: "38px",
-              fontWeight: 700,
+              padding: "12px",
+              borderRadius: "30px",
+              background: "#FFFFFF",
             }}
           >
-            {/* Plain glyphs, not an emoji: the bundled font has no emoji
-                table and would render tofu. */}
-            MP
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={OG_LOGO_DATA_URI} width={92} height={92} alt="" />
           </div>
           <div style={{ display: "flex", fontSize: "56px", fontWeight: 700 }}>
             MyPet.ge

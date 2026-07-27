@@ -1,6 +1,6 @@
 import type { Locale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/siteUrl";
-import { OG_IMAGE_URL, SITE_NAME, SITE_PROFILES } from "@/lib/seo/metadata";
+import { LOGO_SIZE, LOGO_URL, OG_IMAGE_URL, SITE_NAME, SITE_PROFILES } from "@/lib/seo/metadata";
 
 /** Stable @id anchors so nodes can reference each other across pages. */
 export const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -32,10 +32,12 @@ export function organizationJsonLd(description: string): Json {
     description,
     logo: {
       "@type": "ImageObject",
-      url: OG_IMAGE_URL,
-      width: 1200,
-      height: 630,
+      url: LOGO_URL,
+      width: LOGO_SIZE,
+      height: LOGO_SIZE,
+      caption: SITE_NAME,
     },
+    image: OG_IMAGE_URL,
     sameAs: SITE_PROFILES,
     email: "info@mypet.ge",
     areaServed: { "@type": "Country", name: "Georgia" },
