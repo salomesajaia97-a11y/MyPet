@@ -74,6 +74,62 @@ export function websiteJsonLd(locale: Locale, name: string, description: string)
   };
 }
 
+/**
+ * A single content page. `AboutPage` / `ContactPage` are the schema.org
+ * subtypes Google and AI answer engines use to tell "who runs this site" and
+ * "how do I reach them" apart from ordinary body pages — worth the extra word.
+ */
+export function webPageJsonLd({
+  locale,
+  name,
+  description,
+  path,
+  type = "WebPage",
+}: {
+  locale: Locale;
+  name: string;
+  description: string;
+  path: string;
+  type?: "WebPage" | "AboutPage" | "ContactPage";
+}): Json {
+  return {
+    "@type": type,
+    "@id": `${abs(path)}#webpage`,
+    url: abs(path),
+    name,
+    description,
+    inLanguage: locale === "en" ? "en" : "ka",
+    isPartOf: { "@id": WEBSITE_ID },
+    about: { "@id": ORGANIZATION_ID },
+    publisher: { "@id": ORGANIZATION_ID },
+    primaryImageOfPage: { "@type": "ImageObject", url: OG_IMAGE_URL },
+  };
+}
+
+/**
+ * The site's main sections as SiteNavigationElements. Emitted once, on the
+ * homepage: it hands a crawler the whole information architecture from the
+ * entry point instead of making it walk the nav, which is what earns sitelinks
+ * in Google and lets an AI answer engine name the right section directly.
+ */
+export function siteNavigationJsonLd(
+  items: { name: string; path: string; description?: string }[]
+): Json {
+  return {
+    "@type": "ItemList",
+    "@id": `${abs("/")}#sitenav`,
+    itemListElement: items.map((item, i) =>
+      compact({
+        "@type": "SiteNavigationElement",
+        position: i + 1,
+        name: item.name,
+        description: item.description,
+        url: abs(item.path),
+      })
+    ),
+  };
+}
+
 /** Breadcrumb trail. Pass paths relative to the site root. */
 export function breadcrumbJsonLd(items: { name: string; path: string }[]): Json {
   return {

@@ -1,6 +1,5 @@
 export const pages = {
   about: {
-    metaTitle: "ჩვენს შესახებ — MyPet.ge",
     metaDescription:
       "MyPet.ge — ცხოველების ყიდვა, გაჩუქება და სერვისები ერთ სივრცეში.",
     title: "ჩვენს შესახებ",
@@ -12,13 +11,11 @@ export const pages = {
     ],
   },
   contact: {
-    metaTitle: "კონტაქტი — MyPet.ge",
     metaDescription: "დაგვიკავშირდით — MyPet.ge-ის გუნდი მზადაა დაგეხმაროთ.",
     title: "კონტაქტი",
     subtitle: "გაქვთ შეკითხვა ან წინადადება? დაგვიკავშირდით ნებისმიერ არხზე.",
   },
   terms: {
-    metaTitle: "წესები და პირობები — MyPet.ge",
     metaDescription: "MyPet.ge-ის მომსახურების წესები და პირობები.",
     title: "წესები და პირობები",
     lastUpdated: "ბოლო განახლება: 2026 წელი",
@@ -46,7 +43,6 @@ export const pages = {
     ],
   },
   privacy: {
-    metaTitle: "კონფიდენციალურობა — MyPet.ge",
     metaDescription: "MyPet.ge-ის კონფიდენციალურობის პოლიტიკა.",
     title: "კონფიდენციალურობა",
     lastUpdated: "ბოლო განახლება: 2026 წელი",

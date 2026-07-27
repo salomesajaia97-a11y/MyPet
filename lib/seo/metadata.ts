@@ -49,6 +49,12 @@ export interface PageMetadataInput {
   type?: "website" | "article";
   /** Set for pages that must never enter the index (e.g. a missing record). */
   noIndex?: boolean;
+  /**
+   * Skip the root's "%s · MyPet.ge" title template. Only the homepage needs
+   * this — its title already leads with the brand, so the template would
+   * render "MyPet.ge — … · MyPet.ge".
+   */
+  absoluteTitle?: boolean;
 }
 
 /**
@@ -65,6 +71,7 @@ export function pageMetadata({
   images,
   type = "website",
   noIndex = false,
+  absoluteTitle = false,
 }: PageMetadataInput): Metadata {
   const ownImages = images?.length ? images.slice(0, 4) : undefined;
   const ogImages = ownImages
@@ -72,7 +79,9 @@ export function pageMetadata({
     : [DEFAULT_OG_IMAGE];
 
   return {
-    title,
+    // og:title and twitter:title always take the plain string — the template
+    // is a `<title>`-only concern.
+    title: absoluteTitle ? { absolute: title } : title,
     description,
     ...(keywords?.length ? { keywords } : {}),
     alternates: { canonical: path },

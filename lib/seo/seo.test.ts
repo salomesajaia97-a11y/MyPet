@@ -7,7 +7,14 @@ import {
   SITE_KEYWORDS,
   VET_KEYWORDS,
 } from "./keywords";
-import { breadcrumbJsonLd, collectionPageJsonLd, graph, websiteJsonLd } from "./jsonLd";
+import {
+  breadcrumbJsonLd,
+  collectionPageJsonLd,
+  graph,
+  siteNavigationJsonLd,
+  webPageJsonLd,
+  websiteJsonLd,
+} from "./jsonLd";
 import { browsePageMetadata, pageMetadata } from "./metadata";
 import { SITE_URL } from "@/lib/siteUrl";
 
@@ -73,6 +80,26 @@ describe("pageMetadata", () => {
       images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630 }],
     });
     expect(meta.twitter).toMatchObject({ images: [`${SITE_URL}/opengraph-image`] });
+  });
+
+  // The root layout applies a "%s · MyPet.ge" template to any plain-string
+  // title. The homepage title already opens with the brand.
+  it("passes the title through the template by default", () => {
+    const meta = pageMetadata({ locale: "en", title: "About Us", description: "D", path: "/about" });
+    expect(meta.title).toBe("About Us");
+  });
+
+  it("can opt out of the title template", () => {
+    const meta = pageMetadata({
+      locale: "en",
+      title: "MyPet.ge — Pet Listings",
+      description: "D",
+      path: "/",
+      absoluteTitle: true,
+    });
+    expect(meta.title).toEqual({ absolute: "MyPet.ge — Pet Listings" });
+    // og:title stays the plain string — the template is a <title> concern.
+    expect(meta.openGraph?.title).toBe("MyPet.ge — Pet Listings");
   });
 
   it("uses the page's own images when it has them", () => {
@@ -154,6 +181,33 @@ describe("structured data", () => {
     }) as Record<string, Record<string, unknown>>;
     expect(page.mainEntity.numberOfItems).toBe(240);
     expect(page.mainEntity["@type"]).toBe("ItemList");
+  });
+
+  it("types the about and contact pages as their schema.org subtypes", () => {
+    const about = webPageJsonLd({
+      locale: "ka",
+      type: "AboutPage",
+      name: "N",
+      description: "D",
+      path: "/about",
+    }) as Record<string, unknown>;
+    expect(about["@type"]).toBe("AboutPage");
+    expect(about["@id"]).toBe(`${SITE_URL}/about#webpage`);
+    expect(about.isPartOf).toEqual({ "@id": `${SITE_URL}/#website` });
+  });
+
+  it("emits the site sections as absolute navigation elements", () => {
+    const nav = siteNavigationJsonLd([
+      { name: "Buy", path: "/buy-sell", description: "D" },
+      { name: "Adopt", path: "/adoption" },
+    ]) as Record<string, Array<Record<string, unknown>>>;
+    expect(nav.itemListElement[0]).toMatchObject({
+      "@type": "SiteNavigationElement",
+      position: 1,
+      url: `${SITE_URL}/buy-sell`,
+    });
+    // No description supplied — the key must be dropped, not shipped empty.
+    expect("description" in nav.itemListElement[1]).toBe(false);
   });
 
   it("omits image on an item that has none", () => {

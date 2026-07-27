@@ -1,18 +1,40 @@
 import type { Metadata } from "next";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, graph, webPageJsonLd } from "@/lib/seo/jsonLd";
+import { BRAND_KEYWORDS, buildKeywords } from "@/lib/seo/keywords";
 
+// Bare page name: the root's "%s · MyPet.ge" template adds the brand.
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getServerDictionary();
-  return {
-    title: t.pages.privacy.metaTitle,
+  const { t, locale } = await getServerDictionary();
+  return pageMetadata({
+    locale,
+    title: t.pages.privacy.title,
     description: t.pages.privacy.metaDescription,
-  };
+    path: "/privacy",
+    keywords: buildKeywords(BRAND_KEYWORDS),
+  });
 }
 
 export default async function PrivacyPage() {
-  const { t } = await getServerDictionary();
+  const { t, locale } = await getServerDictionary();
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <JsonLd
+        data={graph(
+          webPageJsonLd({
+            locale,
+            name: t.pages.privacy.title,
+            description: t.pages.privacy.metaDescription,
+            path: "/privacy",
+          }),
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.pages.privacy.title, path: "/privacy" },
+          ]),
+        )}
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl sm:text-4xl font-black text-[#0F2830] mb-2">
           {t.pages.privacy.title}

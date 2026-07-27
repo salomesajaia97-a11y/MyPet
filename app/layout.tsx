@@ -32,7 +32,12 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: SITE_NAME, url: SITE_URL }],
     creator: SITE_NAME,
     publisher: SITE_NAME,
-    alternates: { canonical: "/" },
+    // No `alternates.canonical` here on purpose. Nested metadata is merged
+    // shallowly, so a root canonical is INHERITED verbatim by every page that
+    // doesn't set its own — which had /about, /contact, /terms and /privacy all
+    // declaring themselves to be the homepage. Each page states its own via
+    // pageMetadata(); a page with none simply emits no canonical, which is the
+    // safe default.
     // Phone numbers are rendered as real tel: links already; leaving detection
     // on lets Safari rewrite listing text into its own broken links.
     formatDetection: { telephone: false, address: false, email: false },

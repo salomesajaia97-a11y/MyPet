@@ -2,7 +2,6 @@ import type { pages as ka } from "../ka/pages";
 
 export const pages: typeof ka = {
   about: {
-    metaTitle: "About Us — MyPet.ge",
     metaDescription:
       "MyPet.ge — buying, adopting, and services for pets, all in one place.",
     title: "About Us",
@@ -14,14 +13,12 @@ export const pages: typeof ka = {
     ],
   },
   contact: {
-    metaTitle: "Contact — MyPet.ge",
     metaDescription: "Get in touch — the MyPet.ge team is ready to help you.",
     title: "Contact",
     subtitle:
       "Have a question or a suggestion? Reach out to us on any channel.",
   },
   terms: {
-    metaTitle: "Terms & Conditions — MyPet.ge",
     metaDescription: "MyPet.ge's terms and conditions of service.",
     title: "Terms & Conditions",
     lastUpdated: "Last updated: 2026",
@@ -49,7 +46,6 @@ export const pages: typeof ka = {
     ],
   },
   privacy: {
-    metaTitle: "Privacy — MyPet.ge",
     metaDescription: "MyPet.ge's privacy policy.",
     title: "Privacy",
     lastUpdated: "Last updated: 2026",

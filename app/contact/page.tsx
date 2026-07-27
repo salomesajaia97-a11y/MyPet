@@ -2,13 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Send, MessageCircle } from "lucide-react";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, graph, webPageJsonLd } from "@/lib/seo/jsonLd";
+import { BRAND_KEYWORDS, buildKeywords } from "@/lib/seo/keywords";
 
+// Bare page name: the root's "%s · MyPet.ge" template adds the brand.
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getServerDictionary();
-  return {
-    title: t.pages.contact.metaTitle,
+  const { t, locale } = await getServerDictionary();
+  return pageMetadata({
+    locale,
+    title: t.pages.contact.title,
     description: t.pages.contact.metaDescription,
-  };
+    path: "/contact",
+    keywords: buildKeywords(BRAND_KEYWORDS),
+  });
 }
 
 const CHANNELS = [
@@ -33,9 +41,24 @@ const CHANNELS = [
 ];
 
 export default async function ContactPage() {
-  const { t } = await getServerDictionary();
+  const { t, locale } = await getServerDictionary();
   return (
     <div className="min-h-screen bg-[#EBF6FA]">
+      <JsonLd
+        data={graph(
+          webPageJsonLd({
+            locale,
+            type: "ContactPage",
+            name: t.pages.contact.title,
+            description: t.pages.contact.metaDescription,
+            path: "/contact",
+          }),
+          breadcrumbJsonLd([
+            { name: t.seo.breadcrumbs.home, path: "/" },
+            { name: t.pages.contact.title, path: "/contact" },
+          ]),
+        )}
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl sm:text-4xl font-black text-[#0F2830] mb-2">
           {t.pages.contact.title}
