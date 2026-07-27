@@ -3,24 +3,78 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PawPrint } from "lucide-react";
+import {
+  PawPrint,
+  User,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Check,
+  Heart,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+
+const inputClass =
+  "w-full pl-11 pr-4 py-3 rounded-xl border border-stone-200 bg-[#EBF6FA]/50 text-[#0F2830] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30 focus:border-[#0E4A5C] transition-all";
+const iconClass =
+  "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none";
+
+/** 0–4, mirroring the 6-character minimum the API enforces. */
+function scorePassword(v: string) {
+  if (!v) return 0;
+  let score = 0;
+  if (v.length >= 6) score++;
+  if (v.length >= 10) score++;
+  if (/[a-z]/.test(v) && /[A-Z]/.test(v)) score++;
+  if (/\d/.test(v) || /[^A-Za-z0-9]/.test(v)) score++;
+  return Math.min(score, 4);
+}
 
 export default function RegisterPage() {
   const { t } = useT();
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const strength = scorePassword(password);
+  const strengthLabels = [
+    t.auth.register.strengthWeak,
+    t.auth.register.strengthWeak,
+    t.auth.register.strengthFair,
+    t.auth.register.strengthGood,
+    t.auth.register.strengthStrong,
+  ];
+  const strengthColors = ["bg-red-400", "bg-red-400", "bg-amber-400", "bg-lime-500", "bg-emerald-500"];
+  const mismatch = confirm.length > 0 && password !== confirm;
+  const matched = confirm.length > 0 && password === confirm;
+
+  const benefits = [
+    { icon: Sparkles, title: t.auth.register.benefit1Title, desc: t.auth.register.benefit1Desc },
+    { icon: Heart, title: t.auth.register.benefit2Title, desc: t.auth.register.benefit2Desc },
+    { icon: MessageCircle, title: t.auth.register.benefit3Title, desc: t.auth.register.benefit3Desc },
+  ];
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+
+    if (password !== confirm) {
+      setError(t.auth.register.passwordMismatch);
+      return;
+    }
+
     setLoading(true);
 
     const form = new FormData(e.currentTarget);
     const name = form.get("name") as string;
     const email = form.get("email") as string;
-    const password = form.get("password") as string;
 
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -47,74 +101,191 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EBF6FA] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-sm p-8 space-y-6">
-          {/* Logo */}
-          <div className="flex flex-col items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#0E4A5C] flex items-center justify-center">
-              <PawPrint className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-center">
-              <h1 className="text-2xl font-black text-[#0F2830]">{t.auth.register.title}</h1>
-              <p className="text-stone-500 text-sm mt-1">{t.auth.register.subtitle}</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#EBF6FA] to-white flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 bg-white rounded-3xl shadow-xl shadow-[#0E4A5C]/5 ring-1 ring-stone-100 overflow-hidden">
+        {/* Brand panel — decoration only, so it stays out of the tab order. */}
+        <div className="relative hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-[#0E4A5C] via-[#0B3D4E] to-[#072B38] text-white overflow-hidden">
+          <div aria-hidden className="absolute inset-0 opacity-[0.07]">
+            <PawPrint className="absolute -top-6 -left-4 w-40 h-40 rotate-12" />
+            <PawPrint className="absolute top-1/3 -right-10 w-52 h-52 -rotate-12" />
+            <PawPrint className="absolute -bottom-10 left-1/4 w-44 h-44 rotate-45" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+                <PawPrint className="w-5 h-5" />
+              </div>
+              <span className="text-lg font-black tracking-tight">
+                MyPet<span className="text-white/60">.ge</span>
+              </span>
+            </div>
+
+            <h2 className="mt-10 text-3xl font-black leading-tight">{t.auth.register.heroTitle}</h2>
+            <p className="mt-3 text-white/70 leading-relaxed">{t.auth.register.heroSubtitle}</p>
+
+            <ul className="mt-9 space-y-5">
+              {benefits.map(({ icon: Icon, title, desc }) => (
+                <li key={title} className="flex gap-3.5">
+                  <div className="shrink-0 w-9 h-9 rounded-xl bg-white/10 ring-1 ring-white/15 flex items-center justify-center">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{title}</p>
+                    <p className="text-sm text-white/60 leading-relaxed">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="relative mt-10 text-xs text-white/50">{t.auth.register.trust}</p>
+        </div>
+
+        {/* Form panel */}
+        <div className="p-7 sm:p-10">
+          {/* Mobile-only mark; the brand panel carries it from lg up. */}
+          <div className="lg:hidden w-12 h-12 rounded-2xl bg-[#0E4A5C] flex items-center justify-center mx-auto mb-4">
+            <PawPrint className="w-6 h-6 text-white" />
+          </div>
+
+          <div className="text-center lg:text-left">
+            <h1 className="text-2xl font-black text-[#0F2830]">{t.auth.register.title}</h1>
+            <p className="text-stone-500 text-sm mt-1">{t.auth.register.subtitle}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="name" className="text-sm font-medium text-[#0F2830]">{t.auth.register.nameLabel}</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                placeholder={t.auth.register.namePlaceholder}
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#EBF6FA]/50 text-[#0F2830] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30 focus:border-[#0E4A5C] transition-all"
-              />
+              <label htmlFor="name" className="text-sm font-medium text-[#0F2830]">
+                {t.auth.register.nameLabel}
+              </label>
+              <div className="relative">
+                <User className={iconClass} />
+                <input id="name" name="name" type="text" required autoComplete="name" className={inputClass} />
+              </div>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-[#0F2830]">{t.auth.emailLabel}</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#EBF6FA]/50 text-[#0F2830] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30 focus:border-[#0E4A5C] transition-all"
-              />
+              <label htmlFor="email" className="text-sm font-medium text-[#0F2830]">
+                {t.auth.emailLabel}
+              </label>
+              <div className="relative">
+                <Mail className={iconClass} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className={inputClass}
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-[#0F2830]">{t.auth.passwordLabel}</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                minLength={6}
-                placeholder={t.auth.register.passwordPlaceholder}
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-[#EBF6FA]/50 text-[#0F2830] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0E4A5C]/30 focus:border-[#0E4A5C] transition-all"
-              />
+              <label htmlFor="password" className="text-sm font-medium text-[#0F2830]">
+                {t.auth.passwordLabel}
+              </label>
+              <div className="relative">
+                <Lock className={iconClass} />
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t.auth.register.passwordPlaceholder}
+                  className={`${inputClass} pr-12`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? t.auth.register.hidePassword : t.auth.register.showPassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-stone-400 hover:text-[#0E4A5C] hover:bg-stone-100 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {password && (
+                <div className="pt-1">
+                  <div className="flex gap-1.5" aria-hidden>
+                    {[1, 2, 3, 4].map((bar) => (
+                      <span
+                        key={bar}
+                        className={`h-1.5 flex-1 rounded-full transition-colors ${
+                          bar <= strength ? strengthColors[strength] : "bg-stone-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-xs text-stone-500">
+                    {t.auth.register.strengthLabel}:{" "}
+                    <span className="font-semibold text-[#0F2830]">{strengthLabels[strength]}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-[#0F2830]">
+                {t.auth.register.confirmPasswordLabel}
+              </label>
+              <div className="relative">
+                <Lock className={iconClass} />
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirm ? "text" : "password"}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  aria-invalid={mismatch}
+                  className={`${inputClass} pr-12 ${
+                    mismatch ? "border-red-300 bg-red-50/50 focus:ring-red-200 focus:border-red-400" : ""
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  aria-label={showConfirm ? t.auth.register.hidePassword : t.auth.register.showPassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-stone-400 hover:text-[#0E4A5C] hover:bg-stone-100 transition-colors"
+                >
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {mismatch && <p className="text-xs text-red-600">{t.auth.register.passwordMismatch}</p>}
+              {matched && (
+                <p className="flex items-center gap-1 text-xs text-emerald-600">
+                  <Check className="w-3.5 h-3.5" />
+                  {t.auth.register.passwordsMatch}
+                </p>
+              )}
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+              <div role="alert" className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
                 {error}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || mismatch}
               className="w-full bg-[#0E4A5C] text-white py-3.5 rounded-xl font-semibold text-base hover:bg-[#0B3D4E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? t.auth.loading : t.auth.register.submit}
             </button>
           </form>
 
-          <div className="relative">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-stone-200" />
             </div>
@@ -137,7 +308,18 @@ export default function RegisterPage() {
             {t.auth.register.google}
           </button>
 
-          <p className="text-center text-sm text-stone-500">
+          <p className="mt-6 text-center text-xs text-stone-400 leading-relaxed">
+            {t.auth.register.terms}{" "}
+            <Link href="/terms" className="text-[#0E4A5C] font-semibold hover:underline">
+              {t.auth.register.termsLink}
+            </Link>{" "}
+            {t.auth.register.and}{" "}
+            <Link href="/privacy" className="text-[#0E4A5C] font-semibold hover:underline">
+              {t.auth.register.privacyLink}
+            </Link>
+          </p>
+
+          <p className="mt-4 text-center text-sm text-stone-500">
             {t.auth.register.haveAccount}{" "}
             <Link href="/login" className="text-[#0E4A5C] font-semibold hover:underline">
               {t.auth.register.loginLink}
