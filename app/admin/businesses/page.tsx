@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, Trash2, MapPin, Phone } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Check, Trash2, MapPin, Phone, ExternalLink } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 
@@ -17,6 +18,8 @@ interface Business {
   createdAt: string;
 }
 
+type Tab = "pending" | "approved";
+
 export default function AdminBusinessesPage() {
   const { t } = useT();
   const { confirm } = useConfirm();
@@ -26,17 +29,45 @@ export default function AdminBusinessesPage() {
     "pet-shops": t.admin.businesses.categories.petShop,
     "pet-friendly": t.admin.businesses.categories.petFriendly,
   };
+  const [tab, setTab] = useState<Tab>("pending");
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [q, setQ] = useState("");
 
   useEffect(() => {
-    fetch("/api/admin/businesses?status=pending")
+    let active = true;
+    setLoading(true);
+    setBusinesses([]);
+    fetch(`/api/admin/businesses?status=${tab}`)
       .then((r) => (r.ok ? r.json() : { businesses: [] }))
-      .then((d) => setBusinesses(Array.isArray(d.businesses) ? d.businesses : []))
-      .catch(() => setBusinesses([]))
-      .finally(() => setLoading(false));
-  }, []);
+      .then((d) => {
+        if (!active) return;
+        setBusinesses(Array.isArray(d.businesses) ? d.businesses : []);
+      })
+      .catch(() => {
+        if (active) setBusinesses([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [tab]);
+
+  // The approved list can run to hundreds of rows, so filter client-side —
+  // the API already returns the whole page in one shot.
+  const visible = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return businesses;
+    return businesses.filter((b) =>
+      [b.name, b.city, b.address, CATEGORY_LABELS[b.category] ?? b.category]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(needle))
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businesses, q, t]);
 
   async function approve(id: string) {
     setBusyId(id);
@@ -49,10 +80,14 @@ export default function AdminBusinessesPage() {
     setBusyId(null);
   }
 
-  async function reject(id: string) {
+  async function remove(id: string) {
     const ok = await confirm({
-      description: t.admin.businesses.rejectConfirm,
-      confirmLabel: t.admin.businesses.reject,
+      description:
+        tab === "pending"
+          ? t.admin.businesses.rejectConfirm
+          : t.admin.businesses.deleteConfirm,
+      confirmLabel:
+        tab === "pending" ? t.admin.businesses.reject : t.common.actions.delete,
       danger: true,
     });
     if (!ok) return;
@@ -62,20 +97,55 @@ export default function AdminBusinessesPage() {
     setBusyId(null);
   }
 
+  const emptyMessage = q.trim()
+    ? t.admin.businesses.noMatches
+    : tab === "pending"
+      ? t.admin.businesses.noPending
+      : t.admin.businesses.noPublished;
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">{t.admin.businesses.title}</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 mb-5">
         {t.admin.businesses.subtitle}
       </p>
 
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5">
+          {(["pending", "approved"] as Tab[]).map((value) => (
+            <button
+              key={value}
+              onClick={() => {
+                setTab(value);
+                setQ("");
+              }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                tab === value
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {value === "pending"
+                ? t.admin.businesses.tabs.pending
+                : t.admin.businesses.tabs.published}
+            </button>
+          ))}
+        </div>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={t.admin.businesses.searchPlaceholder}
+          className="flex-1 min-w-[180px] border border-gray-200 rounded-lg px-3 py-2 text-sm"
+        />
+      </div>
+
       {loading ? (
         <p className="text-gray-500">{t.admin.businesses.loading}</p>
-      ) : businesses.length === 0 ? (
-        <p className="text-gray-400">{t.admin.businesses.noPending}</p>
+      ) : visible.length === 0 ? (
+        <p className="text-gray-400">{emptyMessage}</p>
       ) : (
         <div className="space-y-3">
-          {businesses.map((b) => (
+          {visible.map((b) => (
             <div
               key={b._id}
               className="flex items-start gap-4 bg-white rounded-xl border border-gray-200 shadow-sm p-4"
@@ -119,21 +189,34 @@ export default function AdminBusinessesPage() {
               </div>
 
               <div className="flex flex-col gap-2 shrink-0">
+                {tab === "pending" ? (
+                  <button
+                    onClick={() => approve(b._id)}
+                    disabled={busyId === b._id}
+                    className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Check size={14} />
+                    {t.admin.businesses.approve}
+                  </button>
+                ) : (
+                  <Link
+                    href={`/services/${b.category}/${b._id}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <ExternalLink size={14} />
+                    {t.common.actions.view}
+                  </Link>
+                )}
                 <button
-                  onClick={() => approve(b._id)}
-                  disabled={busyId === b._id}
-                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  <Check size={14} />
-                  {t.admin.businesses.approve}
-                </button>
-                <button
-                  onClick={() => reject(b._id)}
+                  onClick={() => remove(b._id)}
                   disabled={busyId === b._id}
                   className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-red-600 hover:bg-red-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   <Trash2 size={14} />
-                  {t.admin.businesses.reject}
+                  {tab === "pending"
+                    ? t.admin.businesses.reject
+                    : t.common.actions.delete}
                 </button>
               </div>
             </div>

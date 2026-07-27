@@ -40,14 +40,23 @@ export const admin: typeof ka = {
     petFriendly: "Pet-Friendly",
   },
   businesses: {
-    title: "Pending Businesses",
+    title: "Businesses",
     subtitle:
-      "User-submitted services awaiting review. Approve to publish, reject to delete.",
+      "Review pending submissions, or delete a published business from the directory.",
+    tabs: {
+      pending: "Pending",
+      published: "Published",
+    },
     loading: "Loading…",
     noPending: "No pending submissions.",
+    noPublished: "No published businesses.",
+    noMatches: "Nothing matches that search.",
+    searchPlaceholder: "Search by name, city or category…",
     approve: "Approve",
     reject: "Reject",
     rejectConfirm: "Reject and delete this submission? This cannot be undone.",
+    deleteConfirm:
+      "Delete this business from the directory? This cannot be undone.",
     categories: {
       vetClinic: "Vet Clinic",
       petHotel: "Pet Hotel",

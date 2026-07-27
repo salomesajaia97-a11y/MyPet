@@ -24,6 +24,7 @@ export const common: typeof ka = {
     cancel: "Cancel",
     delete: "Delete",
     edit: "Edit",
+    view: "View",
     search: "Search",
     back: "Back",
     loading: "Loading...",

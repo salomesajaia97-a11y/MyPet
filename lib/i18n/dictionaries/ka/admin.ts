@@ -41,14 +41,22 @@ export const admin = {
     petFriendly: "Pet-Friendly",
   },
   businesses: {
-    title: "მოლოდინში მყოფი ბიზნესები",
+    title: "ბიზნესები",
     subtitle:
-      "მომხმარებლის მიერ გამოგზავნილი სერვისები განხილვის მოლოდინში. დაამტკიცე გამოსაქვეყნებლად, უარყავი წასაშლელად.",
+      "განიხილე მოლოდინში მყოფი განაცხადები ან წაშალე გამოქვეყნებული ბიზნესი კატალოგიდან.",
+    tabs: {
+      pending: "მოლოდინში",
+      published: "გამოქვეყნებული",
+    },
     loading: "იტვირთება…",
     noPending: "მოლოდინში მყოფი განაცხადები არ არის.",
+    noPublished: "გამოქვეყნებული ბიზნესები არ არის.",
+    noMatches: "ძებნას შესაბამისი შედეგი არ არის.",
+    searchPlaceholder: "ძებნა სახელით, ქალაქით ან კატეგორიით…",
     approve: "დამტკიცება",
     reject: "უარყოფა",
     rejectConfirm: "უარვყო და წავშალო ეს განაცხადი? ეს შეუქცევადია.",
+    deleteConfirm: "წავშალო ეს ბიზნესი კატალოგიდან? ეს შეუქცევადია.",
     // Business category labels — singular form used on the moderation list.
     categories: {
       vetClinic: "ვეტ-კლინიკა",

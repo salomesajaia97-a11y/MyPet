@@ -25,6 +25,7 @@ export const common = {
     cancel: "გაუქმება",
     delete: "წაშლა",
     edit: "რედაქტირება",
+    view: "ნახვა",
     search: "ძებნა",
     back: "უკან",
     loading: "იტვირთება...",
