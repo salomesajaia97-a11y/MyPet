@@ -223,10 +223,15 @@ export function Navbar() {
   const subNav = useSubNav();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Collapse the mobile menu whenever navigation lands on a new route.
-  useEffect(() => {
+  // Collapse the mobile menu whenever navigation lands on a new route. Adjusted
+  // during render rather than in an effect: React re-runs this component before
+  // committing, so the menu is never painted open on the new route. (The menu's
+  // own links don't close it, so this also covers back/forward navigation.)
+  const [renderedPath, setRenderedPath] = useState(pathname);
+  if (renderedPath !== pathname) {
+    setRenderedPath(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname.startsWith(href));
