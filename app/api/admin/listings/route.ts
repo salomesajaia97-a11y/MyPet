@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
         status?: string;
         isResolved?: boolean;
         isVip?: boolean;
+        vipTier?: "standard" | "super" | "ultra" | null;
         vipUntil?: Date | null;
         userId?: { toString(): string };
         createdAt: Date;
@@ -70,6 +71,9 @@ export async function GET(req: NextRequest) {
     status: l.status ?? "",
     isResolved: !!l.isResolved,
     isVip: !!l.isVip,
+    // The panel's VIP dialog seeds its tier from this, so a comp defaults to
+    // whatever the listing already has rather than to an arbitrary tier.
+    vipTier: l.vipTier ?? null,
     vipUntil: l.vipUntil ? l.vipUntil.toISOString() : null,
     owner: l.userId ? ownerMap.get(l.userId.toString()) ?? "—" : "—",
     createdAt: l.createdAt,

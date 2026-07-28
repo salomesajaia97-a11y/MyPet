@@ -34,6 +34,17 @@ export const admin: typeof ka = {
       hidden: "Hidden",
     },
   },
+  vip: {
+    title: "VIP promotion",
+    tier: "Package",
+    days: "Days",
+    noExpiry: "No expiry",
+    grant: "Grant",
+    revoke: "Revoke",
+    extendsNote:
+      "If the listing is already VIP, the days are added to what is left and the tier only moves up.",
+    error: "That didn't work. Please try again.",
+  },
   audit: {
     title: "Admin audit log",
     subtitle: "Every change made from the panel. Read-only.",
@@ -92,6 +103,9 @@ export const admin: typeof ka = {
     rejectConfirm: "Reject and delete this submission? This cannot be undone.",
     deleteConfirm:
       "Delete this business from the directory? This cannot be undone.",
+    unpublish: "Unpublish",
+    unpublishConfirm:
+      "Send this business back to the pending queue? It leaves the public directory but nothing is deleted.",
     categories: {
       vetClinic: "Vet Clinic",
       petHotel: "Pet Hotel",

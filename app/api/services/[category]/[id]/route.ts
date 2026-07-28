@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { handleMutationError } from "@/lib/api/errors";
 import { deleteBusinessCascade } from "@/lib/services/deleteBusiness";
 import { normalizeWebsite } from "@/lib/url";
+import { logAdminAction } from "@/lib/admin/guard";
 
 const VALID_CATEGORIES = ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"];
 
@@ -106,6 +107,13 @@ export async function PATCH(
 
     business.set(body);
     await business.save();
+    if (!isOwner && session.user.role === "admin") {
+      await logAdminAction(
+        { id: session.user.id, email: session.user.email ?? null },
+        "business.update",
+        { type: "business", id, summary: `Edited ${business.name ?? "a business"}` }
+      );
+    }
     return NextResponse.json({ service: business.toObject() });
   } catch (err) {
     return handleMutationError(err, "services/[category]/[id] PATCH");

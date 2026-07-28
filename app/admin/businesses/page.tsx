@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Check, Trash2, MapPin, Phone, ExternalLink } from "lucide-react";
+import { Check, Trash2, MapPin, Phone, ExternalLink, EyeOff, Pencil } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 
@@ -85,6 +85,23 @@ export default function AdminBusinessesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "approve" }),
     });
+    if (res.ok) dropRow(id);
+    setBusyId(null);
+  }
+
+  async function unpublish(id: string) {
+    const ok = await confirm({
+      description: t.admin.businesses.unpublishConfirm,
+      confirmLabel: t.admin.businesses.unpublish,
+    });
+    if (!ok) return;
+    setBusyId(id);
+    const res = await fetch(`/api/admin/businesses/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "unpublish" }),
+    });
+    // It leaves the Published tab for the Pending one, so drop it from this view.
     if (res.ok) dropRow(id);
     setBusyId(null);
   }
@@ -208,15 +225,36 @@ export default function AdminBusinessesPage() {
                     {t.admin.businesses.approve}
                   </button>
                 ) : (
-                  <Link
-                    href={`/services/${b.category}/${b._id}`}
-                    target="_blank"
-                    className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    <ExternalLink size={14} />
-                    {t.common.actions.view}
-                  </Link>
+                  <>
+                    <Link
+                      href={`/services/${b.category}/${b._id}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <ExternalLink size={14} />
+                      {t.common.actions.view}
+                    </Link>
+                    {/* Sends it back to the moderation queue — the reversible
+                        alternative to deleting a live directory entry. */}
+                    <button
+                      onClick={() => unpublish(b._id)}
+                      disabled={busyId === b._id}
+                      className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-amber-700 hover:bg-amber-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <EyeOff size={14} />
+                      {t.admin.businesses.unpublish}
+                    </button>
+                  </>
                 )}
+                {/* The owner's own edit form — an admin is allowed through it,
+                    which is what makes every field editable from here. */}
+                <Link
+                  href={`/services/${b.category}/${b._id}/edit`}
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <Pencil size={14} />
+                  {t.common.actions.edit}
+                </Link>
                 <button
                   onClick={() => remove(b._id)}
                   disabled={busyId === b._id}

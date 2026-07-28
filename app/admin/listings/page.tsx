@@ -6,6 +6,8 @@ import Image from "next/image";
 import { Star, Pencil, Trash2, Check } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
+import { VipGrantDialog } from "@/components/admin/VipGrantDialog";
+import type { VipTier } from "@/lib/marketplace/vipPackages";
 
 interface Row {
   _id: string;
@@ -19,6 +21,7 @@ interface Row {
   status: string;
   isResolved: boolean;
   isVip: boolean;
+  vipTier: VipTier | null;
   vipUntil: string | null;
   owner: string;
   createdAt: string;
@@ -42,6 +45,8 @@ export default function AdminListingsPage() {
   const [q, setQ] = useState("");
   const [submittedQ, setSubmittedQ] = useState(""); // applied search term
   const [busy, setBusy] = useState<string | null>(null);
+  // The row whose VIP dialog is open, or null.
+  const [vipFor, setVipFor] = useState<Row | null>(null);
 
   // Returns the rows for the current type + applied search — no setState, so it
   // can be awaited from the effect without a synchronous cascade.
@@ -187,8 +192,11 @@ export default function AdminListingsPage() {
                       >
                         <Pencil size={15} />
                       </Link>
+                      {/* Opens the tier picker rather than toggling a flag: a
+                          promotion without a tier and rank sorts below every
+                          paid listing, which is not what "grant VIP" means. */}
                       <button
-                        onClick={() => patch(r._id, { isVip: !r.isVip, vipUntil: null })}
+                        onClick={() => setVipFor(r)}
                         disabled={busy === r._id}
                         title={r.isVip ? t.admin.listings.actions.removeVip : t.admin.listings.actions.grantVip}
                         className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${
@@ -228,6 +236,25 @@ export default function AdminListingsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {vipFor && (
+        <VipGrantDialog
+          listingId={vipFor._id}
+          listingLabel={vipFor.breed}
+          current={{ isVip: vipFor.isVip, vipTier: vipFor.vipTier, vipUntil: vipFor.vipUntil }}
+          open
+          onClose={() => setVipFor(null)}
+          onDone={(vip) =>
+            setRows((prev) =>
+              prev.map((r) =>
+                r._id === vipFor._id
+                  ? { ...r, isVip: vip.isVip, vipTier: vip.vipTier, vipUntil: vip.vipUntil }
+                  : r
+              )
+            )
+          }
+        />
       )}
     </div>
   );

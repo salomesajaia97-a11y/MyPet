@@ -33,6 +33,17 @@ export const admin = {
       hidden: "დამალული",
     },
   },
+  vip: {
+    title: "VIP დაწინაურება",
+    tier: "პაკეტი",
+    days: "დღეები",
+    noExpiry: "უვადოდ",
+    grant: "დაწინაურება",
+    revoke: "გაუქმება",
+    extendsNote:
+      "თუ განცხადება უკვე VIP-ია, ვადა ემატება არსებულს და პაკეტი მხოლოდ იზრდება.",
+    error: "ვერ შესრულდა. სცადეთ თავიდან.",
+  },
   audit: {
     title: "ადმინის ჟურნალი",
     subtitle: "პანელში შესრულებული ყველა ცვლილება. მხოლოდ წაკითხვადი.",
@@ -92,6 +103,9 @@ export const admin = {
     reject: "უარყოფა",
     rejectConfirm: "უარვყო და წავშალო ეს განაცხადი? ეს შეუქცევადია.",
     deleteConfirm: "წავშალო ეს ბიზნესი კატალოგიდან? ეს შეუქცევადია.",
+    unpublish: "გამოქვეყნების გაუქმება",
+    unpublishConfirm:
+      "დავაბრუნო ეს ბიზნესი მოდერაციაში? ის ქრება საჯარო კატალოგიდან, მაგრამ არაფერი იშლება.",
     // Business category labels — singular form used on the moderation list.
     categories: {
       vetClinic: "ვეტ-კლინიკა",
