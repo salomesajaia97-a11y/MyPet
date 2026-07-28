@@ -39,6 +39,7 @@ export const profile: typeof ka = {
     notFound: "Conversation not found",
     viewListing: "View listing",
     noMessages: "No messages yet",
+    olderHidden: "Showing the most recent messages in this conversation.",
     inputPlaceholder: "Message…",
     send: "Send",
   },

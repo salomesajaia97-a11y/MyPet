@@ -6,6 +6,9 @@ import ThreadModel from "@/lib/models/Thread";
 import MessageModel from "@/lib/models/Message";
 import { rateLimit } from "@/lib/rateLimit";
 
+/** Most recent messages returned per thread. Older ones stay in the database. */
+const MAX_MESSAGES = 200;
+
 async function loadParticipantThread(id: string, me: string) {
   const thread = await ThreadModel.findById(id);
   if (!thread) return { error: "notfound" as const };
@@ -40,9 +43,16 @@ export async function GET(
   else t.ownerReadAt = new Date();
   await t.save();
 
-  const messages = await MessageModel.find({ threadId: t._id })
-    .sort({ createdAt: 1 })
+  // Newest MAX_MESSAGES only, flipped back into reading order. The chat page
+  // re-fetches this every five seconds, so an unbounded query meant a long
+  // thread re-sent its whole history twelve times a minute. One extra row is
+  // read purely to tell the client whether anything was left out.
+  const page = await MessageModel.find({ threadId: t._id })
+    .sort({ createdAt: -1 })
+    .limit(MAX_MESSAGES + 1)
     .lean<{ _id: { toString(): string }; senderId: { toString(): string }; body: string; createdAt: Date }[]>();
+  const truncated = page.length > MAX_MESSAGES;
+  const messages = page.slice(0, MAX_MESSAGES).reverse();
 
   return NextResponse.json({
     thread: {
@@ -51,6 +61,7 @@ export async function GET(
       listingTitle: t.listingTitle,
     },
     meId: me,
+    truncated,
     messages: messages.map((m) => ({
       _id: m._id.toString(),
       senderId: m.senderId.toString(),

@@ -27,19 +27,22 @@ export default function ThreadPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // The API returns only the most recent messages; say so rather than letting
+  // the history look like it starts there.
+  const [truncated, setTruncated] = useState(false);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchThread = useCallback(async (): Promise<
-    { thread: ThreadInfo; messages: Msg[] } | null | "error"
+    { thread: ThreadInfo; messages: Msg[]; truncated: boolean } | null | "error"
   > => {
     try {
       const res = await fetch(`/api/messages/${id}`, { cache: "no-store" });
       if (res.status === 404 || res.status === 403) return "error";
       if (!res.ok) return null;
       const d = await res.json();
-      return { thread: d.thread, messages: d.messages ?? [] };
+      return { thread: d.thread, messages: d.messages ?? [], truncated: !!d.truncated };
     } catch {
       return null;
     }
@@ -55,6 +58,7 @@ export default function ThreadPage() {
       else if (d) {
         setThread(d.thread);
         setMessages(d.messages);
+        setTruncated(d.truncated);
       }
       setLoading(false);
     })();
@@ -142,6 +146,11 @@ export default function ThreadPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto py-4 space-y-2">
+          {truncated && (
+            <p className="text-center text-xs text-stone-400 pb-2">
+              {t.profile.messages.olderHidden}
+            </p>
+          )}
           {messages.length === 0 ? (
             <p className="text-stone-400 text-sm text-center py-8">{t.profile.messages.noMessages}</p>
           ) : (

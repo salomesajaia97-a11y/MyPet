@@ -37,6 +37,7 @@ export const profile = {
     notFound: "საუბარი ვერ მოიძებნა",
     viewListing: "განცხადების ნახვა",
     noMessages: "ჯერ არ არის შეტყობინებები",
+    olderHidden: "ნაჩვენებია ამ მიმოწერის ბოლო შეტყობინებები.",
     inputPlaceholder: "შეტყობინება…",
     send: "გაგზავნა",
   },
