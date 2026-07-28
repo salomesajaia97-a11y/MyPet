@@ -15,6 +15,10 @@ export const misc: typeof ka = {
   uploadPhoto: "Photo",
   uploadHintPrefix: "Max.",
   uploadHintSuffix: "photos • JPEG, PNG, WebP • up to 5 MB",
+  uploadBadType: "only JPEG, PNG or WebP",
+  uploadTooLarge: "over the 5 MB limit",
+  uploadFailed: "Upload failed",
+  uploadRemove: "remove",
   // Favorite button (components/favorites/FavoriteButton.tsx)
   favoriteRemove: "Remove from favorites",
   favoriteAdd: "Add to favorites",

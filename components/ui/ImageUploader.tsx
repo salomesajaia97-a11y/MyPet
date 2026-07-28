@@ -56,7 +56,7 @@ export function ImageUploader({
       if (!ALLOWED.includes(file.type)) {
         setSlots((prev) => {
           const next = [...prev];
-          next[placeholderIndex] = { error: `${file.name}: only JPEG/PNG/WebP` };
+          next[placeholderIndex] = { error: `${file.name}: ${t.misc.uploadBadType}` };
           return next;
         });
         continue;
@@ -64,7 +64,7 @@ export function ImageUploader({
       if (file.size > MAX_BYTES) {
         setSlots((prev) => {
           const next = [...prev];
-          next[placeholderIndex] = { error: `${file.name}: max 5 MB` };
+          next[placeholderIndex] = { error: `${file.name}: ${t.misc.uploadTooLarge}` };
           return next;
         });
         continue;
@@ -82,7 +82,9 @@ export function ImageUploader({
       try {
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Upload failed");
+        // The API's own message is English-only, so it is not shown to the
+        // user — the localized fallback is.
+        if (!res.ok) throw new Error(json.error ?? "upload failed");
 
         setSlots((prev) => {
           const next = [...prev];
@@ -91,10 +93,10 @@ export function ImageUploader({
           onChange(urls);
           return next;
         });
-      } catch (err) {
+      } catch {
         setSlots((prev) => {
           const next = [...prev];
-          next[placeholderIndex] = { error: err instanceof Error ? err.message : "Upload failed" };
+          next[placeholderIndex] = { error: `${file.name}: ${t.misc.uploadFailed}` };
           return next;
         });
       }
@@ -143,7 +145,7 @@ export function ImageUploader({
                   onClick={() => removeSlot(i)}
                   className="mt-1 text-[10px] text-stone-400 underline"
                 >
-                  remove
+                  {t.misc.uploadRemove}
                 </button>
               </div>
             )}

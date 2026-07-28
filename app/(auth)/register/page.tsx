@@ -3,6 +3,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   PawPrint,
   User,
@@ -96,8 +97,12 @@ export default function RegisterPage() {
       router.push("/login");
       return;
     }
-    router.push("/");
-    router.refresh();
+    // Full-document navigation, for the same reason the login page does it: a
+    // client-side transition keeps Next's Router Cache, which can still hold a
+    // prefetch of a proxy-protected route captured while logged out — i.e. a
+    // cached redirect to /login. Replaying that bounces a user who has just
+    // signed up straight back to the login form.
+    window.location.assign("/");
   }
 
   return (
@@ -113,8 +118,11 @@ export default function RegisterPage() {
 
           <div className="relative">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
-                <PawPrint className="w-5 h-5" />
+              {/* On a white chip: the mark's own teal is close enough to the
+                  panel gradient that unbacked it dissolves into it, which is
+                  the same reason the social card backs it. */}
+              <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center">
+                <Image src="/logo.png" alt="" width={32} height={32} className="w-8 h-8" />
               </div>
               <span className="text-lg font-black tracking-tight">
                 MyPet<span className="text-white/60">.ge</span>
@@ -145,9 +153,14 @@ export default function RegisterPage() {
         {/* Form panel */}
         <div className="p-7 sm:p-10">
           {/* Mobile-only mark; the brand panel carries it from lg up. */}
-          <div className="lg:hidden w-12 h-12 rounded-2xl bg-[#0E4A5C] flex items-center justify-center mx-auto mb-4">
-            <PawPrint className="w-6 h-6 text-white" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={48}
+            height={48}
+            priority
+            className="lg:hidden w-12 h-12 mx-auto mb-4"
+          />
 
           <div className="text-center lg:text-left">
             <h1 className="text-2xl font-black text-[#0F2830]">{t.auth.register.title}</h1>

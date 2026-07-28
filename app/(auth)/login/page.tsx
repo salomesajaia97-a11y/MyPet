@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { PawPrint } from "lucide-react";
+import Image from "next/image";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function LoginPage() {
@@ -51,9 +51,9 @@ export default function LoginPage() {
         <div className="bg-white rounded-3xl shadow-sm p-8 space-y-6">
           {/* Logo */}
           <div className="flex flex-col items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#0E4A5C] flex items-center justify-center">
-              <PawPrint className="w-6 h-6 text-white" />
-            </div>
+            {/* The real mark, as in the header — it carries its own teal and
+                rounded corners, so no wrapper background. */}
+            <Image src="/logo.png" alt="" width={48} height={48} priority className="w-12 h-12" />
             <div className="text-center">
               <h1 className="text-2xl font-black text-[#0F2830]">{t.auth.login.title}</h1>
               <p className="text-stone-500 text-sm mt-1">{t.auth.login.subtitle}</p>

@@ -13,6 +13,10 @@ export const misc = {
   uploadPhoto: "ფოტო",
   uploadHintPrefix: "მაქს.",
   uploadHintSuffix: "ფოტო • JPEG, PNG, WebP • 5 MB-მდე",
+  uploadBadType: "მხოლოდ JPEG, PNG ან WebP",
+  uploadTooLarge: "აღემატება 5 MB ლიმიტს",
+  uploadFailed: "ატვირთვა ვერ მოხერხდა",
+  uploadRemove: "წაშლა",
   // Favorite button (components/favorites/FavoriteButton.tsx)
   favoriteRemove: "ფავორიტებიდან ამოღება",
   favoriteAdd: "ფავორიტებში დამატება",
