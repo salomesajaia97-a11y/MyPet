@@ -5,6 +5,7 @@ import { Star, MapPin, Phone, Globe, Clock } from "lucide-react";
 import type { BusinessData } from "@/lib/data/businesses";
 import PhoneLink from "@/components/ui/PhoneLink";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { safeExternalUrl } from "@/lib/url";
 
 interface Props {
   business: BusinessData;
@@ -16,6 +17,9 @@ interface Props {
 
 export function RealBusinessCard({ business, href }: Props) {
   const { t } = useT();
+  // Never put a raw stored value in an href: a submitter could have saved a
+  // `javascript:` URL, and scraped rows were never checked either.
+  const websiteHref = safeExternalUrl(business.website);
   return (
     <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
       {href && (
@@ -112,8 +116,8 @@ export function RealBusinessCard({ business, href }: Props) {
                 {business.phone}
               </PhoneLink>
             )}
-            {business.website && (
-              <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 whitespace-nowrap hover:text-[#0E4A5C]">
+            {websiteHref && (
+              <a href={websiteHref} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 flex items-center gap-1 whitespace-nowrap hover:text-[#0E4A5C]">
                 <Globe className="w-3 h-3" />
                 {t.services.website}
               </a>

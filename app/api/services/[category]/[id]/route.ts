@@ -5,6 +5,7 @@ import BusinessModel from "@/lib/models/Business";
 import { auth } from "@/auth";
 import { handleMutationError } from "@/lib/api/errors";
 import { deleteBusinessCascade } from "@/lib/services/deleteBusiness";
+import { normalizeWebsite } from "@/lib/url";
 
 const VALID_CATEGORIES = ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"];
 
@@ -80,6 +81,17 @@ export async function PATCH(
     delete body.nativeRatingCount;
     delete body.createdAt;
     delete body.updatedAt;
+
+    // Editing keeps the business approved, so this is the path an approved
+    // submitter would use to swap a clean website for a `javascript:` one.
+    // Only http(s) may be stored — see safeExternalUrl.
+    if ("website" in body) {
+      const website = normalizeWebsite(body.website);
+      if (website === "invalid") {
+        return NextResponse.json({ error: "Invalid website URL" }, { status: 400 });
+      }
+      body.website = website;
+    }
 
     await connectDB();
     const business = await BusinessModel.findOne({ _id: id, category });

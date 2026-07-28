@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
 import { auth } from "@/auth";
 import { handleMutationError } from "@/lib/api/errors";
+import { normalizeWebsite } from "@/lib/url";
 
 const VALID_CATEGORIES = ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"];
 
@@ -70,6 +71,14 @@ export async function POST(
     delete body.googleRating;
     delete body.googleRatingCount;
     delete body.nativeRatingCount;
+
+    // `website` lands in an href on the card and the detail page, so only
+    // http(s) may be stored — see safeExternalUrl.
+    const website = normalizeWebsite(body.website);
+    if (website === "invalid") {
+      return NextResponse.json({ error: "Invalid website URL" }, { status: 400 });
+    }
+    body.website = website;
 
     await connectDB();
     // User submissions enter the moderation queue as "pending" — they only go

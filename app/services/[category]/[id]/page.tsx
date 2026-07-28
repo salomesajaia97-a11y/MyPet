@@ -17,6 +17,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd, graph } from "@/lib/seo/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
+import { safeExternalUrl } from "@/lib/url";
 import {
   BRAND_KEYWORDS,
   buildKeywords,
@@ -173,6 +174,8 @@ export default async function ServiceDetailPage({
   const nativeCount = service.nativeRatingCount ?? 0;
 
   const pageUrl = `${SITE_URL}/services/${category}/${service._id}`;
+  // Only http(s) reaches an href or the structured data.
+  const websiteHref = safeExternalUrl(service.website);
 
   // Business structured data → rich Google results (rating stars, address,
   // phone). The @type is narrowed per category (VeterinaryCare, PetStore, …)
@@ -196,7 +199,7 @@ export default async function ServiceDetailPage({
         }
       : {}),
     ...(service.phone ? { telephone: service.phone } : {}),
-    ...(service.website ? { url: service.website, sameAs: [service.website] } : {}),
+    ...(websiteHref ? { url: websiteHref, sameAs: [websiteHref] } : {}),
     ...(service.tags?.length ? { keywords: service.tags.join(", ") } : {}),
     // A 24/7 clinic is exactly what "ვეტკლინიკა 24 საათი" searches want.
     ...(service.is24h ? { openingHours: "Mo-Su 00:00-23:59" } : {}),
@@ -359,9 +362,11 @@ export default async function ServiceDetailPage({
                   {t.services.detail.viewOnMap}
                 </a>
               )}
-              {service.website && (
+              {/* Re-checked at render, not only on write: scraped rows and
+                  anything stored before the write-side check exists too. */}
+              {websiteHref && (
                 <a
-                  href={service.website}
+                  href={websiteHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-stone-500 flex items-center gap-2 hover:text-[#0E4A5C] transition-colors"

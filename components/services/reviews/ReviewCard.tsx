@@ -7,6 +7,7 @@ import ReviewForm from "./ReviewForm";
 import type { Review, ReviewDraft } from "./types";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
+import { safeExternalUrl } from "@/lib/url";
 
 function initials(name: string) {
   return name
@@ -106,7 +107,10 @@ export default function ReviewCard({
       {/* Photos */}
       {review.photos && review.photos.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
-          {review.photos.map((url) => (
+          {/* The API has rejected non-Cloudinary photo URLs since the stored-XSS
+              fix, but rows written before it were never re-checked, and this is
+              the href they land in. Filter at render too. */}
+          {review.photos.map((url) => safeExternalUrl(url)).filter((url): url is string => !!url).map((url) => (
             <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block w-20 h-20 rounded-lg overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="w-full h-full object-cover hover:opacity-90 transition-opacity" />
