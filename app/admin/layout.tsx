@@ -12,6 +12,7 @@ import {
   MessageSquare,
   ScrollText,
   Settings,
+  Type,
 } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 
@@ -27,6 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/reviews", label: t.admin.nav.reviews, icon: MessageSquare },
     { href: "/admin/users", label: t.admin.nav.users, icon: Users },
     { href: "/admin/uploads", label: t.admin.nav.uploads, icon: ImageIcon },
+    { href: "/admin/content", label: t.admin.nav.content, icon: Type },
     { href: "/admin/settings", label: t.admin.nav.settings, icon: Settings },
     { href: "/admin/audit", label: t.admin.nav.audit, icon: ScrollText },
   ];

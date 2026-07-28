@@ -7,6 +7,7 @@ import {
   type Dictionary,
   type Locale,
 } from "@/lib/i18n";
+import { applyOverrides, type TextOverrides } from "@/lib/i18n/overrides";
 
 type LanguageContextValue = {
   locale: Locale;
@@ -20,9 +21,18 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
 
 export function LanguageProvider({
   initialLocale,
+  overrides,
   children,
 }: {
   initialLocale: Locale;
+  /**
+   * Admin-edited copy for BOTH locales, handed down from the root layout.
+   * Switching language re-renders client components immediately from the
+   * dictionary they already hold, so the overrides for the language being
+   * switched *to* have to be here too — fetching them on switch would show the
+   * original wording for a beat before correcting itself.
+   */
+  overrides?: Partial<Record<Locale, TextOverrides>>;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -42,8 +52,12 @@ export function LanguageProvider({
   );
 
   const value = useMemo<LanguageContextValue>(
-    () => ({ locale, t: getDictionary(locale), setLocale }),
-    [locale, setLocale]
+    () => ({
+      locale,
+      t: applyOverrides(getDictionary(locale), overrides?.[locale] ?? {}),
+      setLocale,
+    }),
+    [locale, overrides, setLocale]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

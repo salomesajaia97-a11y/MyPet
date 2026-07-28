@@ -6,6 +6,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Providers } from "./providers";
 import { getDictionary } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
+import { getAllOverrides } from "@/lib/i18n/textStore";
+import { applyOverrides } from "@/lib/i18n/overrides";
 import { SITE_URL } from "@/lib/siteUrl";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_KEYWORDS } from "@/lib/seo/keywords";
@@ -74,7 +76,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getServerLocale();
-  const t = getDictionary(locale);
+  // Read once here and hand down: the layout renders on every request anyway,
+  // and client components need the overrides for both languages so switching
+  // language does not briefly show the original wording.
+  const overrides = await getAllOverrides();
+  const t = applyOverrides(getDictionary(locale), overrides[locale]);
   return (
     <html lang={locale} className={GeistSans.variable}>
       <body>
@@ -87,7 +93,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             websiteJsonLd(locale, t.common.metaTitle, t.common.metaDescription),
           )}
         />
-        <Providers initialLocale={locale}>
+        <Providers initialLocale={locale} overrides={overrides}>
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-[#0E4A5C] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"

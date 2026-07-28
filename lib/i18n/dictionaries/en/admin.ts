@@ -10,6 +10,7 @@ export const admin: typeof ka = {
     uploads: "Uploads",
     payments: "Payments",
     reviews: "Reviews",
+    content: "Site text",
     settings: "Settings",
     audit: "Audit log",
   },
@@ -44,6 +45,19 @@ export const admin: typeof ka = {
     revoke: "Revoke",
     extendsNote:
       "If the listing is already VIP, the days are added to what is left and the tier only moves up.",
+    error: "That didn't work. Please try again.",
+  },
+  content: {
+    title: "Site text",
+    subtitle:
+      "Change any wording on the site, in both languages. Reset to default is always available.",
+    loading: "Loading…",
+    searchPlaceholder: "Search by key or text",
+    onlyEdited: "Only edited",
+    strings: "strings",
+    editedBadge: "Edited",
+    save: "Save",
+    reset: "Reset",
     error: "That didn't work. Please try again.",
   },
   settings: {
