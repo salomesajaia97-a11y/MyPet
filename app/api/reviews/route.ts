@@ -48,7 +48,9 @@ export async function GET(req: NextRequest) {
     // Optional session — only used to flag the caller's own helpful votes.
     const session = await auth();
     const me = session?.user?.id;
-    const raw = await ReviewModel.find({ businessId })
+    // Hidden reviews are withheld from everyone, author included — an admin
+    // hid it, so it should not reappear just because you wrote it.
+    const raw = await ReviewModel.find({ businessId, hidden: { $ne: true } })
       .sort({ createdAt: -1 })
       .limit(200)
       .lean<Array<Record<string, unknown> & { helpfulUserIds?: unknown[] }>>();

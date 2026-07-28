@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
-import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import UploadModel from "@/lib/models/Upload";
 import cloudinary from "@/lib/cloudinary";
-
-async function requireAdmin() {
-  const session = await auth();
-  const role = (session?.user as { role?: string })?.role;
-  if (!session || role !== "admin") return null;
-  return session;
-}
+import { logAdminAction, requireAdmin } from "@/lib/admin/guard";
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await requireAdmin())) {
+  const actor = await requireAdmin();
+  if (!actor) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
@@ -29,6 +23,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     await cloudinary.uploader.destroy(upload.publicId);
     await upload.deleteOne();
 
+    await logAdminAction(actor, "upload.delete", {
+      type: "upload",
+      id,
+      summary: `Deleted image ${upload.publicId} from Cloudinary`,
+    });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

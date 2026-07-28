@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
-import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
 import NotificationModel from "@/lib/models/Notification";
 import { deleteBusinessCascade } from "@/lib/services/deleteBusiness";
+import { logAdminAction, requireAdmin } from "@/lib/admin/guard";
 
-async function requireAdmin() {
-  const session = await auth();
-  const role = (session?.user as { role?: string })?.role;
-  if (!session || role !== "admin") return null;
-  return session;
-}
-
-// Approve a pending business (set status → approved).
+// Move a business between the queue and the live directory. `approve` publishes
+// a pending submission; `unpublish` sends a live one back to pending, which is
+// the reversible alternative to deleting a business that needs attention.
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await requireAdmin())) {
+  const actor = await requireAdmin();
+  if (!actor) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
@@ -32,7 +28,7 @@ export async function PATCH(
   } catch {
     /* default to approve if no body */
   }
-  if (action !== "approve") {
+  if (action !== "approve" && action !== "unpublish") {
     return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
   }
 
@@ -46,10 +42,10 @@ export async function PATCH(
   // Re-approving an already-approved business, or approving a scraped one
   // with no owner, must not create a notification.
   const wasPending = business.status === "pending";
-  business.status = "approved";
+  business.status = action === "approve" ? "approved" : "pending";
   await business.save();
 
-  if (wasPending && business.userId) {
+  if (action === "approve" && wasPending && business.userId) {
     await NotificationModel.create({
       userId: business.userId,
       type: "business_approved",
@@ -57,6 +53,12 @@ export async function PATCH(
       link: `/services/${business.category}/${business._id}`,
     });
   }
+
+  await logAdminAction(actor, `business.${action}`, {
+    type: "business",
+    id,
+    summary: `${action === "approve" ? "Published" : "Unpublished"} ${business.name ?? "a business"}`,
+  });
 
   return NextResponse.json({ business: business.toObject() });
 }
@@ -66,7 +68,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await requireAdmin())) {
+  const actor = await requireAdmin();
+  if (!actor) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
@@ -75,10 +78,17 @@ export async function DELETE(
   }
 
   await connectDB();
+  // Named before the cascade runs — afterwards there is nothing left to read.
+  const doomed = await BusinessModel.findById(id).select("name").lean<{ name?: string } | null>();
   // Takes the business's reviews and approval notification with it.
   const deleted = await deleteBusinessCascade(id);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  await logAdminAction(actor, "business.delete", {
+    type: "business",
+    id,
+    summary: `Deleted ${doomed?.name ?? "a business"} and its reviews`,
+  });
   return NextResponse.json({ success: true });
 }

@@ -24,6 +24,13 @@ const ReviewSchema = new Schema(
     },
     // Set when the author edits their review; drives an "edited" label.
     editedAt: Date,
+    // Admin moderation. A hidden review is withheld from the public list AND
+    // excluded from the business's rating, so hiding a disputed one-star stops
+    // it counting immediately — without destroying it, which is what makes this
+    // the reversible option next to delete.
+    hidden: { type: Boolean, default: false },
+    hiddenAt: { type: Date, default: null },
+    hiddenBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     googleReviewId: String,
     googleProfileUrl: String,
   },

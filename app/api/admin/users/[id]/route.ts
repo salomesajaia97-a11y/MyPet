@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
-import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import UserModel from "@/lib/models/User";
 import { deleteUserCascade } from "@/lib/services/deleteUser";
-
-async function requireAdmin() {
-  const session = await auth();
-  const role = (session?.user as { role?: string })?.role;
-  if (!session || role !== "admin") return null;
-  return session;
-}
+import { logAdminAction, requireAdmin } from "@/lib/admin/guard";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await requireAdmin())) {
+  const actor = await requireAdmin();
+  if (!actor) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
@@ -42,9 +36,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
+  const previousRole = target.role;
   if (typeof body.name === "string") target.name = body.name;
   if (body.role === "user" || body.role === "admin") target.role = body.role;
   await target.save();
+
+  await logAdminAction(actor, "user.update", {
+    type: "user",
+    id,
+    summary:
+      target.role !== previousRole
+        ? `Changed ${target.email} from ${previousRole} to ${target.role}`
+        : `Edited ${target.email}`,
+  });
 
   const { passwordHash: _omit, ...safe } = target.toObject();
   void _omit;
@@ -52,7 +56,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await requireAdmin())) {
+  const actor = await requireAdmin();
+  if (!actor) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
@@ -72,6 +77,12 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   // Takes their listings, reviews, conversations and pending submissions with
   // them; approved businesses survive without an owner, payments are kept.
+  const email = user.email;
   await deleteUserCascade(id);
+  await logAdminAction(actor, "user.delete", {
+    type: "user",
+    id,
+    summary: `Deleted ${email} and their listings, reviews and conversations`,
+  });
   return NextResponse.json({ success: true });
 }

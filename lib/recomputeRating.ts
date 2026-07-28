@@ -4,12 +4,15 @@ import BusinessModel from "@/lib/models/Business";
 
 // Recompute a business's rating from REAL native reviews only. No Google
 // baseline, no blend — the aggregate is the plain average of native review
-// ratings (0 when there are none). Called after every create / edit / delete
-// so the displayed rating always reflects genuine user reviews.
+// ratings (0 when there are none). Called after every create / edit / delete,
+// and after an admin hides or unhides one, so the displayed rating always
+// reflects the genuine, visible reviews.
 export async function recomputeBusinessRating(
   businessId: string | Types.ObjectId
 ): Promise<void> {
-  const natives = await ReviewModel.find({ businessId, source: "native" })
+  // `hidden: { $ne: true }` rather than `hidden: false` so rows written before
+  // the field existed (no `hidden` key at all) still count.
+  const natives = await ReviewModel.find({ businessId, source: "native", hidden: { $ne: true } })
     .select("rating")
     .lean();
 
