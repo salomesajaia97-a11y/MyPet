@@ -3,6 +3,7 @@ import { isValidObjectId } from "mongoose";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import UserModel from "@/lib/models/User";
+import { deleteUserCascade } from "@/lib/services/deleteUser";
 
 async function requireAdmin() {
   const session = await auth();
@@ -69,6 +70,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     }
   }
 
-  await user.deleteOne();
+  // Takes their listings, reviews, conversations and pending submissions with
+  // them; approved businesses survive without an owner, payments are kept.
+  await deleteUserCascade(id);
   return NextResponse.json({ success: true });
 }

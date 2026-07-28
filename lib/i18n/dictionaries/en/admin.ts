@@ -94,7 +94,8 @@ export const admin: typeof ka = {
   users: {
     title: "Users",
     loading: "Loading…",
-    deleteConfirm: "Delete this user? This cannot be undone.",
+    deleteConfirm:
+      "Delete this user? Their listings, reviews and conversations are deleted too. This cannot be undone.",
     empty: "No users found.",
     cols: {
       name: "Name",
