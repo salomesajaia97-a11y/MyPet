@@ -77,7 +77,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
         }}
       >
         {state && (
-          <DialogContent className="max-w-sm rounded-2xl">
+          <DialogContent closeLabel={t.common.dialog.cancel} className="max-w-sm rounded-2xl">
             <DialogHeader>
               <DialogTitle>{state.opts.title ?? t.common.dialog.confirmTitle}</DialogTitle>
               <DialogDescription>{state.opts.description}</DialogDescription>

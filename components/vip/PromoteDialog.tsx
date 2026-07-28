@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useT } from "@/components/i18n/LanguageProvider";
 import {
   VIP_PACKAGES,
@@ -14,6 +21,11 @@ import {
  * Tier picker that hands off to Flitt hosted checkout. The client sends only
  * the listing id and the tier — the server looks up the price, so nothing here
  * can influence what is charged.
+ *
+ * Built on the shared Radix dialog rather than a hand-rolled overlay: this is
+ * the last screen before a payment, and the hand-rolled version could not be
+ * dismissed with Escape, let focus wander to the page behind it, and left that
+ * page scrolling under the sheet.
  */
 export function PromoteDialog({
   listingId,
@@ -28,8 +40,6 @@ export function PromoteDialog({
   const [selected, setSelected] = useState<VipTier>("super");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!open) return null;
 
   const pay = async () => {
     setBusy(true);
@@ -51,22 +61,26 @@ export function PromoteDialog({
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={t.vip.dialog.title}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      <div className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-white p-5 sm:p-6 shadow-xl">
-        <div className="mb-4 flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-[#0F2830]">{t.vip.dialog.title}</h2>
-            <p className="text-xs text-stone-500">{t.vip.dialog.subtitle}</p>
-          </div>
-          <button type="button" onClick={onClose} aria-label={t.vip.dialog.cancel}>
-            <X className="h-5 w-5 text-stone-400" />
-          </button>
-        </div>
+      {/* Sits on the bottom edge on phones and centres from sm up, which is how
+          the picker read before it moved onto the shared dialog. */}
+      <DialogContent
+        closeLabel={t.vip.dialog.cancel}
+        className="max-w-md gap-0 bg-white top-auto bottom-2 translate-y-0 rounded-2xl sm:top-1/2 sm:bottom-auto sm:-translate-y-1/2"
+      >
+        <DialogHeader className="mb-4 pr-6">
+          <DialogTitle className="text-lg font-bold text-[#0F2830]">
+            {t.vip.dialog.title}
+          </DialogTitle>
+          <DialogDescription className="text-xs text-stone-500">
+            {t.vip.dialog.subtitle}
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="space-y-2">
           {VIP_TIERS.map((tier) => {
@@ -118,7 +132,7 @@ export function PromoteDialog({
             ? t.vip.dialog.redirecting
             : `${t.vip.dialog.pay} ${formatGel(VIP_PACKAGES[selected].amount)} ${t.vip.gel}`}
         </button>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
