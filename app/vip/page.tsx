@@ -39,9 +39,6 @@ export default function VipPricingPage() {
                   {formatGel(pkg.amount)}
                   <span className="ml-1 text-base font-semibold text-stone-400">{t.vip.gel}</span>
                 </p>
-                <p className="mt-1 text-xs text-stone-500">
-                  {pkg.days} {t.vip.perDays}
-                </p>
                 <p className="mt-4 flex-1 text-sm text-stone-600">{t.vip.tiers[tier].desc}</p>
                 {/* Buying always happens against a specific listing, so the CTA
                     routes to the owner's listings rather than a generic cart. */}

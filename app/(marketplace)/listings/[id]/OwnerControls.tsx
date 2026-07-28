@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Pencil, Trash2, Star, Sparkles, CheckCircle2, RotateCcw } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
@@ -34,12 +34,22 @@ export function OwnerControls({
   const { t } = useT();
   const { confirm, notify } = useConfirm();
   const router = useRouter();
+  const pathname = usePathname();
   const [deleting, setDeleting] = useState(false);
   const [resolved, setResolved] = useState(isResolved);
   const [resolving, setResolving] = useState(false);
   // Seeded from the query flag so the post-create upsell lands with the picker
   // already open.
   const [promoteOpen, setPromoteOpen] = useState(autoPromote);
+
+  // The flag is a one-shot: drop `?promote=1` from the address bar as soon as
+  // the picker opens, otherwise a refresh (or a shared link) reopens it every
+  // time. replaceState keeps the state local — no server round trip, no extra
+  // history entry to go back to.
+  useEffect(() => {
+    if (!autoPromote) return;
+    window.history.replaceState(null, "", pathname);
+  }, [autoPromote, pathname]);
 
   const toggleResolved = async () => {
     const next = !resolved;

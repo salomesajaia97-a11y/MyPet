@@ -100,13 +100,10 @@ export function PromoteDialog({
                 >
                   {active && <Check className="h-3 w-3" />}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-bold text-[#0F2830]">
-                    {t.vip.tiers[tier].name}
-                  </span>
-                  <span className="block text-xs text-stone-500">
-                    {pkg.days} {t.vip.perDays}
-                  </span>
+                {/* The tier name already states the duration, so no separate
+                    days line here — it only read as a repeat of itself. */}
+                <span className="min-w-0 flex-1 text-sm font-bold text-[#0F2830]">
+                  {t.vip.tiers[tier].name}
                 </span>
                 <span className="shrink-0 text-base font-bold text-[#0F2830]">
                   {formatGel(pkg.amount)} {t.vip.gel}

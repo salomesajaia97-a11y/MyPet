@@ -7,15 +7,15 @@ export const vip = {
   choose: "Choose",
   tiers: {
     standard: {
-      name: "Standard VIP",
+      name: "VIP 3 days",
       desc: "Highlights the listing and places it in the VIP section for 3 days.",
     },
     super: {
-      name: "Super VIP",
+      name: "VIP 7 days",
       desc: "Premium placement at the top of search results and the homepage for 7 days.",
     },
     ultra: {
-      name: "Ultra VIP / TOP",
+      name: "VIP 14 days",
       desc: "Maximum visibility across the platform with a priority badge for 14 days.",
     },
   },
