@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
 import { auth } from "@/auth";
 import { handleMutationError } from "@/lib/api/errors";
+import { deleteBusinessCascade } from "@/lib/services/deleteBusiness";
 
 const VALID_CATEGORIES = ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"];
 
@@ -130,7 +131,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await business.deleteOne();
+    // Cascades to the business's reviews and approval notification.
+    await deleteBusinessCascade(id);
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

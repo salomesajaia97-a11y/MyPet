@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import BusinessModel from "@/lib/models/Business";
 import NotificationModel from "@/lib/models/Notification";
+import { deleteBusinessCascade } from "@/lib/services/deleteBusiness";
 
 async function requireAdmin() {
   const session = await auth();
@@ -74,7 +75,8 @@ export async function DELETE(
   }
 
   await connectDB();
-  const deleted = await BusinessModel.findByIdAndDelete(id).lean();
+  // Takes the business's reviews and approval notification with it.
+  const deleted = await deleteBusinessCascade(id);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
