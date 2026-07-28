@@ -28,7 +28,7 @@ export const misc = {
   searchRetryReformulate: "ვერ მოხერხდა. სცადეთ სხვა ფორმულირება.",
   searchRetry: "ვერ მოხერხდა. სცადეთ თავიდან.",
   searchLoginRequired: "AI ძებნის გამოსაყენებლად გაიარეთ ავტორიზაცია.",
-  searchPlaceholder: "აღწერე ბუნებრივ ენაზე — AI იპოვის",
+  searchPlaceholder: "მოძებნე AI-ს დახმარებით...",
   searching: "ვეძებ…",
   aiSearch: "AI ძებნა",
   // API error / fallback messages returned to the client (route handlers)
