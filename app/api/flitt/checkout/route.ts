@@ -9,7 +9,8 @@ import { rateLimit } from "@/lib/rateLimit";
 import { getServerLocale } from "@/lib/i18n/server";
 import { flittBaseUrl, isFlittConfigured } from "@/lib/flitt/config";
 import { createCheckoutUrl, FlittError } from "@/lib/flitt/client";
-import { VIP_PACKAGES, isVipTier } from "@/lib/marketplace/vipPackages";
+import { isVipTier } from "@/lib/marketplace/vipPackages";
+import { getFlags, getVipPackages } from "@/lib/settings";
 
 /** Merchant-generated, unique, and safe to echo in URLs. */
 function newOrderId(listingId: string): string {
@@ -44,8 +45,18 @@ export async function POST(req: NextRequest) {
   if (!isValidObjectId(listingId) || !isVipTier(body.tier)) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  // Price and duration come from the server table, never from the client.
-  const pkg = VIP_PACKAGES[body.tier];
+
+  // Payments can be switched off from the panel — e.g. while the merchant
+  // account is being changed — without a redeploy.
+  const flags = await getFlags();
+  if (!flags.payments) {
+    return NextResponse.json({ error: "Payments are temporarily unavailable" }, { status: 503 });
+  }
+
+  // Price and duration come from the server table, never from the client. The
+  // table is the code default with any panel override applied; the order then
+  // snapshots both, so a later price change cannot alter an order in flight.
+  const pkg = (await getVipPackages())[body.tier];
 
   try {
     await connectDB();

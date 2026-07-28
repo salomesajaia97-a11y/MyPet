@@ -32,6 +32,7 @@ export const vip = {
     subtitle: "Pick a package",
     pay: "Pay",
     redirecting: "Redirecting…",
+    paymentsOff: "Card payments are paused right now. Please try again later.",
     cancel: "Cancel",
     error: "Could not start the payment. Please try again.",
     loginRequired: "Sign in to pay",

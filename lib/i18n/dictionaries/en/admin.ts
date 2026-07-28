@@ -10,6 +10,7 @@ export const admin: typeof ka = {
     uploads: "Uploads",
     payments: "Payments",
     reviews: "Reviews",
+    settings: "Settings",
     audit: "Audit log",
   },
   reviews: {
@@ -44,6 +45,31 @@ export const admin: typeof ka = {
     extendsNote:
       "If the listing is already VIP, the days are added to what is left and the tier only moves up.",
     error: "That didn't work. Please try again.",
+  },
+  settings: {
+    title: "Site settings",
+    subtitle: "Prices and feature switches, without a developer.",
+    loading: "Loading…",
+    pricesTitle: "VIP package prices",
+    pricesNote:
+      "Amounts are in tetri (300 = 3 ₾). A change applies to new orders only — an order already in progress keeps the price it was created with.",
+    amount: "Amount",
+    days: "Days",
+    flagsTitle: "Features",
+    flagsNote: "Turning something off takes effect immediately and is recorded in the audit log.",
+    flagLabels: {
+      payments: "Card payments",
+      aiSearch: "AI search and photo matching",
+      registration: "New password signups",
+    },
+    flagHints: {
+      payments: "Off means nobody can buy a VIP promotion.",
+      aiSearch: "Off means the AI features answer 503.",
+      registration: "Off closes password signup; Google sign-in keeps working.",
+    },
+    save: "Save",
+    saved: "Saved ✓",
+    error: "Could not save. Please try again.",
   },
   audit: {
     title: "Admin audit log",

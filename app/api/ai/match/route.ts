@@ -4,15 +4,17 @@ import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import { aiEnabled, matchLostPet, type MatchCandidate } from "@/lib/ai";
 import { rateLimit } from "@/lib/rateLimit";
+import { getFlags } from "@/lib/settings";
 
 const MAX_CANDIDATES = 12;
 const ALLOWED_MEDIA = ["image/jpeg", "image/png", "image/webp"] as const;
 type Media = (typeof ALLOWED_MEDIA)[number];
 
 export async function POST(req: NextRequest) {
-  if (!aiEnabled()) {
+  // Missing credentials or switched off from the panel — same answer either way.
+  if (!aiEnabled() || !(await getFlags()).aiSearch) {
     return NextResponse.json(
-      { error: "AI matcher is not configured (set OPENROUTER_API_KEY)." },
+      { error: "The AI matcher is not available right now." },
       { status: 503 }
     );
   }

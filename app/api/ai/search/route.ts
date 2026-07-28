@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { aiEnabled, parseSearchQuery } from "@/lib/ai";
 import { rateLimit } from "@/lib/rateLimit";
 import { auth } from "@/auth";
+import { getFlags } from "@/lib/settings";
 
 const VALID_TYPES = ["buy-sell", "adoption", "mating", "lost-found"];
 
 export async function POST(req: NextRequest) {
-  if (!aiEnabled()) {
+  // Two independent reasons to be off: no credentials, or switched off from the
+  // panel (the free model pool rate-limits, so the owner may want it dark for a
+  // while). Same 503 either way — the client only needs "not available now".
+  if (!aiEnabled() || !(await getFlags()).aiSearch) {
     return NextResponse.json(
-      { error: "AI search is not configured (set OPENROUTER_API_KEY)." },
+      { error: "AI search is not available right now." },
       { status: 503 }
     );
   }

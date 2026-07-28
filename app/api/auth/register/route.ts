@@ -3,10 +3,18 @@ import { connectDB } from "@/lib/db";
 import UserModel from "@/lib/models/User";
 import { hashPassword } from "@/lib/utils/crypto";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { getFlags } from "@/lib/settings";
 
 export async function POST(req: NextRequest) {
   const limited = rateLimit(`register:${clientIp(req)}`, 5, 10 * 60_000);
   if (limited) return limited;
+
+  // Signups can be closed from the panel — a spam wave is the obvious reason,
+  // and it should not need a deploy. Google sign-in is unaffected: this only
+  // gates creating a password account.
+  if (!(await getFlags()).registration) {
+    return NextResponse.json({ error: "Registration is closed right now" }, { status: 403 });
+  }
 
   try {
     const { name, email, password } = await req.json();

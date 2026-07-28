@@ -10,12 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useT } from "@/components/i18n/LanguageProvider";
-import {
-  VIP_PACKAGES,
-  VIP_TIERS,
-  formatGel,
-  type VipTier,
-} from "@/lib/marketplace/vipPackages";
+import { VIP_TIERS, formatGel, type VipTier } from "@/lib/marketplace/vipPackages";
+import { useVipPackages } from "@/components/vip/useVipPackages";
 
 /**
  * Tier picker that hands off to Flitt hosted checkout. The client sends only
@@ -37,6 +33,7 @@ export function PromoteDialog({
   onClose: () => void;
 }) {
   const { t } = useT();
+  const { packages, paymentsEnabled } = useVipPackages();
   const [selected, setSelected] = useState<VipTier>("super");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +81,7 @@ export function PromoteDialog({
 
         <div className="space-y-2">
           {VIP_TIERS.map((tier) => {
-            const pkg = VIP_PACKAGES[tier];
+            const pkg = packages[tier];
             const active = selected === tier;
             return (
               <button
@@ -121,16 +118,23 @@ export function PromoteDialog({
 
         {error && <p className="mt-3 text-xs font-semibold text-red-600">{error}</p>}
 
+        {/* Say it up front rather than letting Pay lead into a 503. */}
+        {!paymentsEnabled && (
+          <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+            {t.vip.dialog.paymentsOff}
+          </p>
+        )}
+
         <button
           type="button"
           onClick={pay}
-          disabled={busy}
+          disabled={busy || !paymentsEnabled}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0E4A5C] py-3 text-sm font-bold text-white disabled:opacity-60"
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" />}
           {busy
             ? t.vip.dialog.redirecting
-            : `${t.vip.dialog.pay} ${formatGel(VIP_PACKAGES[selected].amount)} ${t.vip.gel}`}
+            : `${t.vip.dialog.pay} ${formatGel(packages[selected].amount)} ${t.vip.gel}`}
         </button>
       </DialogContent>
     </Dialog>

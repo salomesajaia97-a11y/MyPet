@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
-import { VIP_PACKAGES, VIP_TIERS, formatGel } from "@/lib/marketplace/vipPackages";
+import { VIP_TIERS, formatGel } from "@/lib/marketplace/vipPackages";
+import { useVipPackages } from "@/components/vip/useVipPackages";
 
 /**
  * Public pricing page for the paid promotion packages. Also the page a payment
@@ -12,6 +13,9 @@ import { VIP_PACKAGES, VIP_TIERS, formatGel } from "@/lib/marketplace/vipPackage
  */
 export default function VipPricingPage() {
   const { t } = useT();
+  // Prices are editable from the admin panel, so the page shows what is
+  // currently in force rather than what was compiled in.
+  const { packages } = useVipPackages();
 
   return (
     <div className="min-h-screen bg-[#EBF6FA] py-12">
@@ -21,7 +25,7 @@ export default function VipPricingPage() {
 
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {VIP_TIERS.map((tier) => {
-            const pkg = VIP_PACKAGES[tier];
+            const pkg = packages[tier];
             const featured = tier === "super";
             return (
               <div
