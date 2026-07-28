@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 type Result = {
@@ -21,6 +21,10 @@ export function ResultClient({ orderId }: { orderId: string }) {
   const { t } = useT();
   const [result, setResult] = useState<Result | null>(null);
   const [failed, setFailed] = useState(false);
+  // Polling stops after MAX_POLLS. Without this the page kept spinning
+  // forever, which reads like the payment is stuck and invites paying twice —
+  // the callback still lands on its own, so say so and let the customer leave.
+  const [gaveUp, setGaveUp] = useState(false);
 
   useEffect(() => {
     let polls = 0;
@@ -35,9 +39,9 @@ export function ResultClient({ orderId }: { orderId: string }) {
         const data = (await res.json()) as Result;
         if (cancelled) return;
         setResult(data);
-        if (PENDING.has(data.status) && ++polls < MAX_POLLS) {
-          timer = setTimeout(tick, INTERVAL_MS);
-        }
+        if (!PENDING.has(data.status)) return;
+        if (++polls < MAX_POLLS) timer = setTimeout(tick, INTERVAL_MS);
+        else setGaveUp(true);
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -52,6 +56,17 @@ export function ResultClient({ orderId }: { orderId: string }) {
 
   if (failed) {
     return <Shell icon="error" title={t.vip.result.errorTitle} body={t.vip.result.errorBody} />;
+  }
+  if (gaveUp && (!result || PENDING.has(result.status))) {
+    return (
+      <Shell
+        icon="waiting"
+        title={t.vip.result.slowTitle}
+        body={t.vip.result.slowBody}
+        href={result ? `/listings/${result.listingId}` : "/profile/listings"}
+        cta={t.vip.result.viewListing}
+      />
+    );
   }
   if (!result || PENDING.has(result.status)) {
     return (
@@ -91,7 +106,7 @@ function Shell({
   href,
   cta,
 }: {
-  icon: "pending" | "success" | "error";
+  icon: "pending" | "waiting" | "success" | "error";
   title: string;
   body: string;
   href?: string;
@@ -103,6 +118,8 @@ function Shell({
         <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
           <div className="flex justify-center mb-4">
             {icon === "pending" && <Loader2 className="w-10 h-10 text-[#0E4A5C] animate-spin" />}
+            {/* Not a spinner: nothing is being waited on any more. */}
+            {icon === "waiting" && <Clock className="w-10 h-10 text-amber-500" />}
             {icon === "success" && <CheckCircle2 className="w-10 h-10 text-green-600" />}
             {icon === "error" && <XCircle className="w-10 h-10 text-red-600" />}
           </div>

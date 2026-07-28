@@ -41,6 +41,9 @@ export const vip = {
   result: {
     pendingTitle: "Processing payment",
     pendingBody: "Please wait, this takes a few seconds.",
+    slowTitle: "Still processing",
+    slowBody:
+      "The bank has not confirmed yet. Your promotion activates on its own as soon as it does — there is no need to pay again.",
     successTitle: "Payment successful",
     successBody: "Your listing has been promoted.",
     activeUntil: "VIP active until",
