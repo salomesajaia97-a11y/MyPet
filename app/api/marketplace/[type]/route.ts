@@ -60,12 +60,25 @@ export async function POST(
     delete body.userId;
     delete body.createdAt;
     delete body.updatedAt;
-    // VIP promotion (`isVip`/`vipUntil`) is granted only via payment or an
-    // admin; `isResolved` defaults to false on the model. A new listing must
-    // never set any of these from client input — it is created as non-VIP.
+    // VIP promotion is granted only via payment or an admin; `isResolved`
+    // defaults to false on the model, and `views` is owned by the view route.
+    // A new listing must never set any of these from client input — it is
+    // created as non-VIP with a zero view count. `vipTier`/`vipRank` are
+    // stripped alongside `isVip` because placement sorts on the rank.
     delete body.isVip;
     delete body.vipUntil;
+    delete body.vipTier;
+    delete body.vipRank;
     delete body.isResolved;
+    delete body.views;
+
+    // `price` is optional on the schema because adoption and lost-found posts
+    // have none, so the per-type requirement has to be enforced here. Without
+    // it a buy-sell listing can be created with no price, and every card that
+    // formats one throws while rendering the public feed.
+    if (type === "buy-sell" && !Number.isFinite(body.price as number)) {
+      return NextResponse.json({ error: "A numeric price is required" }, { status: 400 });
+    }
 
     await connectDB();
     // Attribute the listing to the logged-in user so it surfaces under

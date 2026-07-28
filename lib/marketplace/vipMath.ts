@@ -35,6 +35,72 @@ export function tierForRank(rank: number): VipTier | null {
  * passed in from the payment record rather than read from VIP_PACKAGES, so
  * repricing a package cannot alter an order already in flight.
  */
+export type VipState = {
+  isVip: boolean;
+  vipUntil: Date | null;
+  vipTier: VipTier | null;
+  vipRank: number;
+};
+
+/**
+ * Fields to write on the listing when an approved payment is later reversed —
+ * a refund or a chargeback. Without this a reversed order keeps its paid
+ * placement forever: the money goes back and the promotion stays.
+ *
+ * Two paths, because a listing can be promoted more than once:
+ *
+ * - Nothing has been granted since (the listing still carries the expiry this
+ *   order wrote), so the pre-grant snapshot is restored exactly — including the
+ *   tier, which a subtraction alone could not undo.
+ * - A later payment has moved the expiry on, so only this order's days are
+ *   taken back and the newer purchase keeps its tier.
+ *
+ * Either way, a listing left with no time on it drops out of VIP entirely
+ * rather than lingering at rank 0 with `isVip` still true.
+ */
+export function computeVipRevert(
+  input: {
+    listing: VipListingFields;
+    /** `vipUntil` this grant wrote, to detect a newer grant on top of it. */
+    grantedUntil?: string | Date | null;
+    /** Listing VIP state captured immediately before this grant applied. */
+    previous?: VipListingFields | null;
+    /** Days this order paid for. */
+    days: number;
+  },
+  now: number = Date.now()
+): VipState {
+  const { listing, grantedUntil, previous, days } = input;
+  const currentMs = listing.vipUntil ? new Date(listing.vipUntil).getTime() : null;
+  const grantedMs = grantedUntil ? new Date(grantedUntil).getTime() : null;
+  const untouched = grantedMs !== null && currentMs === grantedMs;
+
+  let state: VipState;
+  if (untouched && previous) {
+    state = {
+      isVip: !!previous.isVip,
+      vipUntil: previous.vipUntil ? new Date(previous.vipUntil) : null,
+      vipTier: previous.vipTier ?? null,
+      vipRank: previous.vipRank ?? 0,
+    };
+  } else {
+    const base = currentMs ?? now;
+    state = {
+      isVip: !!listing.isVip,
+      vipUntil: new Date(base - days * DAY_MS),
+      vipTier: listing.vipTier ?? null,
+      vipRank: listing.vipRank ?? 0,
+    };
+  }
+
+  // An unbounded (admin) grant has no expiry to compare, so it survives.
+  const lapsed = state.vipUntil !== null && state.vipUntil.getTime() <= now;
+  if (!state.isVip || lapsed) {
+    return { isVip: false, vipUntil: state.vipUntil, vipTier: null, vipRank: 0 };
+  }
+  return state;
+}
+
 export function computeVipGrant(
   listing: VipListingFields,
   tier: VipTier,

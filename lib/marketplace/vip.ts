@@ -15,5 +15,5 @@ export function isVipActive(l: {
 
 // Tier-aware placement math lives in vipMath.ts so it stays pure and testable
 // without a database. Re-exported here so callers have a single VIP import.
-export { activeRank, computeVipGrant, tierForRank } from "./vipMath";
+export { activeRank, computeVipGrant, computeVipRevert, tierForRank } from "./vipMath";
 export type { VipListingFields } from "./vipMath";

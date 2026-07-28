@@ -40,6 +40,14 @@ const PaymentSchema = new Schema(
     responseCode: { type: Number, default: null },
     responseDescription: { type: String, default: null },
     appliedAt: { type: Date, default: null },
+    // Written alongside `appliedAt`, so a reversal can be undone precisely:
+    // `grantedUntil` is the expiry this order produced (if the listing still
+    // carries it, nothing has been bought since) and `previousVip` is the
+    // listing's VIP state from just before the grant. `revokedAt` is the
+    // idempotency guard on the way back out, mirroring `appliedAt`.
+    grantedUntil: { type: Date, default: null },
+    previousVip: { type: Schema.Types.Mixed, default: null },
+    revokedAt: { type: Date, default: null },
     // Operational flag for support, e.g. "listingMissing", "amountMismatch".
     note: { type: String, default: null },
     raw: { type: Schema.Types.Mixed, default: null },

@@ -7,7 +7,7 @@ import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { getListings, countListings, getPage } from "@/lib/marketplace/queries";
 import { Pager } from "@/components/marketplace/Pager";
-import { formatAge } from "@/lib/marketplace/format";
+import { formatAge, formatPrice } from "@/lib/marketplace/format";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Dictionary } from "@/lib/i18n";
 import type { BuySellListing } from "@/types/marketplace";
@@ -140,9 +140,10 @@ function ListingCard({ listing, t }: { listing: BuySellListing; t: Dictionary })
           <div className="w-full h-full flex items-center justify-center text-4xl">🐾</div>
         )}
         <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">
-          {listing.currency === "USD"
-            ? `$${listing.price.toLocaleString()}`
-            : `${listing.price.toLocaleString()}₾`}
+          {/* Priceless rows should not exist — the create route rejects them —
+              but one predating that check must not throw and take the feed
+              down with it. */}
+          {formatPrice(listing.price, listing.currency) ?? "—"}
         </div>
       </div>
       <div className="p-4 space-y-2.5">

@@ -1,5 +1,5 @@
 import PaymentModel from "@/lib/models/Payment";
-import { applyVipForOrder } from "@/lib/marketplace/applyVip";
+import { applyVipForOrder, revokeVipForOrder } from "@/lib/marketplace/applyVip";
 import type { FlittCallbackPayload, FlittOrderStatus } from "./types";
 
 const KNOWN_STATUSES: FlittOrderStatus[] = [
@@ -60,6 +60,10 @@ export async function reconcilePayment(
 
   if (status === "approved") {
     await applyVipForOrder(orderId);
+  } else if (status === "reversed") {
+    // The money went back, so the placement has to as well. No-op unless this
+    // order actually granted a promotion.
+    await revokeVipForOrder(orderId);
   }
   return "ok";
 }

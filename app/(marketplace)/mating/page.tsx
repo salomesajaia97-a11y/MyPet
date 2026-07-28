@@ -6,7 +6,7 @@ import { MarketplaceTabs } from "@/components/marketplace/MarketplaceTabs";
 import { MarketplaceSearch } from "@/components/marketplace/MarketplaceSearch";
 import { getListings, countListings, getPage } from "@/lib/marketplace/queries";
 import { Pager } from "@/components/marketplace/Pager";
-import { formatAge } from "@/lib/marketplace/format";
+import { formatAge, formatPrice } from "@/lib/marketplace/format";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Dictionary } from "@/lib/i18n";
 import type { MatingListing } from "@/types/marketplace";
@@ -115,6 +115,9 @@ function ListingCard({ listing, t }: { listing: MatingListing; t: Dictionary }) 
   // Only a live promotion earns a badge — activeRank() returns 0 once
   // `vipUntil` has passed, so a lapsed listing renders as an ordinary one.
   const tier = tierForRank(activeRank(listing));
+  // null price means the stud is offered free; a missing one (older rows, before
+  // the create route validated) reads the same way rather than throwing.
+  const price = formatPrice(listing.price);
   return (
     <Link href={`/listings/${listing._id}`} className="block">
       <div className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer ${
@@ -140,9 +143,9 @@ function ListingCard({ listing, t }: { listing: MatingListing; t: Dictionary }) 
           <div className="absolute top-3 left-3 bg-purple-700 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
             {t.common.categories.mating}
           </div>
-          {listing.price !== null && (
+          {price && (
             <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-sm font-bold text-[#0F2830]">
-              {listing.price.toLocaleString()}₾
+              {price}
             </div>
           )}
         </div>
@@ -154,7 +157,7 @@ function ListingCard({ listing, t }: { listing: MatingListing; t: Dictionary }) 
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {listing.price === null && (
+            {!price && (
               <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
                 {t.marketplace.free}
               </span>

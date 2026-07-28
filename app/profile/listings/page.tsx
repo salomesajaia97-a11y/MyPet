@@ -10,6 +10,7 @@ import type { Listing } from "@/types/marketplace";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { PromoteDialog } from "@/components/vip/PromoteDialog";
 import { isVipActive } from "@/lib/marketplace/vip";
+import { formatPrice } from "@/lib/marketplace/format";
 
 export default function MyListingsPage() {
   const { t } = useT();
@@ -65,12 +66,15 @@ function ListingCard({ listing }: { listing: Listing }) {
   const { t } = useT();
   const [promoteOpen, setPromoteOpen] = useState(false);
   const vip = isVipActive(listing);
+  // Only buy-sell carries a currency; a mating fee is always in GEL. The card
+  // used to print ₾ on both, so a listing priced in dollars showed the wrong
+  // symbol here while every other surface showed $.
   const price =
-    (listing.type === "buy-sell" || listing.type === "mating") &&
-    listing.price !== null &&
-    listing.price !== undefined
-      ? `${listing.price.toLocaleString()}₾`
-      : null;
+    listing.type === "buy-sell"
+      ? formatPrice(listing.price, listing.currency)
+      : listing.type === "mating"
+        ? formatPrice(listing.price)
+        : null;
 
   return (
     <div>

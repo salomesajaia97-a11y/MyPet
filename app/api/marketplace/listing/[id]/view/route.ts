@@ -69,6 +69,10 @@ export async function POST(
       : await ListingModel.findById(id, { views: 1 }).lean<{ views?: number } | null>();
 
     if (!listing) {
+      // The dedupe row is written before we know the listing exists (checking
+      // first would cost an extra query on every real view). Drop it again so a
+      // bogus id cannot seed the collection with rows nothing will ever match.
+      if (counted) await ListingViewModel.deleteOne({ key });
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 

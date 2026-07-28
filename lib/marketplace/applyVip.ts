@@ -1,6 +1,6 @@
 import ListingModel from "@/lib/models/Listing";
 import PaymentModel from "@/lib/models/Payment";
-import { computeVipGrant } from "./vipMath";
+import { computeVipGrant, computeVipRevert, type VipListingFields } from "./vipMath";
 import type { VipTier } from "./vipPackages";
 
 /**
@@ -44,5 +44,63 @@ export async function applyVipForOrder(
 
   const grant = computeVipGrant(listing, claimed.tier, claimed.days);
   await ListingModel.updateOne({ _id: claimed.listingId }, { $set: grant });
+  // Snapshot what the listing looked like before, so a later reversal can put
+  // it back exactly instead of guessing.
+  await PaymentModel.updateOne(
+    { orderId },
+    {
+      $set: {
+        grantedUntil: grant.vipUntil,
+        previousVip: {
+          isVip: !!listing.isVip,
+          vipUntil: listing.vipUntil ?? null,
+          vipTier: listing.vipTier ?? null,
+          vipRank: listing.vipRank ?? 0,
+        },
+      },
+    }
+  );
   return "granted";
+}
+
+/**
+ * Undo a promotion whose payment was reversed — a refund or a chargeback.
+ *
+ * Mirrors applyVipForOrder: `revokedAt` is flipped by a conditional update so
+ * repeated `reversed` callbacks (Flitt retries, plus the status poll) revoke
+ * exactly once. Only an order that actually granted something is eligible —
+ * `appliedAt` must be set — so reversing a declined order is a no-op.
+ */
+export async function revokeVipForOrder(
+  orderId: string
+): Promise<"revoked" | "skipped" | "listing-missing"> {
+  const claimed = await PaymentModel.findOneAndUpdate(
+    { orderId, status: "reversed", appliedAt: { $ne: null }, revokedAt: null },
+    { $set: { revokedAt: new Date() } },
+    { new: true }
+  ).lean<{
+    listingId: unknown;
+    days: number;
+    grantedUntil?: Date | null;
+    previousVip?: VipListingFields | null;
+  } | null>();
+
+  if (!claimed) return "skipped";
+
+  const listing = await ListingModel.findById(claimed.listingId).lean<VipListingFields | null>();
+  if (!listing) {
+    // Nothing to take back — the listing is already gone.
+    await PaymentModel.updateOne({ orderId }, { $set: { note: "listingMissing" } });
+    return "listing-missing";
+  }
+
+  const revert = computeVipRevert({
+    listing,
+    grantedUntil: claimed.grantedUntil ?? null,
+    previous: claimed.previousVip ?? null,
+    days: claimed.days,
+  });
+  await ListingModel.updateOne({ _id: claimed.listingId }, { $set: revert });
+  console.warn(`[flitt] order ${orderId} reversed — VIP revoked`);
+  return "revoked";
 }

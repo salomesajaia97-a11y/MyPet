@@ -20,6 +20,9 @@ interface Business {
 
 type Tab = "pending" | "approved";
 
+/** Stable empty list, so the filter memo does not rerun on every render. */
+const NO_ROWS: Business[] = [];
+
 export default function AdminBusinessesPage() {
   const { t } = useT();
   const { confirm } = useConfirm();
@@ -30,31 +33,37 @@ export default function AdminBusinessesPage() {
     "pet-friendly": t.admin.businesses.categories.petFriendly,
   };
   const [tab, setTab] = useState<Tab>("pending");
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Rows are tagged with the tab they were fetched for. Switching tabs then
+  // shows the spinner as a plain render-time derivation, instead of the effect
+  // clearing the previous tab's rows on its way in — which is a state update
+  // during an effect and flashes the old list first.
+  const [loaded, setLoaded] = useState<{ tab: Tab; items: Business[] } | null>(null);
+  const businesses = loaded && loaded.tab === tab ? loaded.items : NO_ROWS;
+  const loading = loaded?.tab !== tab;
   const [busyId, setBusyId] = useState<string | null>(null);
   const [q, setQ] = useState("");
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setBusinesses([]);
     fetch(`/api/admin/businesses?status=${tab}`)
       .then((r) => (r.ok ? r.json() : { businesses: [] }))
       .then((d) => {
         if (!active) return;
-        setBusinesses(Array.isArray(d.businesses) ? d.businesses : []);
+        setLoaded({ tab, items: Array.isArray(d.businesses) ? d.businesses : [] });
       })
       .catch(() => {
-        if (active) setBusinesses([]);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
+        if (active) setLoaded({ tab, items: [] });
       });
     return () => {
       active = false;
     };
   }, [tab]);
+
+  /** Drop a row locally after it has been approved or deleted server-side. */
+  const dropRow = (id: string) =>
+    setLoaded((prev) =>
+      prev ? { ...prev, items: prev.items.filter((b) => b._id !== id) } : prev
+    );
 
   // The approved list can run to hundreds of rows, so filter client-side —
   // the API already returns the whole page in one shot.
@@ -76,7 +85,7 @@ export default function AdminBusinessesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "approve" }),
     });
-    if (res.ok) setBusinesses((prev) => prev.filter((b) => b._id !== id));
+    if (res.ok) dropRow(id);
     setBusyId(null);
   }
 
@@ -93,7 +102,7 @@ export default function AdminBusinessesPage() {
     if (!ok) return;
     setBusyId(id);
     const res = await fetch(`/api/admin/businesses/${id}`, { method: "DELETE" });
-    if (res.ok) setBusinesses((prev) => prev.filter((b) => b._id !== id));
+    if (res.ok) dropRow(id);
     setBusyId(null);
   }
 

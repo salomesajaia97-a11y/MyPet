@@ -55,13 +55,24 @@ export async function PATCH(
     delete body.userId;
     delete body.createdAt;
     delete body.updatedAt;
-    // VIP promotion (`isVip`/`vipUntil`) is admin-only here — an owner editing
-    // their own listing must not be able to grant themselves VIP. Admins keep
-    // it (this is the route the admin manager uses to toggle VIP). A real paid
-    // promotion flow would set these from a verified payment webhook, not here.
+    // The view counter is written only by the view route, which dedupes per
+    // visitor per day. Letting it through here would let any owner type in
+    // their own popularity.
+    delete body.views;
+    // VIP promotion is admin-only here — an owner editing their own listing
+    // must not be able to grant or upgrade their own promotion. Admins keep it
+    // (this is the route the admin manager uses to toggle VIP). A real paid
+    // promotion flow sets these from a verified payment webhook, not here.
+    //
+    // `vipRank`/`vipTier` matter as much as `isVip`: placement sorts on
+    // `vipRank` and only checks that `isVip` is true, so an owner who bought
+    // Standard could otherwise PATCH themselves to rank 3 and outrank every
+    // paying Ultra for free.
     if (session.user.role !== "admin") {
       delete body.isVip;
       delete body.vipUntil;
+      delete body.vipTier;
+      delete body.vipRank;
     }
 
     await connectDB();

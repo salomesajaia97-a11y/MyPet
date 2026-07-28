@@ -15,6 +15,7 @@ import Gallery from "./Gallery";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { ViewCounter } from "./ViewCounter";
 import { isVipActive } from "@/lib/marketplace/vip";
+import { formatPrice } from "@/lib/marketplace/format";
 import { formatPublishedDate, shortListingId } from "@/lib/marketplace/views";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
@@ -144,6 +145,16 @@ export default async function ListingDetailPage({
       ? `${listing.age} ${t.listings.detail.monthUnit}`
       : `${Math.floor(listing.age / 12)} ${t.listings.detail.yearUnit}`;
 
+  // Price chip on the photo — only the two priced sections have one. A mating
+  // post without a price is offered free, and a row missing one entirely (older
+  // than the create-time check) renders no chip instead of throwing.
+  const priceLabel =
+    listing.type === "buy-sell"
+      ? formatPrice(listing.price, listing.currency, { spaced: true })
+      : listing.type === "mating"
+        ? formatPrice(listing.price, null, { spaced: true })
+        : null;
+
   const url = `${SITE_URL}/listings/${id}`;
   const sectionHref = backHref[listing.type] ?? "/buy-sell";
 
@@ -248,16 +259,9 @@ export default async function ListingDetailPage({
               iconClassName="w-5 h-5"
               className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all shadow"
             />
-            {listing.type === "buy-sell" && (
+            {priceLabel && (
               <div className="absolute bottom-3 right-3 pointer-events-none bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
-                {listing.currency === "USD"
-                  ? `$${listing.price.toLocaleString()}`
-                  : `${listing.price.toLocaleString()} ₾`}
-              </div>
-            )}
-            {listing.type === "mating" && listing.price !== null && (
-              <div className="absolute bottom-3 right-3 pointer-events-none bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-base font-bold text-[#0F2830]">
-                {listing.price.toLocaleString()} ₾
+                {priceLabel}
               </div>
             )}
           </Gallery>
