@@ -38,7 +38,7 @@ export const profile = {
     viewListing: "განცხადების ნახვა",
     listingRemoved: "განცხადება წაშლილია",
     noMessages: "ჯერ არ არის შეტყობინებები",
-    olderHidden: "ნაჩვენებია ამ მიმოწერის ბოლო შეტყობინებები.",
+    loadEarlier: "წინა შეტყობინებების ჩვენება",
     inputPlaceholder: "შეტყობინება…",
     send: "გაგზავნა",
   },

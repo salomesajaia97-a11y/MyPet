@@ -6,9 +6,7 @@ import ThreadModel from "@/lib/models/Thread";
 import MessageModel from "@/lib/models/Message";
 import ListingModel from "@/lib/models/Listing";
 import { rateLimit } from "@/lib/rateLimit";
-
-/** Most recent messages returned per thread. Older ones stay in the database. */
-const MAX_MESSAGES = 200;
+import { MAX_MESSAGES, messagePage, messagePageFilter } from "@/lib/messages/paging";
 
 async function loadParticipantThread(id: string, me: string) {
   const thread = await ThreadModel.findById(id);
@@ -20,8 +18,10 @@ async function loadParticipantThread(id: string, me: string) {
 }
 
 // Messages in a thread (ascending). Marks the thread read for the caller.
+// `?before=<messageId>` reads the page just before that message, which is how
+// the chat page walks back through a long history.
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -30,6 +30,11 @@ export async function GET(
 
   const { id } = await params;
   if (!isValidObjectId(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const before = req.nextUrl.searchParams.get("before");
+  if (before && !isValidObjectId(before)) {
+    return NextResponse.json({ error: "Invalid cursor" }, { status: 400 });
+  }
 
   await connectDB();
   const { thread, error } = await loadParticipantThread(id, me);
@@ -44,16 +49,16 @@ export async function GET(
   else t.ownerReadAt = new Date();
   await t.save();
 
-  // Newest MAX_MESSAGES only, flipped back into reading order. The chat page
+  // One bounded window, flipped back into reading order. The chat page
   // re-fetches this every five seconds, so an unbounded query meant a long
   // thread re-sent its whole history twelve times a minute. One extra row is
-  // read purely to tell the client whether anything was left out.
-  const page = await MessageModel.find({ threadId: t._id })
-    .sort({ createdAt: -1 })
+  // read purely to tell the client whether anything is left behind it — which
+  // is also what drives the "load earlier messages" button.
+  const rows = await MessageModel.find(messagePageFilter(t._id, before))
+    .sort({ _id: -1 })
     .limit(MAX_MESSAGES + 1)
     .lean<{ _id: { toString(): string }; senderId: { toString(): string }; body: string; createdAt: Date }[]>();
-  const truncated = page.length > MAX_MESSAGES;
-  const messages = page.slice(0, MAX_MESSAGES).reverse();
+  const { page: messages, hasMore } = messagePage(rows);
 
   // A thread outlives its listing on purpose (the title is snapshotted), but
   // the header still offered "View listing" straight into a 404. Tell the
@@ -68,7 +73,7 @@ export async function GET(
       listingExists,
     },
     meId: me,
-    truncated,
+    hasMore,
     messages: messages.map((m) => ({
       _id: m._id.toString(),
       senderId: m.senderId.toString(),

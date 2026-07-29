@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { mergeMessages } from "@/lib/messages/paging";
 
 interface Msg {
   _id: string;
@@ -30,26 +31,49 @@ export default function ThreadPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  // The API returns only the most recent messages; say so rather than letting
-  // the history look like it starts there.
-  const [truncated, setTruncated] = useState(false);
+  // The API returns one bounded window of messages; `hasOlder` says whether
+  // there is history behind it to fetch.
+  const [hasOlder, setHasOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Set before prepending an earlier page so the scroll effect below leaves the
+  // reader where they are instead of throwing them back to the newest message.
+  const skipAutoScroll = useRef(false);
 
-  const fetchThread = useCallback(async (): Promise<
-    { thread: ThreadInfo; messages: Msg[]; truncated: boolean } | null | "error"
-  > => {
-    try {
-      const res = await fetch(`/api/messages/${id}`, { cache: "no-store" });
-      if (res.status === 404 || res.status === 403) return "error";
-      if (!res.ok) return null;
-      const d = await res.json();
-      return { thread: d.thread, messages: d.messages ?? [], truncated: !!d.truncated };
-    } catch {
-      return null;
+  const fetchThread = useCallback(
+    async (
+      before?: string
+    ): Promise<{ thread: ThreadInfo; messages: Msg[]; hasMore: boolean } | null | "error"> => {
+      try {
+        const url = before
+          ? `/api/messages/${id}?before=${encodeURIComponent(before)}`
+          : `/api/messages/${id}`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.status === 404 || res.status === 403) return "error";
+        if (!res.ok) return null;
+        const d = await res.json();
+        return { thread: d.thread, messages: d.messages ?? [], hasMore: !!d.hasMore };
+      } catch {
+        return null;
+      }
+    },
+    [id]
+  );
+
+  const loadOlder = async () => {
+    const cursor = messages[0]?._id;
+    if (!cursor || loadingOlder) return;
+    setLoadingOlder(true);
+    const d = await fetchThread(cursor);
+    if (d && d !== "error") {
+      skipAutoScroll.current = true;
+      setMessages((prev) => mergeMessages(d.messages, prev));
+      setHasOlder(d.hasMore);
     }
-  }, [id]);
+    setLoadingOlder(false);
+  };
 
   // Initial load.
   useEffect(() => {
@@ -61,7 +85,7 @@ export default function ThreadPage() {
       else if (d) {
         setThread(d.thread);
         setMessages(d.messages);
-        setTruncated(d.truncated);
+        setHasOlder(d.hasMore);
       }
       setLoading(false);
     })();
@@ -71,26 +95,34 @@ export default function ThreadPage() {
   }, [fetchThread]);
 
   // Poll for new messages every 5s. Skip once the thread is gone (404/403) so
-  // we don't hammer the API. Only replace state when the list actually changed
-  // (same last id + length) — otherwise every poll makes a new array reference
-  // and the scroll effect below yanks the user to the bottom mid-read.
+  // we don't hammer the API. The poll returns only the newest window, so merge
+  // rather than replace — a reader who loaded earlier pages must not lose them.
+  // Only replace state when the merge actually changed something (the merge is
+  // a superset of what we hold, so equal length + same last id means equal);
+  // otherwise every poll makes a new array reference and the scroll effect
+  // below yanks the user to the bottom mid-read.
   useEffect(() => {
     if (notFound) return;
     const interval = setInterval(async () => {
       const d = await fetchThread();
       if (d && d !== "error") {
-        setMessages((prev) =>
-          prev.length === d.messages.length &&
-          prev[prev.length - 1]?._id === d.messages[d.messages.length - 1]?._id
+        setMessages((prev) => {
+          const merged = mergeMessages(prev, d.messages);
+          return merged.length === prev.length &&
+            merged[merged.length - 1]?._id === prev[prev.length - 1]?._id
             ? prev
-            : d.messages
-        );
+            : merged;
+        });
       }
     }, 5000);
     return () => clearInterval(interval);
   }, [fetchThread, notFound]);
 
   useEffect(() => {
+    if (skipAutoScroll.current) {
+      skipAutoScroll.current = false;
+      return;
+    }
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -108,7 +140,7 @@ export default function ThreadPage() {
       });
       if (res.ok) {
         const d = await fetchThread();
-        if (d && d !== "error") setMessages(d.messages);
+        if (d && d !== "error") setMessages((prev) => mergeMessages(prev, d.messages));
       } else {
         setBody(text); // restore on failure
       }
@@ -153,10 +185,17 @@ export default function ThreadPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto py-4 space-y-2">
-          {truncated && (
-            <p className="text-center text-xs text-stone-400 pb-2">
-              {t.profile.messages.olderHidden}
-            </p>
+          {hasOlder && (
+            <div className="pb-2 text-center">
+              <button
+                type="button"
+                onClick={loadOlder}
+                disabled={loadingOlder}
+                className="text-xs font-semibold text-[#0E4A5C] hover:underline disabled:opacity-60"
+              >
+                {loadingOlder ? t.profile.messages.loading : t.profile.messages.loadEarlier}
+              </button>
+            </div>
           )}
           {messages.length === 0 ? (
             <p className="text-stone-400 text-sm text-center py-8">{t.profile.messages.noMessages}</p>
