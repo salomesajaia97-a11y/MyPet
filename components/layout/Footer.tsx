@@ -1,15 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Send, MessageCircle, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { SITE_EMAIL } from "@/lib/seo/metadata";
 
-// No real social accounts yet — render as inert placeholders (not `href="#"`
-// links that jump to the top of the page). Swap in real URLs when available.
-const SOCIALS = [
-  { label: "Telegram", Icon: Send },
-  { label: "Messenger", Icon: MessageCircle },
-  { label: "Email", Icon: Mail },
-];
+// One icon, and it works. This row used to hold three: inert Telegram and
+// Messenger placeholders for accounts that were never created, which read as a
+// site whose social links are broken. Add them back when the accounts exist.
 
 export async function Footer() {
   const { t } = await getServerDictionary();
@@ -82,18 +79,14 @@ export async function Footer() {
                 {l.label}
               </Link>
             ))}
-            <div className="flex items-center gap-2 mt-3">
-              {SOCIALS.map(({ label, Icon }) => (
-                <span
-                  key={label}
-                  aria-label={label}
-                  title={label}
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-stone-200 text-stone-400"
-                >
-                  <Icon className="w-[18px] h-[18px]" strokeWidth={1.75} />
-                </span>
-              ))}
-            </div>
+            <a
+              href={`mailto:${SITE_EMAIL}`}
+              aria-label={SITE_EMAIL}
+              title={SITE_EMAIL}
+              className="w-9 h-9 mt-3 flex items-center justify-center rounded-full border border-stone-200 text-stone-500 hover:border-[#0E4A5C]/40 hover:text-[#0E4A5C] transition-colors"
+            >
+              <Mail className="w-[18px] h-[18px]" strokeWidth={1.75} />
+            </a>
           </div>
         </div>
 
