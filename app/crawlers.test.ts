@@ -74,10 +74,12 @@ describe("llms.txt", () => {
 });
 
 describe("sitemap", () => {
+  // Generous timeout on purpose: sitemap() tries to reach the database and only
+  // falls back to the static list once that attempt fails, which can take
+  // several seconds. The assertion holds either way — /faq is a static route —
+  // but the default 5s timeout made this flaky.
   it("includes the FAQ among the static routes", async () => {
-    // The DB is unreachable in a unit test, so this exercises the static
-    // fallback — which is exactly the list being asserted.
     const entries = await sitemap();
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/faq`);
-  });
+  }, 30_000);
 });

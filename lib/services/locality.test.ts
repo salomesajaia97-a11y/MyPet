@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cityFromCoords, distanceKm, localityFor } from "./locality";
+import { cityByName, cityBySlug, cityFromCoords, distanceKm, localityFor, locativeKa } from "./locality";
 import { CITIES as FILTER_CITIES } from "@/lib/marketplace/filters";
 import { CITIES } from "./locality";
 
@@ -80,5 +80,69 @@ describe("city vocabulary", () => {
   it("has no duplicate entries", () => {
     const names = CITIES.map((c) => c.ka);
     expect(new Set(names).size).toBe(names.length);
+  });
+});
+
+describe("city slugs", () => {
+  it("gives every city a unique Latin slug", () => {
+    const slugs = CITIES.map((c) => c.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    for (const slug of slugs) expect(slug).toMatch(/^[a-z-]+$/);
+  });
+
+  it("resolves a slug back to its city, case-insensitively", () => {
+    expect(cityBySlug("tbilisi")?.ka).toBe("თბილისი");
+    expect(cityBySlug("  Batumi ")?.ka).toBe("ბათუმი");
+  });
+
+  it("returns null for an unknown or empty slug", () => {
+    expect(cityBySlug("paris")).toBeNull();
+    expect(cityBySlug("")).toBeNull();
+    expect(cityBySlug(undefined)).toBeNull();
+  });
+});
+
+describe("cityByName", () => {
+  it("matches a stored name in either language", () => {
+    expect(cityByName("თბილისი")?.slug).toBe("tbilisi");
+    expect(cityByName("Tbilisi")?.slug).toBe("tbilisi");
+    expect(cityByName("  kutaisi ")?.slug).toBe("kutaisi");
+  });
+
+  it("returns null for a district or anything unrecognised", () => {
+    // Stored values include districts like "ვაკე", which are not cities.
+    expect(cityByName("ვაკე")).toBeNull();
+    expect(cityByName("")).toBeNull();
+  });
+});
+
+describe("locativeKa", () => {
+  // "ვეტკლინიკები თბილისში" is the phrase people search; the nominative reads
+  // as broken Georgian and matches the query less well.
+  it("replaces the nominative -ი with -ში", () => {
+    expect(locativeKa("თბილისი")).toBe("თბილისში");
+    expect(locativeKa("ბათუმი")).toBe("ბათუმში");
+    expect(locativeKa("ქუთაისი")).toBe("ქუთაისში");
+    expect(locativeKa("რუსთავი")).toBe("რუსთავში");
+    expect(locativeKa("გორი")).toBe("გორში");
+    expect(locativeKa("ქობულეთი")).toBe("ქობულეთში");
+  });
+
+  it("just appends -ში after another vowel", () => {
+    expect(locativeKa("მცხეთა")).toBe("მცხეთაში");
+    expect(locativeKa("ახალციხე")).toBe("ახალციხეში");
+    expect(locativeKa("სტეფანწმინდა")).toBe("სტეფანწმინდაში");
+  });
+
+  it("covers every city in the table without producing a double suffix", () => {
+    for (const city of CITIES) {
+      const out = locativeKa(city.ka);
+      expect(out.endsWith("ში")).toBe(true);
+      expect(out.endsWith("შიში")).toBe(false);
+    }
+  });
+
+  it("leaves a blank value alone", () => {
+    expect(locativeKa("   ")).toBe("");
   });
 });

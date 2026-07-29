@@ -49,6 +49,21 @@ export const services: typeof ka = {
     label: "Map",
     places: "places",
   },
+  cityPages: {
+    plural: {
+      vetClinics: "Vet clinics",
+      petHotels: "Pet hotels",
+      petShops: "Pet shops",
+      petFriendly: "Pet-friendly places",
+    },
+    metaDescription:
+      "{count} {plural} {cityLocative} — addresses, phone numbers, opening hours and reviews. Find the nearest one.",
+    intro:
+      "The directory has {count} entries {cityLocative}. Open a card for the address, phone number, opening hours and reviews.",
+    otherCities: "Other cities",
+    otherServices: "Other services {cityLocative}",
+    viewAll: "All {plural} in Georgia",
+  },
   detail: {
     back: {
       vetClinics: "Vet Clinics",

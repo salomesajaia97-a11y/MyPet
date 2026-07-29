@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { ServicesSearch } from "@/components/services/ServicesSearch";
 import { ServicesFab } from "@/components/services/ServicesFab";
+import { CityLinks } from "@/components/services/CityLinks";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -64,6 +65,7 @@ export default async function PetHotelsPage() {
         </div>
         <ServicesTabs active="pet-hotels" />
         <ServicesSearch businesses={businesses} category="pet-hotels" />
+        <CityLinks category="pet-hotels" businesses={businesses} />
       </div>
       <ServicesFab />
     </div>

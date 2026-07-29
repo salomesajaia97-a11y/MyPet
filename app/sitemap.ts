@@ -3,6 +3,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { connectDB } from "@/lib/db";
 import ListingModel from "@/lib/models/Listing";
 import BusinessModel from "@/lib/models/Business";
+import { groupByCity } from "@/lib/services/cityIndex";
 
 // Static, always-indexable routes. Auth-gated areas (/admin, /profile) and
 // write flows are excluded (also blocked in robots.ts).
@@ -110,7 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             createdAt?: Date;
           }[]
         >(),
-      BusinessModel.find({ status: "approved" }, "category images updatedAt createdAt")
+      BusinessModel.find({ status: "approved" }, "category images updatedAt createdAt city lat lng")
         .sort({ createdAt: -1 })
         .limit(MAX_PER_TYPE)
         .lean<
@@ -120,6 +121,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             images?: string[];
             updatedAt?: Date;
             createdAt?: Date;
+            city?: string;
+            lat?: number;
+            lng?: number;
           }[]
         >(),
     ]);
@@ -157,7 +161,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    return [...staticEntries, ...listingEntries, ...businessEntries];
+    // City × category landing pages, discovered from the data exactly the way
+    // the pages themselves decide whether to exist — so the sitemap can never
+    // advertise a URL that 404s, or omit one that is live.
+    const cityEntries: MetadataRoute.Sitemap = [];
+    for (const category of ["vet-clinics", "pet-hotels", "pet-shops", "pet-friendly"]) {
+      const inCategory = businesses.filter((b) => b.category === category);
+      for (const { city } of groupByCity(inCategory)) {
+        cityEntries.push({
+          url: `${SITE_URL}/services/${category}/in/${city.slug}`,
+          changeFrequency: "weekly",
+          // Above an individual business: a city shortlist is what a local
+          // search is actually looking for.
+          priority: 0.8,
+        });
+      }
+    }
+
+    return [...staticEntries, ...cityEntries, ...listingEntries, ...businessEntries];
   } catch {
     return staticEntries;
   }

@@ -47,6 +47,24 @@ export const services = {
     label: "რუკა",
     places: "ადგილი",
   },
+  // City × category landing pages (/services/[category]/in/[city]).
+  // "ვეტკლინიკები თბილისში" ცალკე მოთხოვნაა — ერთი საერთო გვერდი მას ვერ
+  // დაიკავებს, ამიტომ ქალაქს თავისი გვერდი აქვს.
+  cityPages: {
+    plural: {
+      vetClinics: "ვეტკლინიკები",
+      petHotels: "ცხოველების სასტუმროები",
+      petShops: "პეტ მაღაზიები",
+      petFriendly: "Pet-Friendly ადგილები",
+    },
+    metaDescription:
+      "{count} {plural} {cityLocative} — მისამართები, ტელეფონები, სამუშაო საათები და შეფასებები. აირჩიე უახლოესი.",
+    intro:
+      "{cityLocative} კატალოგში {count} ჩანაწერია. ბარათზე დაჭერით ნახავ მისამართს, ტელეფონს, სამუშაო საათებს და შეფასებებს.",
+    otherCities: "სხვა ქალაქები",
+    otherServices: "სხვა სერვისები {cityLocative}",
+    viewAll: "ყველა {plural} საქართველოში",
+  },
   detail: {
     back: {
       vetClinics: "ვეტ კლინიკები",

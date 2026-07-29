@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ServicesTabs } from "@/components/services/ServicesTabs";
 import { ServicesSearch } from "@/components/services/ServicesSearch";
 import { ServicesFab } from "@/components/services/ServicesFab";
+import { CityLinks } from "@/components/services/CityLinks";
 import { MapPanel } from "@/components/services/MapPanel";
 import { fetchDBBusinesses } from "@/lib/fetchBusinesses";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -84,6 +85,8 @@ export default async function PetFriendlyPage() {
           {/* Right — live Leaflet map */}
           <MapPanel businesses={businesses} />
         </div>
+
+        <CityLinks category="pet-friendly" businesses={businesses} />
       </div>
       <ServicesFab />
     </div>
