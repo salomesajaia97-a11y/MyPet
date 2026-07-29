@@ -58,6 +58,8 @@ export const services = {
     openingHours: "სამუშაო საათები",
     viewOnMap: "რუკაზე ნახვა",
     pendingNotice: "მოდერაციაშია — ხილვადი მხოლოდ თქვენთვის",
+    nearbyHeading: "ახლომდებარე",
+    kmAway: "კმ",
   },
   new: {
     title: "სერვისის დამატება",

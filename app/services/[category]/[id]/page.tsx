@@ -20,6 +20,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { safeExternalUrl } from "@/lib/url";
 import { localityFor } from "@/lib/services/locality";
 import { tidyDescription } from "@/lib/services/describe";
+import { rankNearby } from "@/lib/services/nearby";
 import {
   BRAND_KEYWORDS,
   buildKeywords,
@@ -86,6 +87,30 @@ const getService = cache(async (
     return doc ? (JSON.parse(JSON.stringify(doc)) as Service) : null;
   } catch {
     return null;
+  }
+});
+
+/**
+ * Every approved business in a category, trimmed to what the nearby block
+ * needs. cache()d so the page renders one query per request even though both
+ * the block and the ranking read it.
+ */
+const getCategorySiblings = cache(async (category: string) => {
+  try {
+    await connectDB();
+    const docs = await BusinessModel.find({ category, status: "approved" })
+      .select("name city lat lng")
+      .limit(300)
+      .lean<{ _id: { toString(): string }; name: string; city?: string; lat?: number; lng?: number }[]>();
+    return docs.map((d) => ({
+      _id: d._id.toString(),
+      name: d.name,
+      city: d.city,
+      lat: d.lat,
+      lng: d.lng,
+    }));
+  } catch {
+    return [];
   }
 });
 
@@ -182,6 +207,14 @@ export default async function ServiceDetailPage({
 
   // Real ratings only: show the badge solely when genuine native reviews exist.
   const nativeCount = service.nativeRatingCount ?? 0;
+
+  // Siblings in this category, ranked by real distance where possible. The
+  // whole category is at most ~90 rows and only four fields wide, so ranking in
+  // JS is cheaper than a geo index nobody else needs.
+  const nearby = rankNearby(
+    service,
+    await getCategorySiblings(category),
+  );
 
   const pageUrl = `${SITE_URL}/services/${category}/${service._id}`;
   // Only http(s) reaches an href or the structured data.
@@ -404,6 +437,40 @@ export default async function ServiceDetailPage({
 
         {/* Reviews & ratings */}
         <ServiceReviews businessId={service._id} ownerId={service.userId} />
+
+        {/* Nearby in the same category. Useful when this entry is a stub, and
+            it is also the only thing linking these 133 pages to each other —
+            without it every business page is a leaf with nothing pointing at
+            it but its category index. */}
+        {nearby.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-lg font-bold text-[#0F2830]">
+              {t.services.detail.nearbyHeading}
+            </h2>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {nearby.map((n) => (
+                <li key={n._id}>
+                  <Link
+                    href={`/services/${category}/${n._id}`}
+                    className="block bg-white rounded-xl border border-stone-200 p-4 hover:border-[#0E4A5C]/40 transition-colors"
+                  >
+                    <p className="font-semibold text-sm text-[#0F2830]">{n.name}</p>
+                    <p className="text-xs text-stone-500 mt-1">
+                      {[
+                        localityFor(n, locale),
+                        typeof n.km === "number"
+                          ? `${n.km < 1 ? n.km.toFixed(1) : Math.round(n.km)} ${t.services.detail.kmAway}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );

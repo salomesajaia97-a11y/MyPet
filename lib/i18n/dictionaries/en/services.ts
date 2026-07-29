@@ -60,6 +60,8 @@ export const services: typeof ka = {
     openingHours: "Opening hours",
     viewOnMap: "View on map",
     pendingNotice: "Under moderation — visible only to you",
+    nearbyHeading: "Nearby",
+    kmAway: "km away",
   },
   new: {
     title: "Add a service",
