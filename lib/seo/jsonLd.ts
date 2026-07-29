@@ -1,6 +1,13 @@
 import type { Locale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/siteUrl";
-import { LOGO_SIZE, LOGO_URL, OG_IMAGE_URL, SITE_NAME, SITE_PROFILES } from "@/lib/seo/metadata";
+import {
+  LOGO_SIZE,
+  LOGO_URL,
+  OG_IMAGE_URL,
+  SITE_EMAIL,
+  SITE_NAME,
+  SITE_PROFILES,
+} from "@/lib/seo/metadata";
 
 /** Stable @id anchors so nodes can reference each other across pages. */
 export const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -38,13 +45,15 @@ export function organizationJsonLd(description: string): Json {
       caption: SITE_NAME,
     },
     image: OG_IMAGE_URL,
-    sameAs: SITE_PROFILES,
-    email: "info@mypet.ge",
+    // Omitted entirely while no profile is claimed — `compact()` strips empty
+    // strings but would happily ship an empty array.
+    ...(SITE_PROFILES.length ? { sameAs: SITE_PROFILES } : {}),
+    email: SITE_EMAIL,
     areaServed: { "@type": "Country", name: "Georgia" },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "info@mypet.ge",
+      email: SITE_EMAIL,
       availableLanguage: ["ka", "en"],
     },
   };

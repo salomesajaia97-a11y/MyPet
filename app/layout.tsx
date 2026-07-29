@@ -11,7 +11,7 @@ import { applyOverrides } from "@/lib/i18n/overrides";
 import { SITE_URL } from "@/lib/siteUrl";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_KEYWORDS } from "@/lib/seo/keywords";
-import { SITE_NAME, SITE_TITLE_TEMPLATE, siteVerification, TWITTER_HANDLE } from "@/lib/seo/metadata";
+import { SITE_NAME, SITE_TITLE_TEMPLATE, siteVerification } from "@/lib/seo/metadata";
 import { graph, organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import "./globals.css";
 
@@ -68,9 +68,8 @@ export async function generateMetadata(): Promise<Metadata> {
       // og:image comes from app/opengraph-image.tsx (file convention).
     },
     twitter: {
+      // See lib/seo/metadata.ts — no handle is claimed, so none is named.
       card: "summary_large_image",
-      site: TWITTER_HANDLE,
-      creator: TWITTER_HANDLE,
       title: t.common.metaTitle,
       description: t.common.metaDescription,
     },

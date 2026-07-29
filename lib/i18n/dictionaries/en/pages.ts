@@ -15,8 +15,8 @@ export const pages: typeof ka = {
   contact: {
     metaDescription: "Get in touch — the MyPet.ge team is ready to help you.",
     title: "Contact",
-    subtitle:
-      "Have a question or a suggestion? Reach out to us on any channel.",
+    subtitle: "Have a question or a suggestion? Send us an email.",
+    faqHint: "Many questions are already answered here:",
   },
   faq: {
     metaDescription:

@@ -67,14 +67,15 @@ the route.
   place), but the vet clinics and shops in the directory usually have one. A
   listed business linking back to its MyPet.ge page is the single strongest
   signal available to a young site.
-- **Real social profiles.** `lib/seo/metadata.ts` ships `SITE_PROFILES` and
-  `TWITTER_HANDLE` pointing at `t.me/mypetge` and `@mypetge`, which are not
-  claimed yet. Either register them or remove them — a `sameAs` pointing at
-  nothing is a dead end for the knowledge graph.
-- **The contact email.** Structured data and `/contact` both advertise
-  `info@mypet.ge`. That is a different domain from the one the site runs on. Use
-  an address that actually receives mail (`info@mypetge.online`), or Google's
-  entity resolution and any human trying to reach you both fail.
+- **Real social profiles.** `SITE_PROFILES` in `lib/seo/metadata.ts` is now
+  empty and no `twitter:site` is emitted, because `t.me/mypetge` and `@mypetge`
+  were never claimed and a `sameAs` pointing at nothing is a dead end for the
+  knowledge graph. Register the accounts and add them back — a real, active
+  profile is one of the few `sameAs` signals a young site can offer.
+- **The contact email** is `mypetge.online@gmail.com` — the address that
+  actually receives mail. A branded address on the site's own domain
+  (`info@mypetge.online`) would read better and is worth setting up later, but a
+  working Gmail beats a branded address nobody reads.
 - **Answer real questions in text.** `/faq` exists and carries `FAQPage`
   structured data; adding to it is the cheapest way to rank for long-tail
   queries and to give an answer engine something quotable. Guides ("what a

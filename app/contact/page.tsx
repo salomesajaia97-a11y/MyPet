@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, Send, MessageCircle } from "lucide-react";
+import { Mail } from "lucide-react";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { pageMetadata, SITE_EMAIL } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd, graph, webPageJsonLd } from "@/lib/seo/jsonLd";
 import { BRAND_KEYWORDS, buildKeywords } from "@/lib/seo/keywords";
 
@@ -19,24 +19,17 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
+// Email only, deliberately. The Telegram and Messenger cards that used to sit
+// here advertised accounts that do not exist — @mypetge is unclaimed and the
+// Messenger card was an `href="#"` that scrolled to the top. A contact channel
+// nobody answers is worse than one channel that works, and a dead handle in
+// `sameAs` is a dead end for Google's entity graph too.
 const CHANNELS = [
   {
     label: "Email",
-    value: "info@mypet.ge",
-    href: "mailto:info@mypet.ge",
+    value: SITE_EMAIL,
+    href: `mailto:${SITE_EMAIL}`,
     Icon: Mail,
-  },
-  {
-    label: "Telegram",
-    value: "@mypetge",
-    href: "https://t.me/mypetge",
-    Icon: Send,
-  },
-  {
-    label: "Messenger",
-    value: "MyPet.ge",
-    href: "#",
-    Icon: MessageCircle,
   },
 ];
 
@@ -67,7 +60,7 @@ export default async function ContactPage() {
           {t.pages.contact.subtitle}
         </p>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:max-w-sm">
           {CHANNELS.map(({ label, value, href, Icon }) => (
             <Link
               key={label}
@@ -84,6 +77,16 @@ export default async function ContactPage() {
             </Link>
           ))}
         </div>
+
+        {/* Most questions that reach an inbox are already answered on /faq, and
+            the link is worth having for its own sake — it is the one page here
+            written to be read by a search engine. */}
+        <p className="text-sm text-stone-500 mt-8">
+          {t.pages.contact.faqHint}{" "}
+          <Link href="/faq" className="font-semibold text-[#0E4A5C] hover:underline">
+            {t.footer.faq}
+          </Link>
+        </p>
       </div>
     </div>
   );
