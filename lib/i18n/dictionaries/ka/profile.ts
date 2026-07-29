@@ -36,6 +36,7 @@ export const profile = {
     hour: "სთ",
     notFound: "საუბარი ვერ მოიძებნა",
     viewListing: "განცხადების ნახვა",
+    listingRemoved: "განცხადება წაშლილია",
     noMessages: "ჯერ არ არის შეტყობინებები",
     olderHidden: "ნაჩვენებია ამ მიმოწერის ბოლო შეტყობინებები.",
     inputPlaceholder: "შეტყობინება…",

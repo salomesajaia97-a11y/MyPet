@@ -38,6 +38,7 @@ export const profile: typeof ka = {
     hour: "hr",
     notFound: "Conversation not found",
     viewListing: "View listing",
+    listingRemoved: "This listing has been removed",
     noMessages: "No messages yet",
     olderHidden: "Showing the most recent messages in this conversation.",
     inputPlaceholder: "Message…",

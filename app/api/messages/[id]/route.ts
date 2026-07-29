@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import ThreadModel from "@/lib/models/Thread";
 import MessageModel from "@/lib/models/Message";
+import ListingModel from "@/lib/models/Listing";
 import { rateLimit } from "@/lib/rateLimit";
 
 /** Most recent messages returned per thread. Older ones stay in the database. */
@@ -54,11 +55,17 @@ export async function GET(
   const truncated = page.length > MAX_MESSAGES;
   const messages = page.slice(0, MAX_MESSAGES).reverse();
 
+  // A thread outlives its listing on purpose (the title is snapshotted), but
+  // the header still offered "View listing" straight into a 404. Tell the
+  // client whether that link leads anywhere.
+  const listingExists = !!(await ListingModel.exists({ _id: t.listingId }));
+
   return NextResponse.json({
     thread: {
       _id: t._id.toString(),
       listingId: t.listingId.toString(),
       listingTitle: t.listingTitle,
+      listingExists,
     },
     meId: me,
     truncated,

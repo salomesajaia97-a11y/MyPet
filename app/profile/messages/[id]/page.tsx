@@ -16,6 +16,9 @@ interface ThreadInfo {
   _id: string;
   listingId: string;
   listingTitle: string;
+  // False once the listing has been deleted — the conversation stays, the link
+  // to the listing does not.
+  listingExists: boolean;
 }
 
 export default function ThreadPage() {
@@ -138,9 +141,13 @@ export default function ThreadPage() {
           </Link>
           <div className="min-w-0">
             <p className="font-semibold text-[#0F2830] truncate">{thread.listingTitle}</p>
-            <Link href={`/listings/${thread.listingId}`} className="text-xs text-[#0E4A5C] hover:underline">
-              {t.profile.messages.viewListing}
-            </Link>
+            {thread.listingExists ? (
+              <Link href={`/listings/${thread.listingId}`} className="text-xs text-[#0E4A5C] hover:underline">
+                {t.profile.messages.viewListing}
+              </Link>
+            ) : (
+              <p className="text-xs text-stone-400">{t.profile.messages.listingRemoved}</p>
+            )}
           </div>
         </div>
 
