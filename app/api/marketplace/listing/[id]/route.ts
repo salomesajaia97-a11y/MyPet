@@ -5,6 +5,7 @@ import ListingModel from "@/lib/models/Listing";
 import { auth } from "@/auth";
 import { handleMutationError } from "@/lib/api/errors";
 import { logAdminAction } from "@/lib/admin/guard";
+import { deleteListingCascade } from "@/lib/services/deleteListing";
 
 export async function GET(
   _req: NextRequest,
@@ -132,7 +133,7 @@ export async function DELETE(
     }
 
     const label = listing.breed ?? "a listing";
-    await listing.deleteOne();
+    await deleteListingCascade(id);
     if (!isOwner && session.user.role === "admin") {
       await logAdminAction(
         { id: session.user.id, email: session.user.email ?? null },

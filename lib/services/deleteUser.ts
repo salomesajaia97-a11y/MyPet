@@ -6,6 +6,7 @@ import ThreadModel from "@/lib/models/Thread";
 import MessageModel from "@/lib/models/Message";
 import NotificationModel from "@/lib/models/Notification";
 import { recomputeBusinessRating } from "@/lib/recomputeRating";
+import { pullListingsFromFavorites } from "@/lib/services/deleteListing";
 
 /**
  * Delete a user and the content that cannot survive without them.
@@ -61,6 +62,9 @@ export async function deleteUserCascade(id: string): Promise<boolean> {
       .lean<{ _id: unknown }[]>();
     await MessageModel.deleteMany({ threadId: { $in: threads.map((t) => t._id) } });
     await ThreadModel.deleteMany({ listingId: { $in: listingIds } });
+    // Other people may have favourited these; clear the refs before the
+    // listings go, same as a single-listing delete does.
+    await pullListingsFromFavorites(listingIds);
     await ListingModel.deleteMany({ _id: { $in: listingIds } });
   }
 
