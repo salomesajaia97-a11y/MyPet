@@ -3,8 +3,8 @@ import type { Locale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/siteUrl";
 
 /** Brand strings reused by metadata and structured data. */
-export const SITE_NAME = "MyPet.ge";
-export const SITE_TITLE_TEMPLATE = "%s · MyPet.ge";
+export const SITE_NAME = "MyPetge.online";
+export const SITE_TITLE_TEMPLATE = "%s · MyPetge.online";
 
 /**
  * The address that actually receives mail.
@@ -52,7 +52,7 @@ const DEFAULT_OG_IMAGE = {
   url: OG_IMAGE_URL,
   width: 1200,
   height: 630,
-  alt: "MyPet.ge — pet listings and services in Georgia",
+  alt: "MyPetge.online — pet listings and services in Georgia",
 };
 
 /**
@@ -102,9 +102,9 @@ export interface PageMetadataInput {
   /** Set for pages that must never enter the index (e.g. a missing record). */
   noIndex?: boolean;
   /**
-   * Skip the root's "%s · MyPet.ge" title template. Only the homepage needs
+   * Skip the root's "%s · MyPetge.online" title template. Only the homepage needs
    * this — its title already leads with the brand, so the template would
-   * render "MyPet.ge — … · MyPet.ge".
+   * render "MyPetge.online — … · MyPetge.online".
    */
   absoluteTitle?: boolean;
 }

@@ -59,7 +59,7 @@ describe("llms.txt", () => {
     expect(res.headers.get("Content-Type")).toBe("text/plain; charset=utf-8");
 
     const body = await res.text();
-    expect(body).toContain("MyPet.ge");
+    expect(body).toContain("MyPetge.online");
     for (const path of ["/buy-sell", "/adoption", "/mating", "/lost-found", "/services"]) {
       expect(body).toContain(`${SITE_URL}${path}`);
     }

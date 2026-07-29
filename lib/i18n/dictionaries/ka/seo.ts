@@ -3,7 +3,7 @@
  * section page. Kept apart from `pages` (legal/static copy) because these
  * strings are tuned for SERP snippets, not for on-page reading.
  *
- * Titles are rendered through the root template ("%s · MyPet.ge"), so they
+ * Titles are rendered through the root template ("%s · MyPetge.online"), so they
  * must stay short enough that the brand suffix still fits in ~60 characters.
  */
 export const seo = {
@@ -60,7 +60,7 @@ export const seo = {
   vip: {
     title: "VIP განცხადებები და ფასები",
     description:
-      "გაზარდე შენი განცხადების ხილვადობა MyPet.ge-ზე — VIP პაკეტები, ფასები, ვადები და დაბრუნების პირობები.",
+      "გაზარდე შენი განცხადების ხილვადობა MyPetge.online-ზე — VIP პაკეტები, ფასები, ვადები და დაბრუნების პირობები.",
   },
   /** Appended to the title on page 2+ of a browse route. */
   pageWord: "გვერდი",

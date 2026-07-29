@@ -9,7 +9,7 @@ import { OG_LOGO_DATA_URI } from "./og-logo";
  * Deliberately Latin-only text: the generator falls back to a bundled font
  * that has no Mkhedruli glyphs, and Georgian would render as empty boxes.
  */
-export const alt = "MyPet.ge — pet listings and services in Georgia";
+export const alt = "MyPetge.online — pet listings and services in Georgia";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -47,8 +47,10 @@ export default async function OpengraphImage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={OG_LOGO_DATA_URI} width={92} height={92} alt="" />
           </div>
+          {/* Wordmark only — the full domain is on the bottom line, and
+              printing "MyPetge.online" twice on one card reads as a mistake. */}
           <div style={{ display: "flex", fontSize: "56px", fontWeight: 700 }}>
-            MyPet.ge
+            MyPet
           </div>
         </div>
 

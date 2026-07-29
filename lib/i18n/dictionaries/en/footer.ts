@@ -8,5 +8,5 @@ export const footer: typeof ka = {
   contact: "Contact",
   terms: "Terms & Conditions",
   privacy: "Privacy",
-  copyright: "© 2026 MyPet.ge — All rights reserved",
+  copyright: "© 2026 MyPetge.online — All rights reserved",
 };

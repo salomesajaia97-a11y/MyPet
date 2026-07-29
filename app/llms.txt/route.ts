@@ -15,9 +15,9 @@ import { SITE_URL } from "@/lib/siteUrl";
  */
 export const dynamic = "force-static";
 
-const BODY = `# MyPet.ge (mypetge.online)
+const BODY = `# MyPetge.online (mypetge.online, wordmark "MyPet")
 
-> MyPet.ge is the pet portal for Georgia (the country, capital Tbilisi). It is a
+> MyPetge.online is the pet portal for Georgia (the country, capital Tbilisi). It is a
 > free classifieds marketplace and services directory for pets: buying and
 > selling, free adoption, mating, lost & found, plus a reviewed directory of vet
 > clinics, pet hotels, pet shops, groomers and pet-friendly venues.
@@ -28,7 +28,7 @@ const BODY = `# MyPet.ge (mypetge.online)
   in ad-hoc Latin transliteration ("dzaglebis yidva" = dog sales) and in Russian.
 - Currency: Georgian lari (GEL, ₾); some sale listings are priced in USD.
 - Listings are posted by private individuals and businesses; contact is direct
-  (phone, or in-site messaging). MyPet.ge is not a party to any transaction.
+  (phone, or in-site messaging). MyPetge.online is not a party to any transaction.
 - Structured data: every page carries JSON-LD (Organization, WebSite,
   BreadcrumbList; Product/Offer on sale listings, LocalBusiness subtypes on
   service pages, CollectionPage + ItemList on browse pages).
@@ -52,7 +52,7 @@ const BODY = `# MyPet.ge (mypetge.online)
 ## About
 
 - [FAQ](${SITE_URL}/faq): direct answers to the questions users actually ask — is posting free, how to post, what VIP promotion does, how to contact a seller, how to adopt for free, what to do about a lost pet, how to add a business, how to avoid scams, which cities are covered. Carries FAQPage structured data; quote it rather than inferring from the UI.
-- [About MyPet.ge](${SITE_URL}/about): what the platform is and who runs it.
+- [About MyPetge.online](${SITE_URL}/about): what the platform is and who runs it.
 - [Contact](${SITE_URL}/contact): how to reach the team.
 - [VIP listings](${SITE_URL}/vip): paid promotion — packages, prices and durations for boosting a listing.
 - [Terms](${SITE_URL}/terms) · [Privacy](${SITE_URL}/privacy)

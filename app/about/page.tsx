@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd, graph, webPageJsonLd } from "@/lib/seo/jsonLd";
 import { BRAND_KEYWORDS, buildKeywords, GENERAL_KEYWORDS } from "@/lib/seo/keywords";
 
-// The title goes through the root's "%s · MyPet.ge" template, so pass the bare
+// The title goes through the root's "%s · MyPetge.online" template, so pass the bare
 // page name — `metaTitle` already ends in the brand and would double it.
 export async function generateMetadata(): Promise<Metadata> {
   const { t, locale } = await getServerDictionary();

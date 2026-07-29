@@ -1,5 +1,10 @@
 /**
- * Keyword corpus for MyPet.ge (mypetge.online).
+ * Keyword corpus for MyPetge.online.
+ *
+ * `mypet.ge` and `mypet ge` stay in the brand group deliberately: the site was
+ * branded that way, people will keep typing it, and mypet.ge is a domain owned
+ * by someone else — so ranking for the query is the only way to catch that
+ * traffic.
  *
  * Georgian users type the same query four different ways: in Mkhedruli, in
  * ad-hoc Latin transliteration (`dzaglebis yidva`), with the common typos of

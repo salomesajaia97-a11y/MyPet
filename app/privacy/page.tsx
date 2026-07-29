@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd, graph, webPageJsonLd } from "@/lib/seo/jsonLd";
 import { BRAND_KEYWORDS, buildKeywords } from "@/lib/seo/keywords";
 
-// Bare page name: the root's "%s · MyPet.ge" template adds the brand.
+// Bare page name: the root's "%s · MyPetge.online" template adds the brand.
 export async function generateMetadata(): Promise<Metadata> {
   const { t, locale } = await getServerDictionary();
   return pageMetadata({

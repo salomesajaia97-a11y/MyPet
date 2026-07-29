@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t.common.metaDescription,
     path: "/",
     keywords: SITE_KEYWORDS,
-    // metaTitle already opens with "MyPet.ge —"; the template would repeat it.
+    // metaTitle already opens with "MyPetge.online —"; the template would repeat it.
     absoluteTitle: true,
   });
 }

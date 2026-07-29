@@ -33,7 +33,7 @@ const PRIVATE_ONLY = ["/admin", "/profile", "/api"];
  * here is not the same as consent: several of these (Google-Extended,
  * Applebot-Extended) are *opt-out* tokens that only ever appear in a
  * disallow, and publishers routinely block the rest by default. Naming them
- * with an explicit `Allow` is how we state that MyPet.ge wants to be readable
+ * with an explicit `Allow` is how we state that MyPetge.online wants to be readable
  * by AI answer engines — being cited in an AI answer is the whole point of a
  * classifieds portal in a market this small.
  *

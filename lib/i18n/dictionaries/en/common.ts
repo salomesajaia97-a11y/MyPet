@@ -5,7 +5,7 @@ export const common: typeof ka = {
   brandSuffix: ".ge",
   tagline: "Buy, adopt, and services — all in one place",
   skipToContent: "Skip to main content",
-  metaTitle: "MyPet.ge — Pet Listings, Adoption & Services in Georgia",
+  metaTitle: "MyPetge.online — Pet Listings, Adoption & Services in Georgia",
   metaDescription:
     "Georgia's pet portal — buy and sell dogs and cats, free adoption, mating, lost and found pets, vet clinics, pet hotels and pet-friendly places in Tbilisi.",
   categories: {

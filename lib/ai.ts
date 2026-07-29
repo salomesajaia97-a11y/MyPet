@@ -67,7 +67,7 @@ async function openrouterChat(
           "Content-Type": "application/json",
           // Optional attribution headers OpenRouter uses for its dashboard/rankings.
           "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://my-pet-self.vercel.app",
-          "X-Title": "MyPet.ge",
+          "X-Title": "MyPetge.online",
         },
         body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature: 0 }),
       });
@@ -125,7 +125,7 @@ export interface SearchFilters {
 
 const SPECIES_SLUGS = SPECIES.map((s) => s.slug) as readonly string[];
 
-const SYSTEM = `You convert a natural-language pet-marketplace search (usually Georgian, sometimes English) into structured filters for MyPet.ge.
+const SYSTEM = `You convert a natural-language pet-marketplace search (usually Georgian, sometimes English) into structured filters for MyPetge.online.
 
 Sections (field "type"):
 - "buy-sell": buying/selling a pet (ყიდვა, გაყიდვა, ვყიდი, ვიყიდი).

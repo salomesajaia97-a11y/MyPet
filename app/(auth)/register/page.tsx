@@ -125,7 +125,7 @@ export default function RegisterPage() {
                 <Image src="/logo.png" alt="" width={32} height={32} className="w-8 h-8" />
               </div>
               <span className="text-lg font-black tracking-tight">
-                MyPet<span className="text-white/60">.ge</span>
+                MyPet<span className="text-white/60">ge.online</span>
               </span>
             </div>
 

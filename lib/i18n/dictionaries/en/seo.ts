@@ -24,7 +24,7 @@ export const seo: typeof ka = {
   lostFoundMatch: {
     title: "Photo Search for Lost Pets",
     description:
-      "Upload a photo and let AI compare it against every lost and found pet listing on MyPet.ge.",
+      "Upload a photo and let AI compare it against every lost and found pet listing on MyPetge.online.",
   },
   services: {
     title: "Pet Services in Georgia",
@@ -54,7 +54,7 @@ export const seo: typeof ka = {
   vip: {
     title: "VIP Listings & Pricing",
     description:
-      "Boost your listing's visibility on MyPet.ge — VIP packages, prices, durations and refund terms.",
+      "Boost your listing's visibility on MyPetge.online — VIP packages, prices, durations and refund terms.",
   },
   pageWord: "Page",
   breadcrumbs: {

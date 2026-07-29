@@ -1,4 +1,4 @@
-# Getting MyPet.ge into Google (and the AI answer engines)
+# Getting MyPetge.online into Google (and the AI answer engines)
 
 Everything on the code side is done: per-page metadata, canonical URLs, a
 DB-driven `sitemap.xml`, `robots.txt` that explicitly allows the AI crawlers,
@@ -63,9 +63,9 @@ the route.
 
 ## 4. What is still worth doing (not code)
 
-- **Google Business Profile** is not applicable (MyPet.ge is not a physical
+- **Google Business Profile** is not applicable (MyPetge.online is not a physical
   place), but the vet clinics and shops in the directory usually have one. A
-  listed business linking back to its MyPet.ge page is the single strongest
+  listed business linking back to its MyPetge.online page is the single strongest
   signal available to a young site.
 - **Real social profiles.** `SITE_PROFILES` in `lib/seo/metadata.ts` is now
   empty and no `twitter:site` is emitted, because `t.me/mypetge` and `@mypetge`

@@ -83,7 +83,7 @@ describe("pageMetadata", () => {
     expect(meta.twitter).toMatchObject({ images: [`${SITE_URL}/opengraph-image`] });
   });
 
-  // The root layout applies a "%s · MyPet.ge" template to any plain-string
+  // The root layout applies a "%s · MyPetge.online" template to any plain-string
   // title. The homepage title already opens with the brand.
   it("passes the title through the template by default", () => {
     const meta = pageMetadata({ locale: "en", title: "About Us", description: "D", path: "/about" });
@@ -93,14 +93,14 @@ describe("pageMetadata", () => {
   it("can opt out of the title template", () => {
     const meta = pageMetadata({
       locale: "en",
-      title: "MyPet.ge — Pet Listings",
+      title: "MyPetge.online — Pet Listings",
       description: "D",
       path: "/",
       absoluteTitle: true,
     });
-    expect(meta.title).toEqual({ absolute: "MyPet.ge — Pet Listings" });
+    expect(meta.title).toEqual({ absolute: "MyPetge.online — Pet Listings" });
     // og:title stays the plain string — the template is a <title> concern.
-    expect(meta.openGraph?.title).toBe("MyPet.ge — Pet Listings");
+    expect(meta.openGraph?.title).toBe("MyPetge.online — Pet Listings");
   });
 
   it("uses the page's own images when it has them", () => {
@@ -154,7 +154,7 @@ describe("structured data", () => {
   });
 
   it("points the site search action at a real results URL", () => {
-    const site = websiteJsonLd("ka", "MyPet.ge", "D") as Record<string, unknown>;
+    const site = websiteJsonLd("ka", "MyPetge.online", "D") as Record<string, unknown>;
     const action = site.potentialAction as Record<string, Record<string, string>>;
     expect(action.target.urlTemplate).toBe(`${SITE_URL}/buy-sell?q={search_term_string}`);
   });

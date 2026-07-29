@@ -256,7 +256,10 @@ export function Navbar() {
           />
           <span className="font-black text-base sm:text-lg tracking-tight">
             <span className="text-[#0E4A5C]">MyPet</span>
-            <span className="text-stone-400 font-light">.ge</span>
+            {/* The suffix is the real domain. It used to read ".ge", which is a
+                domain someone else owns — anyone who read the wordmark and
+                typed it landed on a stranger's page. */}
+            <span className="text-stone-400 font-light">ge.online</span>
           </span>
         </Link>
 

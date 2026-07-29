@@ -5,7 +5,7 @@ export const common = {
   skipToContent: "მთავარ კონტენტზე გადასვლა",
   // Homepage <title> (used as-is, the brand template is not applied to it) and
   // the SERP snippet — both front-loaded with the queries we rank for.
-  metaTitle: "MyPet.ge — ცხოველების განცხადებები, ყიდვა, გაჩუქება და სერვისები",
+  metaTitle: "MyPetge.online — ცხოველების განცხადებები, ყიდვა, გაჩუქება და სერვისები",
   metaDescription:
     "შინაური ცხოველების პორტალი საქართველოში — ძაღლების და კატების ყიდვა-გაყიდვა, გაჩუქება უფასოდ, შეჯვარება, დაკარგული და ნაპოვნი ცხოველები, ვეტკლინიკები და სასტუმროები.",
   // Shared marketplace / service category labels (reused by navbar + footer).

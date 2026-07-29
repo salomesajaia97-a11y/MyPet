@@ -34,7 +34,11 @@ export function organizationJsonLd(description: string): Json {
     "@type": "Organization",
     "@id": ORGANIZATION_ID,
     name: SITE_NAME,
-    alternateName: ["MyPet", "MyPet Georgia", "მაიფეთი"],
+    // "MyPet.ge" stays listed: the site was branded that way, and the name is
+    // still what people say and type. It is only a name here, not a URL — the
+    // domain of that name belongs to someone else, which is why the site itself
+    // is now called MyPetge.online.
+    alternateName: ["MyPet", "MyPet.ge", "MyPet Georgia", "მაიფეთი"],
     url: abs("/"),
     description,
     logo: {
@@ -70,7 +74,7 @@ export function websiteJsonLd(locale: Locale, name: string, description: string)
     "@id": WEBSITE_ID,
     url: abs("/"),
     name,
-    alternateName: ["MyPet.ge", "mypetge", "mypetge.online"],
+    alternateName: ["MyPet", "MyPet.ge", "mypetge", "mypetge.online"],
     description,
     inLanguage: locale === "en" ? "en" : "ka",
     publisher: { "@id": ORGANIZATION_ID },
@@ -206,7 +210,7 @@ export function collectionPageJsonLd({
  * FAQPage — a list of questions with their answers.
  *
  * The one schema type that pays off twice: Google can render it as an expandable
- * result, and an AI answer engine looking for "does MyPet.ge charge for
+ * result, and an AI answer engine looking for "does MyPetge.online charge for
  * listings" gets a verbatim answer it can quote instead of inferring one from
  * the UI. `acceptedAnswer.text` is allowed to contain the answer as plain text,
  * which is what we store in the dictionary.

@@ -3,31 +3,31 @@ import type { pages as ka } from "../ka/pages";
 export const pages: typeof ka = {
   about: {
     metaDescription:
-      "MyPet.ge — buying, adopting, and services for pets, all in one place.",
+      "MyPetge.online — buying, adopting, and services for pets, all in one place.",
     title: "About Us",
     subtitle: "Buying, adopting, and services for pets — all in one place.",
     paragraphs: [
-      "MyPet.ge is Georgia's pet platform, where buying and selling, adoption, mating, lost-and-found listings, as well as vet clinics, hotels, and other services all come together in one space.",
+      "MyPetge.online is Georgia's pet platform, where buying and selling, adoption, mating, lost-and-found listings, as well as vet clinics, hotels, and other services all come together in one space.",
       "Our mission is to help owners find their four-legged friend and receive the best service easily, quickly, and safely.",
       "The platform is constantly evolving — we add new services and features so that every animal stays protected and well cared for.",
     ],
   },
   contact: {
-    metaDescription: "Get in touch — the MyPet.ge team is ready to help you.",
+    metaDescription: "Get in touch — the MyPetge.online team is ready to help you.",
     title: "Contact",
     subtitle: "Have a question or a suggestion? Send us an email.",
     faqHint: "Many questions are already answered here:",
   },
   faq: {
     metaDescription:
-      "How to post a listing, what it costs, how VIP promotion works and how the lost-pet photo search works — answers to common questions about MyPet.ge.",
+      "How to post a listing, what it costs, how VIP promotion works and how the lost-pet photo search works — answers to common questions about MyPetge.online.",
     title: "Frequently Asked Questions",
-    subtitle: "Short answers on how MyPet.ge works.",
+    subtitle: "Short answers on how MyPetge.online works.",
     moreHelp: "Didn't find your answer?",
     items: [
       {
         q: "Does posting a listing cost anything?",
-        a: "No. Posting a pet for sale, for free adoption, for mating, or as lost and found is free on MyPet.ge. Only VIP promotion is paid, and it is entirely optional.",
+        a: "No. Posting a pet for sale, for free adoption, for mating, or as lost and found is free on MyPetge.online. Only VIP promotion is paid, and it is entirely optional.",
       },
       {
         q: "How do I post a listing?",
@@ -62,7 +62,7 @@ export const pages: typeof ka = {
         a: "Meet in person and see the animal before paying, never send money up front to someone you don't know, ask for the vaccination card or passport, and tell us if something looks wrong — listings that break the rules are removed.",
       },
       {
-        q: "Which cities in Georgia does MyPet.ge cover?",
+        q: "Which cities in Georgia does MyPetge.online cover?",
         a: "The whole country. Most listings are in Tbilisi, followed by Batumi, Kutaisi, Rustavi, Gori and Zugdidi, and you can filter by city when searching.",
       },
       {
@@ -72,13 +72,13 @@ export const pages: typeof ka = {
     ],
   },
   terms: {
-    metaDescription: "MyPet.ge's terms and conditions of service.",
+    metaDescription: "MyPetge.online's terms and conditions of service.",
     title: "Terms & Conditions",
     lastUpdated: "Last updated: 2026",
     sections: [
       {
         title: "1. General Provisions",
-        body: "By using MyPet.ge you agree to these terms and conditions. If you do not agree, please do not use the platform.",
+        body: "By using MyPetge.online you agree to these terms and conditions. If you do not agree, please do not use the platform.",
       },
       {
         title: "2. User Obligations",
@@ -90,7 +90,7 @@ export const pages: typeof ka = {
       },
       {
         title: "4. Liability",
-        body: "MyPet.ge is a platform for posting listings and is not a party to the transactions concluded between users.",
+        body: "MyPetge.online is a platform for posting listings and is not a party to the transactions concluded between users.",
       },
       {
         title: "5. Changes",
@@ -99,7 +99,7 @@ export const pages: typeof ka = {
     ],
   },
   privacy: {
-    metaDescription: "MyPet.ge's privacy policy.",
+    metaDescription: "MyPetge.online's privacy policy.",
     title: "Privacy",
     lastUpdated: "Last updated: 2026",
     sections: [

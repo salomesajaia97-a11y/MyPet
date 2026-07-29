@@ -44,7 +44,7 @@ export async function Footer() {
               <Image src="/logo.png" alt="" width={36} height={36} className="w-9 h-9" />
               <span className="font-black text-lg tracking-tight">
                 <span className="text-[#0E4A5C]">MyPet</span>
-                <span className="text-stone-400 font-light">.ge</span>
+                <span className="text-stone-400 font-light">ge.online</span>
               </span>
             </Link>
             <p className="text-sm text-stone-500 mt-3 leading-relaxed">

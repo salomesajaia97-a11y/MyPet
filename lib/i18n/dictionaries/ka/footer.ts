@@ -6,5 +6,5 @@ export const footer = {
   contact: "კონტაქტი",
   terms: "წესები და პირობები",
   privacy: "კონფიდენციალურობა",
-  copyright: "© 2026 MyPet.ge — ყველა უფლება დაცულია",
+  copyright: "© 2026 MyPetge.online — ყველა უფლება დაცულია",
 };
