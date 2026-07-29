@@ -9,34 +9,31 @@ runbook.
 Canonical host is **https://www.mypetge.online** (the apex 308s to `www`).
 Always register the `www` host, or use the Domain property (see below).
 
-## 1. Google Search Console (do this first)
+## 1. Google Search Console — verified
 
-1. Open https://search.google.com/search-console and add a property.
-   - **Domain** property (`mypetge.online`) is better — it covers both hosts and
-     `http`/`https` — but it can only be verified with a DNS TXT record, which
-     you add wherever the domain is registered.
-   - **URL prefix** property (`https://www.mypetge.online/`) can be verified with
-     the HTML meta tag, which is what step 2 wires up.
-2. If you chose the meta tag, copy just the `content="..."` value.
-3. Set it in Vercel production:
+**Done.** The property is a **Domain** property for `mypetge.online`, verified by
+DNS record at the registrar. That is the best of the available options: it covers
+`www` and the apex, `http` and `https`, and it does not depend on anything the
+app serves, so no deploy can break it.
 
-   ```bash
-   printf '<the token>' | vercel env add GOOGLE_SITE_VERIFICATION production \
-     --scope salomesajaia97-a11y-d704ebf2
-   ```
+No verification meta tag is needed, and `GOOGLE_SITE_VERIFICATION` is therefore
+unset. `siteVerification()` in `lib/seo/metadata.ts` stays wired as a fallback in
+case a second (URL-prefix) property is ever added — it emits nothing while the
+variable is absent. Do not use the HTML-file method: that file lives outside the
+app and does not survive a redeploy.
 
-   Then push any commit (or redeploy) so the tag ships, and press Verify.
-   The tag is emitted by `siteVerification()` in `lib/seo/metadata.ts`; it only
-   appears when the variable is set.
-4. Once verified, in Search Console:
-   - **Sitemaps** → submit `sitemap.xml`.
-   - **URL inspection** → paste the homepage → *Request indexing*. Repeat for a
-     couple of section pages (`/buy-sell`, `/services/vet-clinics`). This is the
-     fastest way to get a brand-new site its first crawl.
-   - Check **Pages** a few days later for anything excluded.
+What is left in the Search Console UI, and only there:
 
-Do not use the HTML-file verification method: the file lives outside the app and
-does not survive a redeploy.
+- **Sitemaps** → submit `sitemap.xml`. Verification alone does not tell Google
+  where the sitemap is; robots.txt points at it, but submitting it is what gets
+  you the per-sitemap coverage report.
+- **URL inspection** → homepage → *Request indexing*, then a couple of section
+  pages (`/buy-sell`, `/services/vet-clinics`, `/faq`). Fastest first crawl a new
+  site can get.
+- **Pages** report, a few days later: read the excluded reasons. On this site the
+  expected ones are "Alternate page with proper canonical tag" (paged feeds) and
+  "Excluded by noindex" (`?q=` searches) — both deliberate. Anything else is a
+  bug worth chasing.
 
 ## 2. Bing Webmaster Tools
 

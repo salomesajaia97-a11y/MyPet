@@ -18,6 +18,8 @@ import { pageMetadata } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd, graph } from "@/lib/seo/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 import { safeExternalUrl } from "@/lib/url";
+import { localityFor } from "@/lib/services/locality";
+import { tidyDescription } from "@/lib/services/describe";
 import {
   BRAND_KEYWORDS,
   buildKeywords,
@@ -117,11 +119,16 @@ export async function generateMetadata({
     return { title: t.services.edit.notFound, robots: { index: false, follow: false } };
   }
 
-  const locality = [service.neighborhood, service.city].filter(Boolean).join(", ");
+  // Most imported rows have no `city`, so fall back to the town their
+  // coordinates sit in — otherwise the page never names its own town and
+  // "ვეტკლინიკა თბილისში" has nothing to match.
+  const city = localityFor(service, locale);
+  const locality = [service.neighborhood, city].filter(Boolean).join(", ");
   const title = service.name;
   const description =
-    service.description?.trim().slice(0, 160) ||
-    [service.address, service.neighborhood, service.city].filter(Boolean).join(", ");
+    tidyDescription(service.description)?.slice(0, 160) ||
+    [service.address, service.neighborhood, city].filter(Boolean).join(", ") ||
+    service.name;
 
   return pageMetadata({
     locale,
@@ -134,7 +141,7 @@ export async function generateMetadata({
       [
         service.name,
         locality ? `${service.name} ${locality}` : "",
-        service.city ?? "",
+        city ?? "",
         ...(service.tags ?? []),
       ],
       KEYWORDS_BY_CATEGORY[category] ?? [],
@@ -147,7 +154,7 @@ export default async function ServiceDetailPage({
   params,
 }: PageProps<"/services/[category]/[id]">) {
   const { category, id } = await params;
-  const { t } = await getServerDictionary();
+  const { t, locale } = await getServerDictionary();
   const backHref = CATEGORY_HREF[category];
   if (!backHref) notFound();
   const backLabel = t.services.detail.back[CATEGORY_BACK_KEY[category]];
@@ -166,7 +173,10 @@ export default async function ServiceDetailPage({
     notFound();
   }
 
-  const address = [service.address, service.neighborhood, service.city]
+  // Same fallback as generateMetadata: a derived town beats no town at all.
+  const city = localityFor(service, locale);
+  const description = tidyDescription(service.description);
+  const address = [service.address, service.neighborhood, city]
     .filter(Boolean)
     .join(", ");
 
@@ -187,17 +197,21 @@ export default async function ServiceDetailPage({
     mainEntityOfPage: pageUrl,
     name: service.name,
     ...(service.images?.length ? { image: service.images } : {}),
-    ...(service.description ? { description: service.description } : {}),
-    ...(service.address
+    ...(description ? { description } : {}),
+    // An entry with no street address but known coordinates still gets a
+    // PostalAddress carrying the town: `addressLocality` is the field local
+    // search actually reads, and most imported rows have nothing else.
+    ...(service.address || city
       ? {
           address: {
             "@type": "PostalAddress",
-            streetAddress: service.address,
-            ...(service.city ? { addressLocality: service.city } : {}),
+            ...(service.address ? { streetAddress: service.address } : {}),
+            ...(city ? { addressLocality: city } : {}),
             addressCountry: "GE",
           },
         }
       : {}),
+    ...(city ? { areaServed: { "@type": "City", name: city } } : {}),
     ...(service.phone ? { telephone: service.phone } : {}),
     ...(websiteHref ? { url: websiteHref, sameAs: [websiteHref] } : {}),
     ...(service.tags?.length ? { keywords: service.tags.join(", ") } : {}),
@@ -317,11 +331,11 @@ export default async function ServiceDetailPage({
             )}
 
             {/* Description */}
-            {service.description && (
+            {description && (
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-[#0F2830]">{t.services.detail.description}</p>
                 <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">
-                  {service.description}
+                  {description}
                 </p>
               </div>
             )}
