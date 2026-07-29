@@ -5,6 +5,7 @@ import { getListings } from "@/lib/marketplace/queries";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rateLimit";
 import { handleMutationError } from "@/lib/api/errors";
+import { submitToIndexNow } from "@/lib/seo/indexNow";
 
 const VALID_TYPES = ["buy-sell", "adoption", "mating", "lost-found"];
 
@@ -88,6 +89,10 @@ export async function POST(
       type,
       userId: session.user.id,
     });
+    // Ask the participating engines to fetch the new page now rather than on
+    // their next sweep — a classified is most useful the day it is posted. The
+    // section feed goes too, since its first page just changed.
+    submitToIndexNow([`/listings/${listing._id.toString()}`, `/${type}`]);
     return NextResponse.json({ listing }, { status: 201 });
   } catch (err) {
     return handleMutationError(err, "marketplace/[type] POST");

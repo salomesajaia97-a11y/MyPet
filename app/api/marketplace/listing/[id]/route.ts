@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { handleMutationError } from "@/lib/api/errors";
 import { logAdminAction } from "@/lib/admin/guard";
 import { deleteListingCascade } from "@/lib/services/deleteListing";
+import { submitToIndexNow } from "@/lib/seo/indexNow";
 
 export async function GET(
   _req: NextRequest,
@@ -99,6 +100,9 @@ export async function PATCH(
         { type: "listing", id, summary: `Edited ${listing.breed ?? "a listing"}` }
       );
     }
+    // The public page changed — have it re-read rather than serving a stale
+    // snippet (a sold pet, an old price) in results for weeks.
+    submitToIndexNow([`/listings/${id}`]);
     return NextResponse.json({ listing: listing.toObject() });
   } catch (err) {
     return handleMutationError(err, "marketplace/listing/[id] PATCH");
@@ -133,7 +137,12 @@ export async function DELETE(
     }
 
     const label = listing.breed ?? "a listing";
+    const type = listing.type;
     await deleteListingCascade(id);
+    // Submitting a deleted URL is the documented way to get it dropped: the
+    // engine refetches, gets a 404, and removes it instead of showing a dead
+    // result for months.
+    submitToIndexNow([`/listings/${id}`, ...(type ? [`/${type}`] : [])]);
     if (!isOwner && session.user.role === "admin") {
       await logAdminAction(
         { id: session.user.id, email: session.user.email ?? null },

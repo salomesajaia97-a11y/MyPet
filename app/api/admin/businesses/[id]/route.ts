@@ -5,6 +5,7 @@ import BusinessModel from "@/lib/models/Business";
 import NotificationModel from "@/lib/models/Notification";
 import { deleteBusinessCascade } from "@/lib/services/deleteBusiness";
 import { logAdminAction, requireAdmin } from "@/lib/admin/guard";
+import { submitToIndexNow } from "@/lib/seo/indexNow";
 
 // Move a business between the queue and the live directory. `approve` publishes
 // a pending submission; `unpublish` sends a live one back to pending, which is
@@ -54,6 +55,13 @@ export async function PATCH(
     });
   }
 
+  // Either direction is a change to a public URL: an approval makes the page
+  // real, an unpublish makes it a 404 that should leave the index.
+  submitToIndexNow([
+    `/services/${business.category}/${business._id.toString()}`,
+    `/services/${business.category}`,
+  ]);
+
   await logAdminAction(actor, `business.${action}`, {
     type: "business",
     id,
@@ -79,11 +87,16 @@ export async function DELETE(
 
   await connectDB();
   // Named before the cascade runs — afterwards there is nothing left to read.
-  const doomed = await BusinessModel.findById(id).select("name").lean<{ name?: string } | null>();
+  const doomed = await BusinessModel.findById(id)
+    .select("name category")
+    .lean<{ name?: string; category?: string } | null>();
   // Takes the business's reviews and approval notification with it.
   const deleted = await deleteBusinessCascade(id);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  if (doomed?.category) {
+    submitToIndexNow([`/services/${doomed.category}/${id}`, `/services/${doomed.category}`]);
   }
   await logAdminAction(actor, "business.delete", {
     type: "business",
