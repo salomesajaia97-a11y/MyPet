@@ -202,7 +202,7 @@ export const admin: typeof ka = {
   enrich: {
     title: "Fill the directory from OpenStreetMap",
     description:
-      "Re-reads OpenStreetMap for the imported businesses and fills in a missing address, phone, website, city or opening hours. Never overwrites data that is already there.",
+      "Re-reads OpenStreetMap and, where an entry has only coordinates, looks up the street it stands on. Fills a missing address, city, district, website or opening hours. Never overwrites data that is already there. Phone numbers are not available from these sources.",
     preview: "Check",
     working: "Working…",
     apply: "Save changes",
@@ -211,12 +211,14 @@ export const admin: typeof ka = {
     showRows: "Show the rows",
     partial: "OpenStreetMap answered partially; failed requests:",
     failed: "Enrichment failed. Try again.",
+    geocodeCapped: "Address lookups are capped per run; still to do (run it again):",
     attribution: "Data: © OpenStreetMap contributors (ODbL).",
     fields: {
       address: "Address",
       phone: "Phone",
       website: "Website",
       city: "City",
+      neighborhood: "District",
       openingHours: "Opening hours",
       is24h: "24/7",
     },

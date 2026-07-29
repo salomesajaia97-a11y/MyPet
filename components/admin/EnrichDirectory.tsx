@@ -8,6 +8,8 @@ interface Report {
   applied: boolean;
   osmRows: number;
   matched: number;
+  geocoded: number;
+  geocodeSkipped: number;
   changed: number;
   fieldCounts: Record<string, number>;
   failures: string[];
@@ -51,6 +53,7 @@ export default function EnrichDirectory() {
     phone: t.admin.enrich.fields.phone,
     website: t.admin.enrich.fields.website,
     city: t.admin.enrich.fields.city,
+    neighborhood: t.admin.enrich.fields.neighborhood,
     openingHours: t.admin.enrich.fields.openingHours,
     is24h: t.admin.enrich.fields.is24h,
   };
@@ -92,6 +95,13 @@ export default function EnrichDirectory() {
                 </li>
               ))}
             </ul>
+          )}
+
+          {report.geocodeSkipped > 0 && (
+            // A per-run cap that says nothing reads as full coverage.
+            <p className="text-xs text-amber-700">
+              {t.admin.enrich.geocodeCapped} {report.geocodeSkipped}
+            </p>
           )}
 
           {report.failures.length > 0 && (
