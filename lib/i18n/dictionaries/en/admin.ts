@@ -199,6 +199,28 @@ export const admin: typeof ka = {
     empty: "No uploads yet.",
     deleteConfirm: "Delete this image from Cloudinary? This cannot be undone.",
   },
+  enrich: {
+    title: "Fill the directory from OpenStreetMap",
+    description:
+      "Re-reads OpenStreetMap for the imported businesses and fills in a missing address, phone, website, city or opening hours. Never overwrites data that is already there.",
+    preview: "Check",
+    working: "Working…",
+    apply: "Save changes",
+    previewSummary: "Would fill",
+    appliedSummary: "Filled",
+    showRows: "Show the rows",
+    partial: "OpenStreetMap answered partially; failed requests:",
+    failed: "Enrichment failed. Try again.",
+    attribution: "Data: © OpenStreetMap contributors (ODbL).",
+    fields: {
+      address: "Address",
+      phone: "Phone",
+      website: "Website",
+      city: "City",
+      openingHours: "Opening hours",
+      is24h: "24/7",
+    },
+  },
   chart: {
     total: "Total",
   },

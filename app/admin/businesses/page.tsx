@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check, Trash2, MapPin, Phone, ExternalLink, EyeOff, Pencil } from "lucide-react";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
+import EnrichDirectory from "@/components/admin/EnrichDirectory";
 
 interface Business {
   _id: string;
@@ -135,6 +136,11 @@ export default function AdminBusinessesPage() {
       <p className="text-sm text-gray-500 mb-5">
         {t.admin.businesses.subtitle}
       </p>
+
+      {/* Only meaningful on the published tab — every imported row is already
+          approved — but harmless either way and easier to find here than buried
+          in a settings page. */}
+      <EnrichDirectory />
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5">

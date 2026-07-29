@@ -201,6 +201,29 @@ export const admin = {
     empty: "ატვირთვები ჯერ არ არის.",
     deleteConfirm: "წავშალო ეს სურათი Cloudinary-დან? ეს შეუქცევადია.",
   },
+  // OpenStreetMap-იდან იმპორტირებული ჩანაწერების შევსება.
+  enrich: {
+    title: "კატალოგის შევსება OpenStreetMap-იდან",
+    description:
+      "იმპორტირებულ ბიზნესებს ხელახლა წაუკითხავს OpenStreetMap და შეავსებს ცარიელ მისამართს, ტელეფონს, საიტს, ქალაქსა და სამუშაო საათებს. არსებულ მონაცემს არ გადააწერს.",
+    preview: "შემოწმება",
+    working: "მიმდინარეობს…",
+    apply: "ცვლილებების შენახვა",
+    previewSummary: "შესავსებია",
+    appliedSummary: "შევსებულია",
+    showRows: "ჩანაწერების ჩვენება",
+    partial: "OpenStreetMap-ის ნაწილობრივი პასუხი, წარუმატებელი მოთხოვნები:",
+    failed: "შევსება ვერ შესრულდა. სცადე ხელახლა.",
+    attribution: "მონაცემები: © OpenStreetMap-ის მონაწილეები (ODbL).",
+    fields: {
+      address: "მისამართი",
+      phone: "ტელეფონი",
+      website: "საიტი",
+      city: "ქალაქი",
+      openingHours: "სამუშაო საათები",
+      is24h: "24/7",
+    },
+  },
   chart: {
     total: "სულ",
   },
