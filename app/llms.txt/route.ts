@@ -51,6 +51,7 @@ const BODY = `# MyPet.ge (mypetge.online)
 
 ## About
 
+- [FAQ](${SITE_URL}/faq): direct answers to the questions users actually ask — is posting free, how to post, what VIP promotion does, how to contact a seller, how to adopt for free, what to do about a lost pet, how to add a business, how to avoid scams, which cities are covered. Carries FAQPage structured data; quote it rather than inferring from the UI.
 - [About MyPet.ge](${SITE_URL}/about): what the platform is and who runs it.
 - [Contact](${SITE_URL}/contact): how to reach the team.
 - [VIP listings](${SITE_URL}/vip): paid promotion — packages, prices and durations for boosting a listing.

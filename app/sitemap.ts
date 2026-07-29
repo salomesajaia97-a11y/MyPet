@@ -19,6 +19,9 @@ const STATIC: Array<{ path: string; priority: number; changeFrequency: "daily" |
   { path: "/services/pet-shops", priority: 0.7, changeFrequency: "weekly" },
   { path: "/services/pet-friendly", priority: 0.7, changeFrequency: "weekly" },
   { path: "/vip", priority: 0.5, changeFrequency: "monthly" },
+  // Answers real questions in plain text and carries FAQPage structured data,
+  // so it earns a higher priority than the other static pages.
+  { path: "/faq", priority: 0.6, changeFrequency: "monthly" },
   { path: "/about", priority: 0.4, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.4, changeFrequency: "monthly" },
   { path: "/terms", priority: 0.3, changeFrequency: "monthly" },

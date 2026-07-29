@@ -4,6 +4,7 @@ export const footer: typeof ka = {
   listingsHeading: "Listings",
   infoHeading: "Information",
   about: "About us",
+  faq: "FAQ",
   contact: "Contact",
   terms: "Terms & Conditions",
   privacy: "Privacy",

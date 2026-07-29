@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import robots from "./robots";
 import { GET as llmsTxt } from "./llms.txt/route";
+import sitemap from "./sitemap";
 import { SITE_URL } from "@/lib/siteUrl";
 
 type Rule = { userAgent?: string | string[]; allow?: string | string[]; disallow?: string | string[] };
@@ -63,5 +64,20 @@ describe("llms.txt", () => {
       expect(body).toContain(`${SITE_URL}${path}`);
     }
     expect(body).toContain(`${SITE_URL}/sitemap.xml`);
+  });
+
+  // The FAQ is the one page written to be quoted verbatim by an answer engine,
+  // so it must be named here rather than left to be discovered.
+  it("points answer engines at the FAQ", async () => {
+    expect(await llmsTxt().text()).toContain(`${SITE_URL}/faq`);
+  });
+});
+
+describe("sitemap", () => {
+  it("includes the FAQ among the static routes", async () => {
+    // The DB is unreachable in a unit test, so this exercises the static
+    // fallback — which is exactly the list being asserted.
+    const entries = await sitemap();
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/faq`);
   });
 });

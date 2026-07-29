@@ -18,6 +18,59 @@ export const pages: typeof ka = {
     subtitle:
       "Have a question or a suggestion? Reach out to us on any channel.",
   },
+  faq: {
+    metaDescription:
+      "How to post a listing, what it costs, how VIP promotion works and how the lost-pet photo search works — answers to common questions about MyPet.ge.",
+    title: "Frequently Asked Questions",
+    subtitle: "Short answers on how MyPet.ge works.",
+    moreHelp: "Didn't find your answer?",
+    items: [
+      {
+        q: "Does posting a listing cost anything?",
+        a: "No. Posting a pet for sale, for free adoption, for mating, or as lost and found is free on MyPet.ge. Only VIP promotion is paid, and it is entirely optional.",
+      },
+      {
+        q: "How do I post a listing?",
+        a: "Register or sign in with Google, then press \"Add listing\", pick a category and fill in photos, breed, age, city, price and a contact number. The listing goes live immediately.",
+      },
+      {
+        q: "What is a VIP listing and what does it do?",
+        a: "A VIP listing sits at the top of its section and carries a badge, so it gets seen and called about far more. Packages come in several durations; the prices are on the VIP page and payment is by card.",
+      },
+      {
+        q: "How do I contact a seller or owner?",
+        a: "Each listing shows the owner's phone number, and you can also message them from the site — the conversation is kept under \"Messages\" in your profile.",
+      },
+      {
+        q: "How do I adopt a pet for free?",
+        a: "Open the Adoption section: it collects dogs, cats and other pets being given away free across Georgia. Listings often state temperament, vaccination and whether the animal is spayed or neutered.",
+      },
+      {
+        q: "I lost my pet — what should I do?",
+        a: "Post in the Lost & Found section with the neighbourhood, the date and a photo. Then use the photo search: an AI model compares your picture against every open listing and shows you the closest matches.",
+      },
+      {
+        q: "How do I find a vet clinic, a pet hotel or a pet shop?",
+        a: "The Services directory covers vet clinics, pet hotels, pet shops, grooming and pet-friendly venues — with addresses, phone numbers, reviews and a map.",
+      },
+      {
+        q: "How do I add my own business to the directory?",
+        a: "Choose to add a business from the Services page and fill in the details. Submissions go through moderation and are published once approved — you get a notification in your profile.",
+      },
+      {
+        q: "How do I avoid being scammed?",
+        a: "Meet in person and see the animal before paying, never send money up front to someone you don't know, ask for the vaccination card or passport, and tell us if something looks wrong — listings that break the rules are removed.",
+      },
+      {
+        q: "Which cities in Georgia does MyPet.ge cover?",
+        a: "The whole country. Most listings are in Tbilisi, followed by Batumi, Kutaisi, Rustavi, Gori and Zugdidi, and you can filter by city when searching.",
+      },
+      {
+        q: "Is the site available in English?",
+        a: "Yes — the KA｜EN switch in the top navigation translates the whole interface. Listing text is written by the people who post it, so it stays in whatever language they used.",
+      },
+    ],
+  },
   terms: {
     metaDescription: "MyPet.ge's terms and conditions of service.",
     title: "Terms & Conditions",

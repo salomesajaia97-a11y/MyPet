@@ -193,6 +193,45 @@ export function collectionPageJsonLd({
   });
 }
 
+/**
+ * FAQPage — a list of questions with their answers.
+ *
+ * The one schema type that pays off twice: Google can render it as an expandable
+ * result, and an AI answer engine looking for "does MyPet.ge charge for
+ * listings" gets a verbatim answer it can quote instead of inferring one from
+ * the UI. `acceptedAnswer.text` is allowed to contain the answer as plain text,
+ * which is what we store in the dictionary.
+ */
+export function faqPageJsonLd({
+  locale,
+  name,
+  description,
+  path,
+  items,
+}: {
+  locale: Locale;
+  name: string;
+  description: string;
+  path: string;
+  items: readonly { q: string; a: string }[];
+}): Json {
+  return {
+    "@type": "FAQPage",
+    "@id": `${abs(path)}#faq`,
+    url: abs(path),
+    name,
+    description,
+    inLanguage: locale === "en" ? "en" : "ka",
+    isPartOf: { "@id": WEBSITE_ID },
+    publisher: { "@id": ORGANIZATION_ID },
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+}
+
 /** Wrap nodes in a single @graph document — one script tag per page. */
 export function graph(...nodes: (Json | null | undefined)[]): Json {
   return {

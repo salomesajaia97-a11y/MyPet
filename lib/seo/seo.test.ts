@@ -10,6 +10,7 @@ import {
 import {
   breadcrumbJsonLd,
   collectionPageJsonLd,
+  faqPageJsonLd,
   graph,
   siteNavigationJsonLd,
   webPageJsonLd,
@@ -256,6 +257,39 @@ describe("siteVerification", () => {
       google: "g",
       yandex: "y",
       other: { "msvalidate.01": "b" },
+    });
+  });
+});
+
+describe("faqPageJsonLd", () => {
+  const faq = () =>
+    faqPageJsonLd({
+      locale: "ka",
+      name: "ხშირად დასმული კითხვები",
+      description: "D",
+      path: "/faq",
+      items: [
+        { q: "განცხადება ფასიანია?", a: "არა, უფასოა." },
+        { q: "როგორ განვათავსო?", a: "შედი და დააჭირე დამატებას." },
+      ],
+    }) as Record<string, unknown>;
+
+  it("is a FAQPage anchored on its own URL and tied to the site node", () => {
+    const node = faq();
+    expect(node["@type"]).toBe("FAQPage");
+    expect(node["@id"]).toBe(`${SITE_URL}/faq#faq`);
+    expect(node.isPartOf).toEqual({ "@id": `${SITE_URL}/#website` });
+  });
+
+  // Google only renders the rich result when every entry is a Question with an
+  // acceptedAnswer, so the shape is worth pinning.
+  it("emits each entry as a Question with an acceptedAnswer", () => {
+    const entries = faq().mainEntity as Array<Record<string, unknown>>;
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toEqual({
+      "@type": "Question",
+      name: "განცხადება ფასიანია?",
+      acceptedAnswer: { "@type": "Answer", text: "არა, უფასოა." },
     });
   });
 });

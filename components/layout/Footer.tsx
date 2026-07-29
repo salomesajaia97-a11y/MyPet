@@ -28,6 +28,7 @@ export async function Footer() {
   // Core info + legal pages.
   const LEGAL_LINKS = [
     { label: t.footer.about, href: "/about" },
+    { label: t.footer.faq, href: "/faq" },
     { label: t.footer.contact, href: "/contact" },
     { label: t.footer.terms, href: "/terms" },
     { label: t.footer.privacy, href: "/privacy" },
