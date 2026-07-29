@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   ADOPTION_KEYWORDS,
   BUY_SELL_KEYWORDS,
@@ -15,7 +15,7 @@ import {
   webPageJsonLd,
   websiteJsonLd,
 } from "./jsonLd";
-import { browsePageMetadata, pageMetadata } from "./metadata";
+import { browsePageMetadata, pageMetadata, siteVerification } from "./metadata";
 import { SITE_URL } from "@/lib/siteUrl";
 
 describe("buildKeywords", () => {
@@ -219,5 +219,43 @@ describe("structured data", () => {
       items: [{ name: "Labrador", path: "/listings/1" }],
     }) as Record<string, Record<string, Array<Record<string, unknown>>>>;
     expect("image" in page.mainEntity.itemListElement[0]).toBe(false);
+  });
+});
+
+describe("siteVerification", () => {
+  const KEYS = ["GOOGLE_SITE_VERIFICATION", "YANDEX_VERIFICATION", "BING_SITE_VERIFICATION"];
+
+  afterEach(() => {
+    for (const key of KEYS) delete process.env[key];
+  });
+
+  it("emits nothing when no console is configured", () => {
+    expect(siteVerification()).toBeUndefined();
+  });
+
+  it("treats a blank value as unset, so no empty tag ships", () => {
+    process.env.GOOGLE_SITE_VERIFICATION = "   ";
+    expect(siteVerification()).toBeUndefined();
+  });
+
+  it("passes the Google token through, trimmed", () => {
+    process.env.GOOGLE_SITE_VERIFICATION = "  token-abc  ";
+    expect(siteVerification()).toEqual({ google: "token-abc" });
+  });
+
+  it("emits Bing under the raw meta name it requires", () => {
+    process.env.BING_SITE_VERIFICATION = "bing-token";
+    expect(siteVerification()).toEqual({ other: { "msvalidate.01": "bing-token" } });
+  });
+
+  it("carries every configured console at once", () => {
+    process.env.GOOGLE_SITE_VERIFICATION = "g";
+    process.env.YANDEX_VERIFICATION = "y";
+    process.env.BING_SITE_VERIFICATION = "b";
+    expect(siteVerification()).toEqual({
+      google: "g",
+      yandex: "y",
+      other: { "msvalidate.01": "b" },
+    });
   });
 });

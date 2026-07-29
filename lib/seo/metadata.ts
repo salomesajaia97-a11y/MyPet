@@ -39,6 +39,32 @@ const DEFAULT_OG_IMAGE = {
   alt: "MyPet.ge — pet listings and services in Georgia",
 };
 
+/**
+ * Search-console ownership tokens for the root layout's `verification` field.
+ *
+ * Read from the environment rather than hardcoded: a token is per-property and
+ * gets re-issued when a property is removed and re-added, so it must not need a
+ * deploy of new code. Google Search Console is what actually gets the site
+ * crawled promptly and reports what it thinks of the pages — the site is
+ * invisible until a property is verified, and the file-upload method does not
+ * survive a redeploy, so the meta tag is the durable option.
+ *
+ * Returns undefined when nothing is configured so no empty tag ships.
+ */
+export function siteVerification(): Metadata["verification"] | undefined {
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+  const yandex = process.env.YANDEX_VERIFICATION?.trim();
+  // Bing/IndexNow's own tag has no dedicated Next field; `other` emits it raw.
+  const bing = process.env.BING_SITE_VERIFICATION?.trim();
+
+  if (!google && !yandex && !bing) return undefined;
+  return {
+    ...(google ? { google } : {}),
+    ...(yandex ? { yandex } : {}),
+    ...(bing ? { other: { "msvalidate.01": bing } } : {}),
+  };
+}
+
 function ogLocale(locale: Locale) {
   return locale === "en" ? "en_US" : "ka_GE";
 }

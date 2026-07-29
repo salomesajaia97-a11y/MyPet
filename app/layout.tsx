@@ -11,15 +11,18 @@ import { applyOverrides } from "@/lib/i18n/overrides";
 import { SITE_URL } from "@/lib/siteUrl";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_KEYWORDS } from "@/lib/seo/keywords";
-import { SITE_NAME, SITE_TITLE_TEMPLATE, TWITTER_HANDLE } from "@/lib/seo/metadata";
+import { SITE_NAME, SITE_TITLE_TEMPLATE, siteVerification, TWITTER_HANDLE } from "@/lib/seo/metadata";
 import { graph, organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const t = getDictionary(locale);
+  const verification = siteVerification();
   return {
     metadataBase: new URL(SITE_URL),
+    // Only present once a token is configured — see siteVerification().
+    ...(verification ? { verification } : {}),
     title: {
       default: t.common.metaTitle,
       // Child pages set only their own title; this appends the brand.
